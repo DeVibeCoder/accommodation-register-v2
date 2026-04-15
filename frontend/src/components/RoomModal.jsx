@@ -34,8 +34,8 @@ const closeBtnStyle = {
 };
 const summaryGrid = {
   display: 'grid',
-  gridTemplateColumns: 'repeat(3, minmax(0, 1fr))',
-  gap: 8,
+  gridTemplateColumns: 'repeat(6, minmax(0, 1fr))',
+  gap: 6,
 };
 const tableHeaderStyle = {
   display: 'grid',
@@ -97,12 +97,12 @@ function RoomModal({ open, onClose, room }) {
         <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', borderBottom: '1px solid #e3eafc', padding: '16px 20px', width: '100%', boxSizing: 'border-box', background: '#fff' }}>
           <div>
             <div style={{ fontWeight: 900, fontSize: '1.45rem', color: '#1e315f', letterSpacing: 0.2 }}>{room.id}</div>
-            <div style={{ fontSize: 12.5, color: '#6b7a94', marginTop: 4 }}>{room.building} • Floor {room.floor}</div>
+            <div style={{ fontSize: 12.5, color: '#6b7a94', marginTop: 4 }}>{room.building} | FLOOR {room.floor}</div>
           </div>
           <button style={closeBtnStyle} onClick={onClose} aria-label="Close">×</button>
         </div>
 
-        <div style={{ padding: '16px 20px 10px', background: '#fff' }}>
+        <div style={{ padding: '16px 20px 10px', background: '#fff', flex: 1, minHeight: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
             <div style={{ fontWeight: 800, fontSize: '1.02rem', color: '#1e315f' }}>Occupants</div>
             <div style={{ fontSize: 12, fontWeight: 700, color: '#64748b', background: '#f8fafc', border: '1px solid #dbe4f0', padding: '6px 10px', borderRadius: 999 }}>
@@ -110,7 +110,7 @@ function RoomModal({ open, onClose, room }) {
             </div>
           </div>
 
-          <div style={{ border: '1px solid #dfe6f1', borderRadius: 14, overflow: 'hidden', background: '#fff' }}>
+          <div style={{ border: '1px solid #dfe6f1', borderRadius: 14, overflow: 'hidden', background: '#fff', flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
             <div style={tableHeaderStyle}>
               {['#', 'ID', 'Name', 'Department', 'Type', 'Nationality'].map(label => (
                 <div key={label} style={{ fontSize: 10.5, fontWeight: 800, color: '#7f93b3', textTransform: 'uppercase', letterSpacing: 0.6 }}>
@@ -119,7 +119,7 @@ function RoomModal({ open, onClose, room }) {
               ))}
             </div>
 
-            <div style={{ maxHeight: 330, overflowY: 'auto' }}>
+            <div style={{ flex: 1, minHeight: 0, overflowY: 'auto' }}>
               {activeOccupants.length === 0 ? (
                 <div style={{ padding: '22px 16px', color: '#7a869a', fontStyle: 'italic', fontSize: 14.5 }}>No occupants in this room.</div>
               ) : (
@@ -142,13 +142,13 @@ function RoomModal({ open, onClose, room }) {
           </div>
         </div>
 
-        <div style={{ padding: '0 20px 16px', background: '#fff' }}>
-          <div style={{ fontWeight: 800, fontSize: '0.98rem', marginBottom: 8, color: '#1e315f' }}>Room Summary</div>
+        <div style={{ padding: '0 20px 16px', background: '#fff', flexShrink: 0 }}>
+          <div style={{ fontWeight: 800, fontSize: '0.92rem', marginBottom: 6, color: '#1e315f' }}>Room Summary</div>
           <div style={summaryGrid}>
             {summaryItems.map(([label, value]) => (
-              <div key={label} style={{ background: '#f8fbff', border: '1px solid #dde7f3', borderRadius: 10, padding: '8px 10px' }}>
-                <div style={{ fontSize: 10, color: '#7f93b3', textTransform: 'uppercase', fontWeight: 700, letterSpacing: 0.5 }}>{label}</div>
-                <div style={{ marginTop: 2, fontSize: 14, fontWeight: 800, color: '#1e293b', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{value}</div>
+              <div key={label} style={{ background: '#f8fbff', border: '1px solid #dde7f3', borderRadius: 8, padding: '6px 8px', minWidth: 0 }}>
+                <div style={{ fontSize: 9, color: '#7f93b3', textTransform: 'uppercase', fontWeight: 700, letterSpacing: 0.4, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{label}</div>
+                <div style={{ marginTop: 1, fontSize: 12.5, fontWeight: 800, color: '#1e293b', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{value}</div>
               </div>
             ))}
           </div>
