@@ -1,17 +1,86 @@
 
-import React, { useMemo, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import Sidebar from './Sidebar';
 import { Outlet } from 'react-router-dom';
 import { occupants as rawOccupants } from '../data/occupants';
 import { rooms as structuredRooms } from '../data/data';
+import { fetchOccupants as fetchOccupantsFromSupabase } from '../services/occupancyService';
+import { fetchRooms as fetchRoomsFromSupabase } from '../services/roomsService';
+
+function buildSeedRooms() {
+  return structuredRooms.map(room => ({
+    ...room,
+    beds: Array.from({ length: room.totalBeds }, (_, index) => ({
+      bedId: `Bed ${index + 1}`,
+      occupied: Boolean(room.beds?.[index]?.occupied),
+      occupant: room.beds?.[index]?.occupant ?? null,
+    })),
+  }));
+}
+
+function isCurrentRoomId(roomId = '') {
+  return /^(OB|FB|VTV)-/i.test(String(roomId));
+}
+
+function attachOccupantsToRooms(rooms, occupants) {
+  return rooms.map(room => ({
+    ...room,
+    beds: Array.from({ length: room.totalBeds }, (_, index) => {
+      const bedNumber = index + 1;
+      const occupant = occupants.find(o => o.roomId === room.id && Number(o.bedNo) === bedNumber) ?? null;
+      return {
+        bedId: `Bed ${bedNumber}`,
+        occupied: Boolean(occupant),
+        occupant,
+      };
+    }),
+  }));
+}
 
 function Layout({ user, onLogout }) {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const uidRef = useRef(1000);
-  const [occupants, setOccupants] = useState(() => rawOccupants.map(o => ({ ...o, _id: uidRef.current++ })));
-  const roomsState = useMemo(() => structuredRooms, []);
   const getNextUid = () => uidRef.current++;
+
+  const [occupants, setOccupants] = useState(() => rawOccupants.map(o => ({ ...o, _id: uidRef.current++ })));
+  const [roomBaseState, setRoomsState] = useState(() => buildSeedRooms());
+
+  const roomsState = useMemo(() => attachOccupantsToRooms(roomBaseState, occupants), [roomBaseState, occupants]);
   const sidebarWidth = sidebarCollapsed ? 70 : 220;
+
+  useEffect(() => {
+    let ignore = false;
+
+    (async () => {
+      const [remoteOccupants, remoteRooms] = await Promise.all([
+        fetchOccupantsFromSupabase(),
+        fetchRoomsFromSupabase(),
+      ]);
+
+      if (ignore) return;
+
+      const compatibleRooms = Array.isArray(remoteRooms) ? remoteRooms.filter(room => isCurrentRoomId(room.id)) : [];
+      if (compatibleRooms.length > 0) {
+        setRoomsState(compatibleRooms);
+        console.info('[Supabase] Rooms loaded from backend.');
+      } else {
+        console.info('[Supabase] Keeping local room master because backend room IDs are from the legacy schema.');
+      }
+
+      const compatibleOccupants = Array.isArray(remoteOccupants) ? remoteOccupants.filter(occupant => isCurrentRoomId(occupant.roomId)) : [];
+      if (compatibleOccupants.length > 0) {
+        uidRef.current = 1000;
+        setOccupants(compatibleOccupants.map(o => ({ ...o, _id: uidRef.current++ })));
+        console.info('[Supabase] Occupancy loaded from backend.');
+      } else {
+        console.info('[Supabase] Keeping local occupancy because backend data is still from the old format.');
+      }
+    })();
+
+    return () => {
+      ignore = true;
+    };
+  }, []);
 
   return (
     <div style={{ minHeight: '100vh', overflow: 'hidden', background: '#f5f7fa' }}>
@@ -77,7 +146,7 @@ function Layout({ user, onLogout }) {
 
         <main style={{ flex: 1, overflowY: 'auto', overflowX: 'hidden' }}>
           <div style={{ width: '100%', maxWidth: '100%', margin: 0, padding: 0 }}>
-            <Outlet context={{ sidebarCollapsed, setSidebarCollapsed, occupants, setOccupants, roomsState, getNextUid }} />
+            <Outlet context={{ sidebarCollapsed, setSidebarCollapsed, occupants, setOccupants, roomsState, setRoomsState, getNextUid }} />
           </div>
         </main>
       </div>

@@ -1,7 +1,7 @@
 ﻿import React, { useMemo, useState } from 'react';
 import RoomModal from '../components/RoomModal';
-import { rooms as structuredRooms } from '../data/data';
 import { useOutletContext } from 'react-router-dom';
+import { updateRoom as updateRoomRecord } from '../services/roomsService';
 
 const STATUS_OPTIONS = ['All', 'Partial', 'Vacant', 'Full'];
 const ROOM_TYPE_OPTIONS = ['Internal', 'Project', 'Quarantine'];
@@ -45,19 +45,12 @@ function Rooms() {
   const [shareType, setShareType] = useState('All');
   const [search, setSearch] = useState('');
   const [status, setStatus] = useState('All');
-  const [roomsState, setRoomsState] = useState(
-    structuredRooms.map(room => ({
-      ...room,
-      beds: [...room.beds],
-      type: normalizeType(room.totalBeds),
-    }))
-  );
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [editRoomId, setEditRoomId] = useState('');
   const [editBeds, setEditBeds] = useState('1');
   const [editRoomType, setEditRoomType] = useState('Internal');
   const [editAcType, setEditAcType] = useState('Non-AC');
-  const { sidebarCollapsed } = useOutletContext();
+  const { sidebarCollapsed, roomsState, setRoomsState } = useOutletContext();
 
   const rooms = useMemo(() => deriveRooms(roomsState), [roomsState]);
 
@@ -116,8 +109,9 @@ function Rooms() {
     setEditRoomId('');
   }
 
-  function saveRoomEdits() {
+  async function saveRoomEdits() {
     const nextTotalBeds = Math.max(1, parseInt(editBeds, 10) || 1);
+
     setRoomsState(prev => prev.map(room => {
       if (room.id !== editRoomId) return room;
       return {
@@ -129,7 +123,15 @@ function Rooms() {
         beds: createBeds(nextTotalBeds, room.beds),
       };
     }));
+
     closeEditModal();
+
+    await updateRoomRecord(editRoomId, {
+      totalBeds: nextTotalBeds,
+      type: normalizeType(nextTotalBeds),
+      roomType: editRoomType,
+      ac: editAcType === 'AC',
+    });
   }
 
   return (

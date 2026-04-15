@@ -1,6 +1,11 @@
 import React, { useMemo, useRef, useState } from 'react';
 import { useOutletContext } from 'react-router-dom';
 import AddOccupantModal from '../components/AddOccupantModal';
+import {
+  addOccupant as addOccupantRecord,
+  updateOccupant as updateOccupantRecord,
+  deleteOccupant as deleteOccupantRecord,
+} from '../services/occupancyService';
 
 const BUILDING_ORDER = ['OFFICE BUILDING', 'F&B BUILDING', 'VTV BUILDING'];
 const BUILDING_LABELS = {
@@ -297,33 +302,107 @@ function Occupancy() {
     return result;
   },[filtered]);
 
-  const handleAdd = form => {
-    setOccupants(prev=>[...prev,{
-      ...form, _id:getNextUid(), status:'Active',
+  const handleAdd = async form => {
+    const normalized = {
+      _id: getNextUid(),
+      personType: form.personType,
+      staffId: form.staffId,
+      name: form.fullName,
+      section: form.section,
+      department: form.department,
+      nationality: form.nationality,
+      roomId: form.roomId,
+      bedNo: parseInt(String(form.bedId).replace(/\D/g, ''), 10) || 1,
+      fasting: String(form.fasting).toLowerCase() === 'yes' || form.fasting === true,
+      checkIn: form.checkin || '',
+      checkOut: '',
+      status: 'Active',
       building: buildingFrom(form.roomId),
       buildingCode: buildingCodeFrom(form.roomId),
-    }]);
+    };
+
+    setOccupants(prev => [...prev, normalized]);
+
+    const saved = await addOccupantRecord(normalized);
+    if (saved) {
+      setOccupants(prev => prev.map(o => o._id === normalized._id ? { ...o, id: saved.id ?? o.id, __match: saved.__match ?? o.__match } : o));
+    }
   };
-  const handleEdit = updated => setOccupants(prev=>prev.map(o=>o._id===updated._id?{...o,...updated}:o));
-  const handleDelete = id => setOccupants(prev=>prev.filter(o=>o._id!==id));
-  const handleCheckout = id => setOccupants(prev=>prev.filter(o=>o._id!==id));
-  const handleSwap = (idA,idB) => {
-    setOccupants(prev=>{
-      const next=prev.map(o=>({...o}));
-      const a=next.find(o=>o._id===idA), b=next.find(o=>o._id===idB);
-      if(!a||!b) return next;
-      const tmpRoom=a.roomId,tmpBed=a.bedNo,tmpBuilding=a.building,tmpCode=a.buildingCode;
-      a.roomId=b.roomId; a.bedNo=b.bedNo; a.building=b.building; a.buildingCode=b.buildingCode;
-      b.roomId=tmpRoom;  b.bedNo=tmpBed;  b.building=tmpBuilding; b.buildingCode=tmpCode;
+
+  const handleEdit = async updated => {
+    setOccupants(prev => prev.map(o => o._id === updated._id ? { ...o, ...updated } : o));
+    const saved = await updateOccupantRecord(updated?.id, updated);
+    if (saved) {
+      setOccupants(prev => prev.map(o => o._id === updated._id ? { ...o, id: saved.id ?? o.id, __match: saved.__match ?? o.__match } : o));
+    }
+  };
+
+  const handleDelete = async occupant => {
+    if (!occupant) return;
+    setOccupants(prev => prev.filter(o => o._id !== occupant._id));
+    await deleteOccupantRecord(occupant);
+  };
+
+  const handleCheckout = async occupant => {
+    if (!occupant) return;
+    setOccupants(prev => prev.filter(o => o._id !== occupant._id));
+    await deleteOccupantRecord(occupant);
+  };
+
+  const handleSwap = async (idA, idB) => {
+    let swapped = [];
+
+    setOccupants(prev => {
+      const next = prev.map(o => ({ ...o }));
+      const a = next.find(o => o._id === idA);
+      const b = next.find(o => o._id === idB);
+      if (!a || !b) return next;
+
+      const tmpRoom = a.roomId;
+      const tmpBed = a.bedNo;
+      const tmpBuilding = a.building;
+      const tmpCode = a.buildingCode;
+
+      a.roomId = b.roomId;
+      a.bedNo = b.bedNo;
+      a.building = b.building;
+      a.buildingCode = b.buildingCode;
+
+      b.roomId = tmpRoom;
+      b.bedNo = tmpBed;
+      b.building = tmpBuilding;
+      b.buildingCode = tmpCode;
+
+      swapped = [{ ...a }, { ...b }];
       return next;
     });
+
+    for (const occupant of swapped) {
+      if (occupant?.id != null) {
+        await updateOccupantRecord(occupant.id, occupant);
+      }
+    }
   };
-  const handleMove = (id,toRoom,toBed) => {
-    setOccupants(prev=>prev.map(o=>{
-      if(o._id!==id) return o;
-      const bedNum=parseInt(toBed.replace(/\D/g,''),10)||o.bedNo;
-      return{...o,roomId:toRoom,bedNo:bedNum,building:buildingFrom(toRoom),buildingCode:buildingCodeFrom(toRoom)};
+
+  const handleMove = async (id, toRoom, toBed) => {
+    let moved = null;
+
+    setOccupants(prev => prev.map(o => {
+      if (o._id !== id) return o;
+      const bedNum = parseInt(String(toBed).replace(/\D/g, ''), 10) || o.bedNo;
+      moved = {
+        ...o,
+        roomId: toRoom,
+        bedNo: bedNum,
+        building: buildingFrom(toRoom),
+        buildingCode: buildingCodeFrom(toRoom),
+      };
+      return moved;
     }));
+
+    if (moved?.id != null) {
+      await updateOccupantRecord(moved.id, moved);
+    }
   };
 
   const downloadCsv = (fileName, csvContent) => {
@@ -592,8 +671,8 @@ function Occupancy() {
       <EditOccupantModal open={!!editTarget} onClose={()=>setEditTarget(null)} occupant={editTarget} onSave={handleEdit} />
       <SwapModal open={!!swapTarget} onClose={()=>setSwapTarget(null)} occupant={swapTarget} allOccupants={occupants} onSwap={handleSwap} />
       <MoveModal open={!!moveTarget} onClose={()=>setMoveTarget(null)} occupant={moveTarget} allRooms={roomsState} onMove={handleMove} />
-      <ConfirmModal open={!!checkoutTarget} onClose={()=>setCheckoutTarget(null)} onConfirm={()=>handleCheckout(checkoutTarget._id)} title="Check Out Occupant" message={`Check out ${checkoutTarget?.name} from ${checkoutTarget?.roomId}? They will be removed from the active list.`} confirmLabel="Check Out" confirmColor="#f59e0b" />
-      <ConfirmModal open={!!deleteTarget} onClose={()=>setDeleteTarget(null)} onConfirm={()=>handleDelete(deleteTarget._id)} title="Delete Occupant" message={`Permanently delete ${deleteTarget?.name}? This cannot be undone.`} confirmLabel="Delete" confirmColor="#ef4444" />
+      <ConfirmModal open={!!checkoutTarget} onClose={()=>setCheckoutTarget(null)} onConfirm={()=>handleCheckout(checkoutTarget)} title="Check Out Occupant" message={`Check out ${checkoutTarget?.name} from ${checkoutTarget?.roomId}? They will be removed from the active list.`} confirmLabel="Check Out" confirmColor="#f59e0b" />
+      <ConfirmModal open={!!deleteTarget} onClose={()=>setDeleteTarget(null)} onConfirm={()=>handleDelete(deleteTarget)} title="Delete Occupant" message={`Permanently delete ${deleteTarget?.name}? This cannot be undone.`} confirmLabel="Delete" confirmColor="#ef4444" />
     </div>
   );
 }
