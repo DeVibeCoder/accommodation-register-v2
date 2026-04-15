@@ -16,21 +16,26 @@ const modalStyle = {
   // Use .modal class for styling
 };
 const closeBtnStyle = {
-  position: 'absolute',
-  top: 18,
-  right: 22,
+  width: 36,
+  height: 36,
+  borderRadius: 999,
   fontSize: 22,
   fontWeight: 700,
   color: '#1e315f',
-  background: 'none',
-  border: 'none',
+  background: '#f8fbff',
+  border: '1px solid #d7e3f3',
   cursor: 'pointer',
   zIndex: 10,
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  lineHeight: 1,
+  flexShrink: 0,
 };
 const summaryGrid = {
   display: 'grid',
   gridTemplateColumns: 'repeat(3, minmax(0, 1fr))',
-  gap: 12,
+  gap: 8,
 };
 const tableHeaderStyle = {
   display: 'grid',
@@ -80,13 +85,16 @@ function RoomModal({ open, onClose, room }) {
           ...modalStyle,
           background: '#fff',
           borderRadius: 18,
-          width: 'min(1120px, 95vw)',
+          width: 'min(1100px, 94vw)',
+          height: 'min(680px, 88vh)',
           boxShadow: '0 20px 60px rgba(15,23,42,.28)',
           overflow: 'hidden',
+          display: 'flex',
+          flexDirection: 'column',
         }}
         onClick={e => e.stopPropagation()}
       >
-        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', borderBottom: '1px solid #e3eafc', padding: '18px 24px', width: '100%', boxSizing: 'border-box', background: '#fff' }}>
+        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', borderBottom: '1px solid #e3eafc', padding: '16px 20px', width: '100%', boxSizing: 'border-box', background: '#fff' }}>
           <div>
             <div style={{ fontWeight: 900, fontSize: '1.45rem', color: '#1e315f', letterSpacing: 0.2 }}>{room.id}</div>
             <div style={{ fontSize: 12.5, color: '#6b7a94', marginTop: 4 }}>{room.building} • Floor {room.floor}</div>
@@ -94,19 +102,7 @@ function RoomModal({ open, onClose, room }) {
           <button style={closeBtnStyle} onClick={onClose} aria-label="Close">×</button>
         </div>
 
-        <div style={{ padding: '20px 20px 18px', background: '#fff' }}>
-          <div style={{ fontWeight: 800, fontSize: '1.02rem', marginBottom: 12, color: '#1e315f' }}>Room Summary</div>
-          <div style={summaryGrid}>
-            {summaryItems.map(([label, value]) => (
-              <div key={label} style={{ background: '#f8fbff', border: '1px solid #dde7f3', borderRadius: 12, padding: '10px 12px' }}>
-                <div style={{ fontSize: 11, color: '#7f93b3', textTransform: 'uppercase', fontWeight: 700, letterSpacing: 0.6 }}>{label}</div>
-                <div style={{ marginTop: 4, fontSize: 15, fontWeight: 800, color: '#1e293b', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{value}</div>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        <div style={{ padding: '0 20px 20px', background: '#fff' }}>
+        <div style={{ padding: '16px 20px 10px', background: '#fff' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
             <div style={{ fontWeight: 800, fontSize: '1.02rem', color: '#1e315f' }}>Occupants</div>
             <div style={{ fontSize: 12, fontWeight: 700, color: '#64748b', background: '#f8fafc', border: '1px solid #dbe4f0', padding: '6px 10px', borderRadius: 999 }}>
@@ -123,7 +119,7 @@ function RoomModal({ open, onClose, room }) {
               ))}
             </div>
 
-            <div style={{ maxHeight: 300, overflowY: 'auto' }}>
+            <div style={{ maxHeight: 330, overflowY: 'auto' }}>
               {activeOccupants.length === 0 ? (
                 <div style={{ padding: '22px 16px', color: '#7a869a', fontStyle: 'italic', fontSize: 14.5 }}>No occupants in this room.</div>
               ) : (
@@ -143,6 +139,18 @@ function RoomModal({ open, onClose, room }) {
                 ))
               )}
             </div>
+          </div>
+        </div>
+
+        <div style={{ padding: '0 20px 16px', background: '#fff' }}>
+          <div style={{ fontWeight: 800, fontSize: '0.98rem', marginBottom: 8, color: '#1e315f' }}>Room Summary</div>
+          <div style={summaryGrid}>
+            {summaryItems.map(([label, value]) => (
+              <div key={label} style={{ background: '#f8fbff', border: '1px solid #dde7f3', borderRadius: 10, padding: '8px 10px' }}>
+                <div style={{ fontSize: 10, color: '#7f93b3', textTransform: 'uppercase', fontWeight: 700, letterSpacing: 0.5 }}>{label}</div>
+                <div style={{ marginTop: 2, fontSize: 14, fontWeight: 800, color: '#1e293b', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{value}</div>
+              </div>
+            ))}
           </div>
         </div>
       </div>
