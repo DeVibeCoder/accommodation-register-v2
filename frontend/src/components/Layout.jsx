@@ -44,6 +44,33 @@ function Layout({ user, onLogout }) {
 
   const [occupants, setOccupants] = useState(() => rawOccupants.map(o => ({ ...o, _id: uidRef.current++ })));
   const [roomBaseState, setRoomsState] = useState(() => buildSeedRooms());
+  const [stayHistory, setStayHistory] = useState(() => {
+    try {
+      const saved = localStorage.getItem('tic_stay_history');
+      return saved ? JSON.parse(saved) : [];
+    } catch {
+      return [];
+    }
+  });
+
+  const addStayHistory = (entry) => {
+    setStayHistory(prev => {
+      const next = [{
+        id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+        timestamp: new Date().toISOString(),
+        user: user?.role || 'Admin',
+        ...entry,
+      }, ...prev].slice(0, 500);
+
+      try {
+        localStorage.setItem('tic_stay_history', JSON.stringify(next));
+      } catch {
+        // ignore localStorage write issues
+      }
+
+      return next;
+    });
+  };
 
   const roomsState = useMemo(() => attachOccupantsToRooms(roomBaseState, occupants), [roomBaseState, occupants]);
   const sidebarWidth = sidebarCollapsed ? 70 : 220;
@@ -146,7 +173,7 @@ function Layout({ user, onLogout }) {
 
         <main style={{ flex: 1, overflowY: 'auto', overflowX: 'hidden' }}>
           <div style={{ width: '100%', maxWidth: '100%', margin: 0, padding: 0 }}>
-            <Outlet context={{ sidebarCollapsed, setSidebarCollapsed, occupants, setOccupants, roomsState, setRoomsState, getNextUid }} />
+            <Outlet context={{ sidebarCollapsed, setSidebarCollapsed, occupants, setOccupants, roomsState, setRoomsState, getNextUid, stayHistory, addStayHistory }} />
           </div>
         </main>
       </div>

@@ -1,45 +1,148 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
+import { useOutletContext } from 'react-router-dom';
 
-const historyData = [
-  { name: 'John Doe', room: '101', action: 'Check-in', date: '2026-04-01' },
-  { name: 'Jane Smith', room: '102', action: 'Edit', date: '2026-04-02' },
-  { name: 'Ali Hassan', room: '201', action: 'Check-out', date: '2026-04-03' },
-];
+const FILTERS = ['All', 'Check Out', 'Check In', 'Swap', 'Move', 'Edits'];
+
+const ACTION_STYLES = {
+  'Check In': { bg: '#dcfce7', text: '#15803d' },
+  'Check Out': { bg: '#fee2e2', text: '#dc2626' },
+  Swap: { bg: '#ede9fe', text: '#7c3aed' },
+  Move: { bg: '#dbeafe', text: '#2563eb' },
+  Edit: { bg: '#fef3c7', text: '#b45309' },
+};
+
+function formatTime(value) {
+  if (!value) return '-';
+  try {
+    return new Date(value).toLocaleString();
+  } catch {
+    return value;
+  }
+}
 
 function StayHistory() {
+  const { stayHistory = [] } = useOutletContext();
+  const [activeFilter, setActiveFilter] = useState('All');
   const [search, setSearch] = useState('');
-  const filtered = historyData.filter(h =>
-    h.name.toLowerCase().includes(search.toLowerCase()) ||
-    h.room.toLowerCase().includes(search.toLowerCase()) ||
-    h.action.toLowerCase().includes(search.toLowerCase())
-  );
+
+  const filtered = useMemo(() => {
+    return stayHistory.filter(item => {
+      const matchesFilter = activeFilter === 'All'
+        ? true
+        : activeFilter === 'Edits'
+          ? item.type === 'Edit'
+          : item.type === activeFilter;
+
+      const q = search.trim().toLowerCase();
+      const matchesSearch = q === '' ||
+        String(item.name || '').toLowerCase().includes(q) ||
+        String(item.roomId || '').toLowerCase().includes(q) ||
+        String(item.details || '').toLowerCase().includes(q) ||
+        String(item.type || '').toLowerCase().includes(q);
+
+      return matchesFilter && matchesSearch;
+    });
+  }, [stayHistory, activeFilter, search]);
+
   return (
-    <div className="page-container" style={{ width: '100%', maxWidth: '100%', margin: 0, padding: '32px 32px 0 32px', background: 'none', fontFamily: 'Inter, Segoe UI, Arial, sans-serif', boxSizing: 'border-box' }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 18 }}>
-        <h2 style={{ fontWeight: 800, fontSize: '1.3rem', color: '#1e315f', margin: 0, marginRight: 18 }}>Stay History</h2>
-        <input type="text" placeholder="Search..." value={search} onChange={e => setSearch(e.target.value)} style={{ padding: '7px 14px', borderRadius: 10, border: '1.5px solid #d0d7e2', minWidth: 220, fontSize: 15, background: '#fff' }} />
+    <div style={{ width: '100%', maxWidth: '100%', margin: 0, padding: '24px 32px', background: 'none', fontFamily: 'Inter, Segoe UI, Arial, sans-serif', boxSizing: 'border-box', minHeight: '100vh' }}>
+      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 16, marginBottom: 20, flexWrap: 'wrap' }}>
+        <div>
+          <h1 style={{ fontWeight: 800, fontSize: '1.7rem', color: '#1e315f', margin: 0, letterSpacing: '-0.4px' }}>Stay History</h1>
+          <p style={{ margin: '6px 0 0', color: '#94a3b8', fontSize: 13 }}>
+            {filtered.length} of {stayHistory.length} recorded accommodation activities
+          </p>
+        </div>
+        <input
+          type="text"
+          placeholder="Search name, room, action..."
+          value={search}
+          onChange={e => setSearch(e.target.value)}
+          style={{ padding: '10px 14px', borderRadius: 12, border: '1.5px solid #d0d7e2', minWidth: 280, fontSize: 14, background: '#fff' }}
+        />
       </div>
-      <div style={{ background: '#fff', borderRadius: 12, boxShadow: '0 2px 8px #d0d7e2', overflow: 'hidden' }}>
-        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-          <thead>
-            <tr style={{ background: '#f5f7fa', fontWeight: 700, color: '#1e315f', fontSize: 15 }}>
-              <th style={{ padding: '12px 8px', textAlign: 'left' }}>Name</th>
-              <th style={{ padding: '12px 8px', textAlign: 'left' }}>Room</th>
-              <th style={{ padding: '12px 8px', textAlign: 'left' }}>Action</th>
-              <th style={{ padding: '12px 8px', textAlign: 'left' }}>Date</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filtered.map((h, idx) => (
-              <tr key={idx} style={{ borderBottom: idx < filtered.length - 1 ? '1px solid #e3eafc' : 'none', fontSize: 15 }}>
-                <td style={{ padding: '10px 8px' }}>{h.name}</td>
-                <td style={{ padding: '10px 8px' }}>{h.room}</td>
-                <td style={{ padding: '10px 8px', color: h.action === 'Check-in' ? '#3ec97a' : h.action === 'Check-out' ? '#e74c3c' : '#3b82f6', fontWeight: 700 }}>{h.action}</td>
-                <td style={{ padding: '10px 8px' }}>{h.date}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, marginBottom: 18 }}>
+        {FILTERS.map(filter => {
+          const isActive = activeFilter === filter;
+          return (
+            <button
+              key={filter}
+              onClick={() => setActiveFilter(filter)}
+              style={{
+                padding: '9px 16px',
+                borderRadius: 999,
+                border: isActive ? '1px solid #2563eb' : '1px solid #d7e1ef',
+                background: isActive ? '#dbeafe' : '#fff',
+                color: isActive ? '#1d4ed8' : '#475569',
+                fontWeight: 700,
+                fontSize: 13,
+                cursor: 'pointer',
+              }}
+            >
+              {filter}
+            </button>
+          );
+        })}
+      </div>
+
+      <div style={{ background: '#fff', borderRadius: 18, boxShadow: '0 8px 26px rgba(30,49,95,.08)', border: '1px solid #dfe6f1', overflow: 'hidden' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 0.9fr 1fr 1.8fr 1fr', padding: '0 20px', height: 46, alignItems: 'center', background: 'linear-gradient(180deg, #f8fbff 0%, #f3f7fd 100%)', borderBottom: '1px solid #dfe6f1', gap: 12 }}>
+          {['Action', 'Person', 'Room', 'Details', 'Time'].map(label => (
+            <span key={label} style={{ fontSize: 10.5, fontWeight: 700, color: '#7f93b3', textTransform: 'uppercase', letterSpacing: 0.6 }}>
+              {label}
+            </span>
+          ))}
+        </div>
+
+        {filtered.length === 0 ? (
+          <div style={{ padding: '56px 20px', textAlign: 'center', color: '#94a3b8' }}>
+            No stay activity has been recorded yet for this filter.
+          </div>
+        ) : (
+          filtered.map((item, index) => {
+            const tone = ACTION_STYLES[item.type] || ACTION_STYLES.Edit;
+            const rowBg = index % 2 === 0 ? '#ffffff' : '#f8fbff';
+
+            return (
+              <div
+                key={item.id || index}
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns: '1.2fr 0.9fr 1fr 1.8fr 1fr',
+                  gap: 12,
+                  alignItems: 'center',
+                  padding: '14px 20px',
+                  borderBottom: '1px solid #e8eef6',
+                  background: rowBg,
+                }}
+              >
+                <div>
+                  <span style={{ display: 'inline-flex', alignItems: 'center', padding: '5px 10px', borderRadius: 999, background: tone.bg, color: tone.text, fontWeight: 800, fontSize: 12 }}>
+                    {item.type === 'Edit' ? 'Edit' : item.type}
+                  </span>
+                </div>
+
+                <div style={{ fontWeight: 700, color: '#1e293b', fontSize: 13.5 }}>
+                  {item.name || '-'}
+                </div>
+
+                <div style={{ color: '#2563eb', fontWeight: 800, fontSize: 13 }}>
+                  {item.roomId || '-'}
+                  {item.bedNo ? <div style={{ color: '#94a3b8', fontWeight: 600, fontSize: 11, marginTop: 2 }}>Bed {item.bedNo}</div> : null}
+                </div>
+
+                <div style={{ color: '#475569', fontWeight: 600, fontSize: 13, lineHeight: 1.4 }}>
+                  {item.details || '-'}
+                </div>
+
+                <div style={{ color: '#64748b', fontSize: 12.5, fontWeight: 600 }}>
+                  {formatTime(item.timestamp)}
+                </div>
+              </div>
+            );
+          })
+        )}
       </div>
     </div>
   );

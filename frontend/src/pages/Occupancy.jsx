@@ -248,7 +248,7 @@ function buildingCodeFrom(roomId) {
 }
 
 function Occupancy() {
-  const { occupants, setOccupants, roomsState, getNextUid } = useOutletContext();
+  const { occupants, setOccupants, roomsState, getNextUid, addStayHistory } = useOutletContext();
   const importInputRef = useRef(null);
 
   const [personTypeFilter, setPersonTypeFilter] = useState('All');
@@ -322,6 +322,13 @@ function Occupancy() {
     };
 
     setOccupants(prev => [...prev, normalized]);
+    addStayHistory?.({
+      type: 'Check In',
+      name: normalized.name,
+      roomId: normalized.roomId,
+      bedNo: normalized.bedNo,
+      details: `Checked in to ${normalized.roomId} / Bed ${normalized.bedNo}`,
+    });
 
     const saved = await addOccupantRecord(normalized);
     if (saved) {
@@ -330,7 +337,24 @@ function Occupancy() {
   };
 
   const handleEdit = async updated => {
+    const original = occupants.find(o => o._id === updated._id);
     setOccupants(prev => prev.map(o => o._id === updated._id ? { ...o, ...updated } : o));
+
+    const changedFields = [];
+    if (original) {
+      ['name', 'personType', 'staffId', 'section', 'department', 'nationality', 'fasting'].forEach(field => {
+        if (String(original[field] ?? '') !== String(updated[field] ?? '')) changedFields.push(field);
+      });
+    }
+
+    addStayHistory?.({
+      type: 'Edit',
+      name: updated.name,
+      roomId: updated.roomId,
+      bedNo: updated.bedNo,
+      details: changedFields.length > 0 ? `Updated ${changedFields.join(', ')}` : 'Occupant details edited',
+    });
+
     const saved = await updateOccupantRecord(updated?.id, updated);
     if (saved) {
       setOccupants(prev => prev.map(o => o._id === updated._id ? { ...o, id: saved.id ?? o.id, __match: saved.__match ?? o.__match } : o));
@@ -340,23 +364,42 @@ function Occupancy() {
   const handleDelete = async occupant => {
     if (!occupant) return;
     setOccupants(prev => prev.filter(o => o._id !== occupant._id));
+    addStayHistory?.({
+      type: 'Edit',
+      name: occupant.name,
+      roomId: occupant.roomId,
+      bedNo: occupant.bedNo,
+      details: 'Occupant record deleted',
+    });
     await deleteOccupantRecord(occupant);
   };
 
   const handleCheckout = async occupant => {
     if (!occupant) return;
     setOccupants(prev => prev.filter(o => o._id !== occupant._id));
+    addStayHistory?.({
+      type: 'Check Out',
+      name: occupant.name,
+      roomId: occupant.roomId,
+      bedNo: occupant.bedNo,
+      details: `Checked out from ${occupant.roomId} / Bed ${occupant.bedNo}`,
+    });
     await deleteOccupantRecord(occupant);
   };
 
   const handleSwap = async (idA, idB) => {
     let swapped = [];
+    let beforeA = null;
+    let beforeB = null;
 
     setOccupants(prev => {
       const next = prev.map(o => ({ ...o }));
       const a = next.find(o => o._id === idA);
       const b = next.find(o => o._id === idB);
       if (!a || !b) return next;
+
+      beforeA = { ...a };
+      beforeB = { ...b };
 
       const tmpRoom = a.roomId;
       const tmpBed = a.bedNo;
@@ -377,6 +420,16 @@ function Occupancy() {
       return next;
     });
 
+    if (beforeA && beforeB) {
+      addStayHistory?.({
+        type: 'Swap',
+        name: `${beforeA.name} ⇄ ${beforeB.name}`,
+        roomId: `${beforeA.roomId} ⇄ ${beforeB.roomId}`,
+        bedNo: `${beforeA.bedNo} ⇄ ${beforeB.bedNo}`,
+        details: 'Swapped occupant room and bed assignments',
+      });
+    }
+
     for (const occupant of swapped) {
       if (occupant?.id != null) {
         await updateOccupantRecord(occupant.id, occupant);
@@ -386,9 +439,11 @@ function Occupancy() {
 
   const handleMove = async (id, toRoom, toBed) => {
     let moved = null;
+    let original = null;
 
     setOccupants(prev => prev.map(o => {
       if (o._id !== id) return o;
+      original = { ...o };
       const bedNum = parseInt(String(toBed).replace(/\D/g, ''), 10) || o.bedNo;
       moved = {
         ...o,
@@ -399,6 +454,16 @@ function Occupancy() {
       };
       return moved;
     }));
+
+    if (original && moved) {
+      addStayHistory?.({
+        type: 'Move',
+        name: moved.name,
+        roomId: moved.roomId,
+        bedNo: moved.bedNo,
+        details: `Moved from ${original.roomId} / Bed ${original.bedNo} to ${moved.roomId} / Bed ${moved.bedNo}`,
+      });
+    }
 
     if (moved?.id != null) {
       await updateOccupantRecord(moved.id, moved);
