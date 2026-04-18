@@ -4,6 +4,7 @@ import Sidebar from './Sidebar';
 import { Outlet } from 'react-router-dom';
 import { fetchOccupants as fetchOccupantsFromApi } from '../services/occupancyService';
 import { fetchRooms as fetchRoomsFromApi } from '../services/roomsService';
+import { addStayHistory as addStayHistoryToApi, fetchStayHistory as fetchStayHistoryFromApi } from '../services/stayHistoryService';
 
 function isCurrentRoomId(roomId = '') {
   return /^(OB|FB|VTV)-/i.test(String(roomId));
@@ -44,32 +45,24 @@ function Layout({ user, onLogout }) {
 
   const [occupants, setOccupants] = useState([]);
   const [roomBaseState, setRoomsState] = useState([]);
-  const [stayHistory, setStayHistory] = useState(() => {
-    try {
-      const saved = localStorage.getItem('tic_stay_history');
-      return saved ? JSON.parse(saved) : [];
-    } catch {
-      return [];
-    }
-  });
+  const [stayHistory, setStayHistory] = useState([]);
 
   const addStayHistory = (entry) => {
-    setStayHistory(prev => {
-      const next = [{
-        id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
-        timestamp: new Date().toISOString(),
-        user: user?.role || 'Admin',
-        ...entry,
-      }, ...prev].slice(0, 500);
+    const optimisticEntry = {
+      id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+      timestamp: new Date().toISOString(),
+      user: user?.role || 'Admin',
+      ...entry,
+    };
 
-      try {
-        localStorage.setItem('tic_stay_history', JSON.stringify(next));
-      } catch {
-        // ignore localStorage write issues
-      }
+    setStayHistory(prev => [optimisticEntry, ...prev].slice(0, 500));
 
-      return next;
-    });
+    (async () => {
+      const saved = await addStayHistoryToApi(optimisticEntry);
+      if (!saved) return;
+
+      setStayHistory(prev => prev.map(item => item.id === optimisticEntry.id ? saved : item));
+    })();
   };
 
   const roomsState = useMemo(() => attachOccupantsToRooms(roomBaseState, occupants), [roomBaseState, occupants]);
@@ -80,9 +73,10 @@ function Layout({ user, onLogout }) {
 
     (async () => {
       try {
-        const [remoteOccupants, remoteRooms] = await Promise.all([
+        const [remoteOccupants, remoteRooms, remoteHistory] = await Promise.all([
           fetchOccupantsFromApi(),
           fetchRoomsFromApi(),
+          fetchStayHistoryFromApi(),
         ]);
 
         if (ignore) return;
@@ -98,12 +92,14 @@ function Layout({ user, onLogout }) {
         setRoomsState(liveRooms);
         uidRef.current = 1000;
         setOccupants(liveOccupants.map(o => ({ ...o, _id: uidRef.current++ })));
+        setStayHistory(Array.isArray(remoteHistory) ? remoteHistory.slice(0, 500) : []);
 
-        console.info(`[API] Loaded ${liveRooms.length} rooms and ${liveOccupants.length} occupants from backend.`);
+        console.info(`[API] Loaded ${liveRooms.length} rooms, ${liveOccupants.length} occupants, and ${Array.isArray(remoteHistory) ? remoteHistory.length : 0} history entries from backend.`);
       } catch (error) {
         if (!ignore) {
           setRoomsState([]);
           setOccupants([]);
+          setStayHistory([]);
         }
         console.error('[API] Failed to load live accommodation data.', error?.message || error);
       }
@@ -178,7 +174,7 @@ function Layout({ user, onLogout }) {
 
         <main style={{ flex: 1, overflowY: 'auto', overflowX: 'hidden' }}>
           <div style={{ width: '100%', maxWidth: '100%', margin: 0, padding: 0 }}>
-            <Outlet context={{ sidebarCollapsed, setSidebarCollapsed, occupants, setOccupants, roomsState, setRoomsState, getNextUid, stayHistory, setStayHistory, addStayHistory }} />
+            <Outlet context={{ sidebarCollapsed, setSidebarCollapsed, occupants, setOccupants, roomsState, setRoomsState, getNextUid, stayHistory, setStayHistory, addStayHistory, user, isAdmin: (user?.role || 'Viewer') === 'Admin', canEditAccommodation: (user?.role || 'Viewer') !== 'Viewer' }} />
           </div>
         </main>
       </div>

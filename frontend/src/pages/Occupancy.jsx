@@ -286,7 +286,7 @@ function buildingCodeFrom(roomId) {
 }
 
 function Occupancy() {
-  const { occupants, setOccupants, roomsState, setRoomsState, getNextUid, addStayHistory } = useOutletContext();
+  const { occupants, setOccupants, roomsState, setRoomsState, getNextUid, addStayHistory, canEditAccommodation = true } = useOutletContext();
   const importInputRef = useRef(null);
 
   const syncRoomCapacities = async (assignments = []) => {
@@ -381,6 +381,8 @@ function Occupancy() {
   },[filtered]);
 
   const handleAdd = async form => {
+    if (!canEditAccommodation) return;
+
     const normalized = {
       _id: getNextUid(),
       personType: form.personType,
@@ -416,6 +418,8 @@ function Occupancy() {
   };
 
   const handleEdit = async updated => {
+    if (!canEditAccommodation) return;
+
     const original = occupants.find(o => o._id === updated._id);
     setOccupants(prev => prev.map(o => o._id === updated._id ? { ...o, ...updated } : o));
 
@@ -441,7 +445,7 @@ function Occupancy() {
   };
 
   const handleDelete = async occupant => {
-    if (!occupant) return;
+    if (!occupant || !canEditAccommodation) return;
     setOccupants(prev => prev.filter(o => o._id !== occupant._id));
     addStayHistory?.({
       type: 'Edit',
@@ -454,7 +458,7 @@ function Occupancy() {
   };
 
   const handleCheckout = async occupant => {
-    if (!occupant) return;
+    if (!occupant || !canEditAccommodation) return;
     setOccupants(prev => prev.filter(o => o._id !== occupant._id));
     addStayHistory?.({
       type: 'Check Out',
@@ -467,6 +471,8 @@ function Occupancy() {
   };
 
   const handleSwap = async (idA, idB) => {
+    if (!canEditAccommodation) return;
+
     let swapped = [];
     let beforeA = null;
     let beforeB = null;
@@ -517,6 +523,8 @@ function Occupancy() {
   };
 
   const handleMove = async (id, toRoom, toBed) => {
+    if (!canEditAccommodation) return;
+
     let moved = null;
     let original = null;
 
@@ -727,10 +735,10 @@ function Occupancy() {
           <p style={{ margin:'4px 0 0',fontSize:13,color:'#94a3b8' }}>{filtered.length} of {occupants.length} active occupants</p>
         </div>
         <div style={{ display:'flex',gap:10,alignItems:'flex-start' }}>
-          <button onClick={()=>setAddOpen(true)} style={{ padding:'11px 26px',borderRadius:12,border:'none',background:'#3b82f6',color:'#fff',fontWeight:700,fontSize:15,cursor:'pointer',display:'flex',alignItems:'center',gap:8,boxShadow:'0 2px 8px rgba(59,130,246,.35)' }}>+ Add Occupant</button>
+          {canEditAccommodation ? <button onClick={()=>setAddOpen(true)} style={{ padding:'11px 26px',borderRadius:12,border:'none',background:'#3b82f6',color:'#fff',fontWeight:700,fontSize:15,cursor:'pointer',display:'flex',alignItems:'center',gap:8,boxShadow:'0 2px 8px rgba(59,130,246,.35)' }}>+ Add Occupant</button> : null}
           <div style={{ display:'flex',gap:8 }}>
             <button onClick={handleExport} style={{ padding:'10px 18px',borderRadius:10,border:'1.5px solid #d0d7e2',background:'#fff',color:'#1e315f',fontWeight:700,fontSize:13,cursor:'pointer' }}>Export</button>
-            <button onClick={handleImportClick} style={{ padding:'10px 18px',borderRadius:10,border:'1.5px solid #d0d7e2',background:'#fff',color:'#1e315f',fontWeight:700,fontSize:13,cursor:'pointer' }}>Import</button>
+            {canEditAccommodation ? <button onClick={handleImportClick} style={{ padding:'10px 18px',borderRadius:10,border:'1.5px solid #d0d7e2',background:'#fff',color:'#1e315f',fontWeight:700,fontSize:13,cursor:'pointer' }}>Import</button> : null}
             <button onClick={handleTemplate} style={{ padding:'10px 18px',borderRadius:10,border:'1.5px solid #d0d7e2',background:'#fff',color:'#1e315f',fontWeight:700,fontSize:13,cursor:'pointer' }}>Template</button>
             <input ref={importInputRef} type="file" accept=".csv,text/csv" onChange={handleImportFile} style={{ display:'none' }} />
           </div>
@@ -829,18 +837,22 @@ function Occupancy() {
               </div>
 
               <div style={{ display:'flex',gap:4,alignItems:'center',background:'rgba(255,255,255,.76)',padding:'4px 6px',borderRadius:11,overflow:'visible',flexWrap:'nowrap',justifyContent:'center',border:'1px solid #dbe4f0' }}>
-                <ActionBtn title="Edit"      onClick={()=>setEditTarget(o)}     color="#3b82f6" bgGradient="linear-gradient(135deg, #dbeafe 0%, #eff6ff 100%)"><IconEdit /></ActionBtn>
-                <ActionBtn title="Swap"      onClick={()=>setSwapTarget(o)}     color="#8b5cf6" bgGradient="linear-gradient(135deg, #ede9fe 0%, #f3e8ff 100%)"><IconSwap /></ActionBtn>
-                <ActionBtn title="Move"      onClick={()=>setMoveTarget(o)}     color="#10b981" bgGradient="linear-gradient(135deg, #d1fae5 0%, #ecfdf5 100%)"><IconMove /></ActionBtn>
-                <ActionBtn title="Check Out" onClick={()=>setCheckoutTarget(o)} color="#f59e0b" bgGradient="linear-gradient(135deg, #fed7aa 0%, #fffbeb 100%)"><IconCheckout /></ActionBtn>
-                <ActionBtn title="Delete"    onClick={()=>setDeleteTarget(o)}   color="#ef4444" bgGradient="linear-gradient(135deg, #fecaca 0%, #fee2e2 100%)" hoverColor="#b91c1c"><IconDelete /></ActionBtn>
+                {canEditAccommodation ? (
+                  <>
+                    <ActionBtn title="Edit"      onClick={()=>setEditTarget(o)}     color="#3b82f6" bgGradient="linear-gradient(135deg, #dbeafe 0%, #eff6ff 100%)"><IconEdit /></ActionBtn>
+                    <ActionBtn title="Swap"      onClick={()=>setSwapTarget(o)}     color="#8b5cf6" bgGradient="linear-gradient(135deg, #ede9fe 0%, #f3e8ff 100%)"><IconSwap /></ActionBtn>
+                    <ActionBtn title="Move"      onClick={()=>setMoveTarget(o)}     color="#10b981" bgGradient="linear-gradient(135deg, #d1fae5 0%, #ecfdf5 100%)"><IconMove /></ActionBtn>
+                    <ActionBtn title="Check Out" onClick={()=>setCheckoutTarget(o)} color="#f59e0b" bgGradient="linear-gradient(135deg, #fed7aa 0%, #fffbeb 100%)"><IconCheckout /></ActionBtn>
+                    <ActionBtn title="Delete"    onClick={()=>setDeleteTarget(o)}   color="#ef4444" bgGradient="linear-gradient(135deg, #fecaca 0%, #fee2e2 100%)" hoverColor="#b91c1c"><IconDelete /></ActionBtn>
+                  </>
+                ) : <span style={{ fontSize: 11, fontWeight: 700, color:'#64748b', padding:'4px 8px' }}>View only</span>}
               </div>
             </div>
           );
         })}
       </div>
 
-      <AddOccupantModal open={addOpen} onClose={()=>setAddOpen(false)} rooms={roomsState} onAdd={handleAdd} />
+      <AddOccupantModal open={canEditAccommodation && addOpen} onClose={()=>setAddOpen(false)} rooms={roomsState} onAdd={handleAdd} />
       <EditOccupantModal open={!!editTarget} onClose={()=>setEditTarget(null)} occupant={editTarget} onSave={handleEdit} />
       <SwapModal open={!!swapTarget} onClose={()=>setSwapTarget(null)} occupant={swapTarget} allOccupants={occupants} onSwap={handleSwap} />
       <MoveModal open={!!moveTarget} onClose={()=>setMoveTarget(null)} occupant={moveTarget} allRooms={roomsState} onMove={handleMove} />

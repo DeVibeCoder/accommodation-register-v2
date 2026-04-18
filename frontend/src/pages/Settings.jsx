@@ -160,12 +160,13 @@ function Settings({ user, setUser }) {
         <h2 style={{ fontWeight: 800, fontSize: '1.3rem', color: '#1e315f', marginBottom: 18 }}>Role Management</h2>
         <div style={{ marginBottom: 18 }}>
           <label htmlFor="role-select" style={{ fontWeight: 700, fontSize: 16, marginRight: 16 }}>Select Role:</label>
-          <select id="role-select" value={selectedRole} onChange={handleRoleChange} style={{ fontSize: 16, padding: '8px 18px', borderRadius: 8, border: '1.5px solid #d0d7e2', fontWeight: 600 }}>
+          <select id="role-select" value={selectedRole} onChange={handleRoleChange} disabled={!isAdmin} style={{ fontSize: 16, padding: '8px 18px', borderRadius: 8, border: '1.5px solid #d0d7e2', fontWeight: 600, background: !isAdmin ? '#f1f5f9' : '#fff', cursor: !isAdmin ? 'not-allowed' : 'pointer' }}>
             {roleDescriptions.map(r => (
               <option key={r.role} value={r.role}>{r.role}</option>
             ))}
           </select>
         </div>
+        {!isAdmin ? <div style={{ marginBottom: 14, color: '#b45309', fontWeight: 700 }}>Only Admin can change user roles.</div> : null}
         <div style={{ display: 'flex', gap: 18, flexWrap: 'wrap' }}>
           {roleDescriptions.map(r => (
             <div key={r.role} style={{ background: selectedRole === r.role ? '#e3eafc' : '#f5f7fa', color: '#1e315f', borderRadius: 10, padding: '18px 24px', fontWeight: 700, fontSize: 16, flex: '1 1 220px', textAlign: 'center', border: selectedRole === r.role ? '2px solid #1e315f' : '1.5px solid #d0d7e2' }}>

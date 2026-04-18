@@ -1,4 +1,4 @@
-import { allowMethods, formatOccupantForClient, json, readBody, supabaseRequest, toOccupancyRow } from '../_lib/supabase.js';
+import { allowMethods, formatOccupantForClient, json, readBody, requireRole, supabaseRequest, toOccupancyRow } from '../_lib/supabase.js';
 
 function buildFilter(routeId, payload = {}) {
   if (payload.id) {
@@ -19,6 +19,10 @@ export default async function handler(req, res) {
   if (!allowMethods(req, res, ['PUT', 'DELETE'])) return;
 
   try {
+    const allowedRoles = req.method === 'DELETE' ? ['Admin', 'Accommodation'] : ['Admin', 'Accommodation'];
+    const user = await requireRole(req, res, allowedRoles);
+    if (!user) return;
+
     const routeId = req.query.id;
     const payload = await readBody(req);
     const filter = buildFilter(routeId, payload);

@@ -1,9 +1,12 @@
-import { allowMethods, json, readBody, supabaseRequest, toRoomRow } from '../_lib/supabase.js';
+import { allowMethods, json, readBody, requireRole, supabaseRequest, toRoomRow } from '../_lib/supabase.js';
 
 export default async function handler(req, res) {
   if (!allowMethods(req, res, ['PUT'])) return;
 
   try {
+    const user = await requireRole(req, res, ['Admin', 'Accommodation']);
+    if (!user) return;
+
     const roomId = req.query.id;
     const payload = await readBody(req);
 

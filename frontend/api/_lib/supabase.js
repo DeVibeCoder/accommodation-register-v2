@@ -235,6 +235,35 @@ export async function getUserFromSession(req, res) {
   }
 }
 
+export async function getProfileFromSession(req, res) {
+  const authUser = await getUserFromSession(req, res);
+  if (!authUser) return null;
+
+  const user = await ensureProfileForUser(authUser);
+  if (user?.active === false) {
+    clearSessionCookies(res);
+    return null;
+  }
+
+  return user;
+}
+
+export async function requireRole(req, res, allowedRoles = []) {
+  const user = await getProfileFromSession(req, res);
+
+  if (!user) {
+    json(res, 401, { error: 'Authentication required.' });
+    return null;
+  }
+
+  if (Array.isArray(allowedRoles) && allowedRoles.length > 0 && !allowedRoles.includes(user.role)) {
+    json(res, 403, { error: 'You do not have permission for this action.' });
+    return null;
+  }
+
+  return user;
+}
+
 export function formatRoomForClient(row = {}) {
   return {
     id: row.room_id,
@@ -309,5 +338,33 @@ export function toOccupancyRow(payload = {}) {
     status: payload.status || 'Active',
     building: payload.building || null,
     building_code: payload.buildingCode || null,
+  };
+}
+
+export function formatStayHistoryForClient(row = {}) {
+  const details = row.details && typeof row.details === 'object' ? row.details : {};
+
+  return {
+    id: row.id,
+    type: row.action || 'Edit',
+    name: row.occupant_name || details.name || '',
+    roomId: row.room_id || details.roomId || '',
+    bedNo: details.bedNo ?? null,
+    details: details.details || details.message || details.text || '',
+    timestamp: row.created_at,
+    user: details.user || '',
+  };
+}
+
+export function toStayHistoryRow(payload = {}) {
+  return {
+    action: payload.type || 'Edit',
+    occupant_name: payload.name || null,
+    room_id: payload.roomId || null,
+    details: {
+      bedNo: payload.bedNo ?? null,
+      details: payload.details || '',
+      user: payload.user || null,
+    },
   };
 }

@@ -1,10 +1,13 @@
-import { allowMethods, formatRoomForClient, json, readBody, supabaseRequest, toRoomRow } from '../_lib/supabase.js';
+import { allowMethods, formatRoomForClient, json, readBody, requireRole, supabaseRequest, toRoomRow } from '../_lib/supabase.js';
 
 export default async function handler(req, res) {
   if (!allowMethods(req, res, ['GET', 'POST'])) return;
 
   try {
     if (req.method === 'GET') {
+      const user = await requireRole(req, res, []);
+      if (!user) return;
+
       const rows = await supabaseRequest('/rest/v1/rooms?select=*&order=room_id.asc', {
         service: true,
       });
@@ -12,6 +15,9 @@ export default async function handler(req, res) {
       const rooms = Array.isArray(rows) ? rows.map(formatRoomForClient) : [];
       return json(res, 200, { rooms });
     }
+
+    const user = await requireRole(req, res, ['Admin']);
+    if (!user) return;
 
     const payload = await readBody(req);
     const inserted = await supabaseRequest('/rest/v1/rooms', {

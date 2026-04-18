@@ -72,7 +72,7 @@ function Rooms() {
   const [editBeds, setEditBeds] = useState('1');
   const [editRoomType, setEditRoomType] = useState('Internal');
   const [editAcType, setEditAcType] = useState('Non-AC');
-  const { sidebarCollapsed, roomsState, setRoomsState } = useOutletContext();
+  const { sidebarCollapsed, roomsState, setRoomsState, canEditAccommodation = true } = useOutletContext();
 
   const rooms = useMemo(() => deriveRooms(roomsState), [roomsState]);
 
@@ -119,6 +119,7 @@ function Rooms() {
 
   function openEditModal(room, event) {
     event.stopPropagation();
+    if (!canEditAccommodation) return;
     setEditRoomId(room.id);
     setEditBeds(String(room.totalBeds));
     setEditRoomType(room.roomType || 'Internal');
@@ -335,30 +336,32 @@ function Rooms() {
               onKeyPress={e => { if (e.key === 'Enter') { setSelectedRoom(room); setIsModalOpen(true); } }}
             >
               {/* Edit button - absolutely positioned, never shifts layout */}
-              <button
-                type="button"
-                aria-label={`Edit ${room.id}`}
-                onClick={event => openEditModal(room, event)}
-                style={{
-                  position: 'absolute',
-                  top: 10,
-                  right: 10,
-                  width: 26,
-                  height: 26,
-                  borderRadius: 999,
-                  border: isSpecialType ? '1px solid rgba(255,255,255,0.38)' : '1px solid #9db4ec',
-                  background: isSpecialType ? 'rgba(255,255,255,0.22)' : '#93b2ff',
-                  display: 'grid',
-                  placeItems: 'center',
-                  cursor: 'pointer',
-                  zIndex: 2,
-                  boxShadow: '0 2px 6px rgba(0,0,0,0.15)',
-                }}
-              >
-                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                  <path d="M4 20H8L18.5 9.5C19.3 8.7 19.3 7.4 18.5 6.6L17.4 5.5C16.6 4.7 15.3 4.7 14.5 5.5L4 16V20Z" stroke="#ffffff" strokeWidth="2.2" strokeLinejoin="round" />
-                </svg>
-              </button>
+              {canEditAccommodation && (
+                <button
+                  type="button"
+                  aria-label={`Edit ${room.id}`}
+                  onClick={event => openEditModal(room, event)}
+                  style={{
+                    position: 'absolute',
+                    top: 10,
+                    right: 10,
+                    width: 26,
+                    height: 26,
+                    borderRadius: 999,
+                    border: isSpecialType ? '1px solid rgba(255,255,255,0.38)' : '1px solid #9db4ec',
+                    background: isSpecialType ? 'rgba(255,255,255,0.22)' : '#93b2ff',
+                    display: 'grid',
+                    placeItems: 'center',
+                    cursor: 'pointer',
+                    zIndex: 2,
+                    boxShadow: '0 2px 6px rgba(0,0,0,0.15)',
+                  }}
+                >
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                    <path d="M4 20H8L18.5 9.5C19.3 8.7 19.3 7.4 18.5 6.6L17.4 5.5C16.6 4.7 15.3 4.7 14.5 5.5L4 16V20Z" stroke="#ffffff" strokeWidth="2.2" strokeLinejoin="round" />
+                  </svg>
+                </button>
+              )}
 
               {/* Row 1: Room ID + Status badge (padded right to clear the absolute edit button) */}
               <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 7, paddingRight: 34 }}>

@@ -1,10 +1,13 @@
-import { allowMethods, formatOccupantForClient, json, readBody, supabaseRequest, toOccupancyRow } from '../_lib/supabase.js';
+import { allowMethods, formatOccupantForClient, json, readBody, requireRole, supabaseRequest, toOccupancyRow } from '../_lib/supabase.js';
 
 export default async function handler(req, res) {
   if (!allowMethods(req, res, ['GET', 'POST', 'DELETE'])) return;
 
   try {
     if (req.method === 'GET') {
+      const user = await requireRole(req, res, []);
+      if (!user) return;
+
       const rows = await supabaseRequest('/rest/v1/occupancy?select=*&order=created_at.desc', {
         service: true,
       });
@@ -14,6 +17,9 @@ export default async function handler(req, res) {
     }
 
     if (req.method === 'DELETE') {
+      const user = await requireRole(req, res, ['Admin']);
+      if (!user) return;
+
       await supabaseRequest('/rest/v1/occupancy?id=not.is.null', {
         method: 'DELETE',
         service: true,
@@ -28,6 +34,9 @@ export default async function handler(req, res) {
 
       return json(res, 200, { success: true });
     }
+
+    const user = await requireRole(req, res, ['Admin', 'Accommodation']);
+    if (!user) return;
 
     const payload = await readBody(req);
     const inserted = await supabaseRequest('/rest/v1/occupancy', {

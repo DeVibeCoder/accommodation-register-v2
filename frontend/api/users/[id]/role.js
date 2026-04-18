@@ -1,9 +1,12 @@
-import { allowMethods, formatUserForClient, json, readBody, supabaseRequest } from '../../_lib/supabase.js';
+import { allowMethods, formatUserForClient, json, readBody, requireRole, supabaseRequest } from '../../_lib/supabase.js';
 
 export default async function handler(req, res) {
   if (!allowMethods(req, res, ['PUT'])) return;
 
   try {
+    const admin = await requireRole(req, res, ['Admin']);
+    if (!admin) return;
+
     const userId = req.query.id;
     const { email, role } = await readBody(req);
 
