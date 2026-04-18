@@ -1,7 +1,7 @@
 import { allowMethods, formatOccupantForClient, json, readBody, supabaseRequest, toOccupancyRow } from '../_lib/supabase.js';
 
 export default async function handler(req, res) {
-  if (!allowMethods(req, res, ['GET', 'POST'])) return;
+  if (!allowMethods(req, res, ['GET', 'POST', 'DELETE'])) return;
 
   try {
     if (req.method === 'GET') {
@@ -11,6 +11,22 @@ export default async function handler(req, res) {
 
       const occupants = Array.isArray(rows) ? rows.map(formatOccupantForClient) : [];
       return json(res, 200, { occupants });
+    }
+
+    if (req.method === 'DELETE') {
+      await supabaseRequest('/rest/v1/occupancy?id=not.is.null', {
+        method: 'DELETE',
+        service: true,
+        prefer: 'return=minimal',
+      });
+
+      await supabaseRequest('/rest/v1/stay_history?id=not.is.null', {
+        method: 'DELETE',
+        service: true,
+        prefer: 'return=minimal',
+      });
+
+      return json(res, 200, { success: true });
     }
 
     const payload = await readBody(req);

@@ -89,6 +89,21 @@ export async function fetchRooms() {
   }
 }
 
+export async function createRoom(room) {
+  try {
+    const data = await apiRequest('/api/rooms', {
+      method: 'POST',
+      body: toApiPayload(room),
+    });
+
+    const record = data?.room ?? data?.data ?? data;
+    return record ? normalizeRoomRecord(record) : null;
+  } catch (error) {
+    console.error('[API] Unable to create room on backend.', error.message || error);
+    return null;
+  }
+}
+
 export async function updateRoom(roomId, updates) {
   if (!roomId) return null;
 

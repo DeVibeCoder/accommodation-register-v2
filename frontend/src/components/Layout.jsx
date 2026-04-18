@@ -165,7 +165,7 @@ function Layout({ user, onLogout }) {
 
         <main style={{ flex: 1, overflowY: 'auto', overflowX: 'hidden' }}>
           <div style={{ width: '100%', maxWidth: '100%', margin: 0, padding: 0 }}>
-            <Outlet context={{ sidebarCollapsed, setSidebarCollapsed, occupants, setOccupants, roomsState, setRoomsState, getNextUid, stayHistory, addStayHistory }} />
+            <Outlet context={{ sidebarCollapsed, setSidebarCollapsed, occupants, setOccupants, roomsState, setRoomsState, getNextUid, stayHistory, setStayHistory, addStayHistory }} />
           </div>
         </main>
       </div>

@@ -37,6 +37,28 @@ function compareRoomIds(a, b) {
   return a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' });
 }
 
+function escapeCsvValue(value) {
+  const str = value == null ? '' : String(value);
+  if (/[",\n]/.test(str)) return `"${str.replace(/"/g, '""')}"`;
+  return str;
+}
+
+function downloadCsv(filename, headers, rows) {
+  const csv = [headers.join(',')]
+    .concat(rows.map(row => headers.map(header => escapeCsvValue(row[header])).join(',')))
+    .join('\n');
+
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const url = window.URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.setAttribute('download', filename);
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  window.URL.revokeObjectURL(url);
+}
+
 function Rooms() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedRoom, setSelectedRoom] = useState(null);
@@ -102,6 +124,44 @@ function Rooms() {
     setEditRoomType(room.roomType || 'Internal');
     setEditAcType(room.ac ? 'AC' : 'Non-AC');
     setIsEditOpen(true);
+  }
+
+  function exportRoomsCsv() {
+    const headers = [
+      'Building',
+      'Building Code',
+      'Floor',
+      'Room No',
+      'Room ID',
+      'Room Type',
+      'AC / Non-AC',
+      'Toilet Type',
+      'Room Active',
+      'Total Beds',
+      'Used Beds',
+      'Available Beds',
+      'Room Status',
+      'Remarks',
+    ];
+
+    const rows = sortedFilteredRooms.map(room => ({
+      'Building': room.building || '',
+      'Building Code': room.buildingCode || '',
+      'Floor': room.floor || '',
+      'Room No': room.roomNo && room.roomNo !== room.id ? room.roomNo : String(room.id || '').split('-').slice(-1)[0],
+      'Room ID': room.id || '',
+      'Room Type': String(room.type || normalizeType(room.totalBeds)).replace(/\s+Share$/i, '-Share'),
+      'AC / Non-AC': room.ac ? 'AC' : 'Non-AC',
+      'Toilet Type': room.attached ? 'Attached' : 'Common',
+      'Room Active': /^(yes|y)$/i.test(String(room.roomActive || 'Yes')) ? 'Y' : 'N',
+      'Total Beds': room.totalBeds || 0,
+      'Used Beds': room.occupiedBeds || 0,
+      'Available Beds': room.availableBeds || 0,
+      'Room Status': String(room.occupancyStatus || '').toUpperCase(),
+      'Remarks': '',
+    }));
+
+    downloadCsv('room-summary.csv', headers, rows);
   }
 
   function closeEditModal() {
@@ -170,6 +230,12 @@ function Rooms() {
             style={{ padding: '10px 20px', borderRadius: 12, border: 'none', background: '#e3eafc', color: '#1e315f', fontWeight: 700, marginLeft: 6, fontSize: 15, cursor: 'pointer' }}
           >
             Clear Filters
+          </button>
+          <button
+            onClick={exportRoomsCsv}
+            style={{ padding: '10px 20px', borderRadius: 12, border: 'none', background: '#16a34a', color: '#fff', fontWeight: 700, fontSize: 15, cursor: 'pointer' }}
+          >
+            Export CSV
           </button>
           <input
             className="search-bar"

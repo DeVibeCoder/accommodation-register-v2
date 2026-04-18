@@ -145,3 +145,16 @@ export async function deleteOccupant(idOrOccupant) {
     return null;
   }
 }
+
+export async function clearAllOccupancyData() {
+  try {
+    await apiRequest('/api/occupancy', {
+      method: 'DELETE',
+    });
+
+    return true;
+  } catch (error) {
+    console.error('[API] Unable to clear live occupancy data.', error.message || error);
+    return null;
+  }
+}
