@@ -1,0 +1,26 @@
+import { allowMethods, formatUserForClient, json, readBody, supabaseRequest } from '../../_lib/supabase.js';
+
+export default async function handler(req, res) {
+  if (!allowMethods(req, res, ['PUT'])) return;
+
+  try {
+    const userId = req.query.id;
+    const { email, role } = await readBody(req);
+
+    if (!userId || !role) {
+      return json(res, 400, { error: 'User ID and role are required.' });
+    }
+
+    const updated = await supabaseRequest(`/rest/v1/profiles?id=eq.${encodeURIComponent(userId)}`, {
+      method: 'PATCH',
+      service: true,
+      body: { email: email || null, role },
+      prefer: 'return=representation',
+    });
+
+    const user = Array.isArray(updated) && updated[0] ? formatUserForClient(updated[0]) : null;
+    return json(res, 200, { user });
+  } catch (error) {
+    return json(res, 500, { error: error.message || 'Unable to update role.' });
+  }
+}
