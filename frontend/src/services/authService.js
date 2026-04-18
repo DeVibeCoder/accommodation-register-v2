@@ -174,3 +174,28 @@ export async function fetchUsersForRoleManagement() {
     throw new Error(error?.message || 'Unable to load users.');
   }
 }
+
+export async function sendPasswordResetForUser(userId, email) {
+  try {
+    await apiRequest(`/api/users/${encodeURIComponent(userId)}/reset-password`, {
+      method: 'POST',
+      body: { email },
+    });
+
+    return { success: true, error: null };
+  } catch (error) {
+    return { success: false, error: error?.message || 'Unable to send password reset email.' };
+  }
+}
+
+export async function deleteManagedUser(userId) {
+  try {
+    await apiRequest(`/api/users/${encodeURIComponent(userId)}`, {
+      method: 'DELETE',
+    });
+
+    return { success: true, error: null };
+  } catch (error) {
+    return { success: false, error: error?.message || 'Unable to delete user.' };
+  }
+}

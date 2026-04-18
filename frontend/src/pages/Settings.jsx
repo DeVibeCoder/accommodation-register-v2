@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useOutletContext } from 'react-router-dom';
-import { fetchUsersForRoleManagement, updateProfileRole } from '../services/authService';
+import { deleteManagedUser, fetchUsersForRoleManagement, sendPasswordResetForUser, updateProfileRole } from '../services/authService';
 import { clearAllOccupancyData } from '../services/occupancyService';
 import { createRoom } from '../services/roomsService';
 
@@ -85,6 +85,7 @@ function Settings({ user, setUser }) {
   const [userSearch, setUserSearch] = useState('');
   const [pendingRoles, setPendingRoles] = useState({});
   const [savingRoleUserId, setSavingRoleUserId] = useState('');
+  const [userActionState, setUserActionState] = useState({ id: '', type: '' });
   const [confirmConfig, setConfirmConfig] = useState({ open: false });
   const [confirmBusy, setConfirmBusy] = useState(false);
   const [notice, setNotice] = useState('');
@@ -200,6 +201,37 @@ function Settings({ user, setUser }) {
     setIsResetting(false);
   };
 
+  const submitPasswordReset = async (targetUser) => {
+    setUserActionState({ id: targetUser.id, type: 'reset' });
+    setNotice('');
+
+    const result = await sendPasswordResetForUser(targetUser.id, targetUser.email);
+    setNotice(result.success ? `Password reset email sent to ${targetUser.email}.` : (result.error || 'Unable to send password reset email.'));
+
+    setUserActionState({ id: '', type: '' });
+  };
+
+  const submitDeleteUser = async (targetUser) => {
+    setUserActionState({ id: targetUser.id, type: 'delete' });
+    setNotice('');
+
+    const result = await deleteManagedUser(targetUser.id);
+
+    if (result.success) {
+      setManagedUsers(prev => prev.filter(item => item.id !== targetUser.id));
+      setPendingRoles(prev => {
+        const next = { ...prev };
+        delete next[targetUser.id];
+        return next;
+      });
+      setNotice(`${targetUser.email} was deleted successfully.`);
+    } else {
+      setNotice(result.error || 'Unable to delete user.');
+    }
+
+    setUserActionState({ id: '', type: '' });
+  };
+
   const handleManagedUserRoleChange = async (targetUser) => {
     if (!isAdmin) return;
 
@@ -216,6 +248,42 @@ function Settings({ user, setUser }) {
       message: `Are you sure you want to change ${targetUser.email} to ${nextRole}?`,
       confirmLabel: 'Yes, Save Change',
       action: async () => submitRoleChange(targetUser, nextRole),
+    });
+  };
+
+  const handlePasswordReset = (targetUser) => {
+    if (!isAdmin) return;
+
+    setConfirmConfig({
+      open: true,
+      variant: 'primary',
+      title: 'Send Password Reset',
+      message: `Send a password reset email to ${targetUser.email}?`,
+      confirmLabel: 'Send Reset Email',
+      action: async () => submitPasswordReset(targetUser),
+    });
+  };
+
+  const handleDeleteUser = (targetUser) => {
+    if (!isAdmin) return;
+
+    if (targetUser.id === user?.id) {
+      setNotice('You cannot delete the account you are currently using.');
+      return;
+    }
+
+    if (targetUser.role === 'Admin' && roleCounts.Admin <= 1) {
+      setNotice('At least one Admin account must remain.');
+      return;
+    }
+
+    setConfirmConfig({
+      open: true,
+      variant: 'danger',
+      title: 'Delete User',
+      message: `Delete ${targetUser.email}? This will remove their login access and profile.`,
+      confirmLabel: 'Yes, Delete User',
+      action: async () => submitDeleteUser(targetUser),
     });
   };
 
@@ -349,7 +417,7 @@ function Settings({ user, setUser }) {
             <div style={{ display: 'flex', justifyContent: 'space-between', gap: 14, alignItems: 'center', flexWrap: 'wrap', marginBottom: 16 }}>
               <div>
                 <h2 style={{ fontWeight: 800, fontSize: '1.25rem', color: '#1e315f', margin: 0 }}>User Access Management</h2>
-                <p style={{ color: '#64748b', fontWeight: 600, margin: '6px 0 0' }}>Choose a role, then save and confirm the change.</p>
+                <p style={{ color: '#64748b', fontWeight: 600, margin: '6px 0 0' }}>Manage roles, send password reset emails, and remove users safely.</p>
               </div>
               <input
                 type="text"
@@ -382,9 +450,13 @@ function Settings({ user, setUser }) {
                   const selectedRole = pendingRoles[item.id] || item.role;
                   const hasPendingChange = selectedRole !== item.role;
                   const isSavingThisUser = savingRoleUserId === item.id;
+                  const isResettingPassword = userActionState.id === item.id && userActionState.type === 'reset';
+                  const isDeletingUser = userActionState.id === item.id && userActionState.type === 'delete';
+                  const isBusyUser = isSavingThisUser || isResettingPassword || isDeletingUser;
+                  const canDeleteUserRow = item.id !== user?.id && !(item.role === 'Admin' && roleCounts.Admin <= 1);
 
                   return (
-                    <div key={item.id} style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1.4fr) 120px 120px minmax(220px, 1fr)', gap: 12, alignItems: 'center', border: '1px solid #e2e8f0', borderRadius: 14, padding: '12px 14px', background: '#fff' }}>
+                    <div key={item.id} style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1.4fr) 120px 120px minmax(320px, 1.2fr)', gap: 12, alignItems: 'center', border: '1px solid #e2e8f0', borderRadius: 14, padding: '12px 14px', background: '#fff' }}>
                       <div style={{ minWidth: 0 }}>
                         <div style={{ fontWeight: 800, color: '#1e293b', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.email || 'No email'}</div>
                         <div style={{ fontSize: 12, color: '#64748b', marginTop: 3 }}>Created: {formatDate(item.createdAt)}</div>
@@ -394,7 +466,7 @@ function Settings({ user, setUser }) {
                         <span style={{ display: 'inline-flex', padding: '5px 10px', borderRadius: 999, background: '#eef2ff', color: '#3730a3', fontWeight: 800, fontSize: 12 }}>{item.role}</span>
                       </div>
                       <div style={{ display: 'grid', gap: 8 }}>
-                        <select value={selectedRole} onChange={e => handleRoleSelectionChange(item.id, e.target.value)} style={inputStyle} disabled={isSavingThisUser}>
+                        <select value={selectedRole} onChange={e => handleRoleSelectionChange(item.id, e.target.value)} style={inputStyle} disabled={isBusyUser}>
                           {roleDescriptions.map(r => (
                             <option key={r.role} value={r.role}>{r.role}</option>
                           ))}
@@ -404,25 +476,47 @@ function Settings({ user, setUser }) {
                           <button
                             type="button"
                             onClick={() => handleManagedUserRoleChange(item)}
-                            disabled={!hasPendingChange || isSavingThisUser}
-                            style={{ padding: '8px 12px', borderRadius: 10, border: 'none', background: !hasPendingChange || isSavingThisUser ? '#cbd5e1' : '#2563eb', color: '#fff', fontWeight: 800, cursor: !hasPendingChange || isSavingThisUser ? 'not-allowed' : 'pointer' }}
+                            disabled={!hasPendingChange || isBusyUser}
+                            style={{ padding: '8px 12px', borderRadius: 10, border: 'none', background: !hasPendingChange || isBusyUser ? '#cbd5e1' : '#2563eb', color: '#fff', fontWeight: 800, cursor: !hasPendingChange || isBusyUser ? 'not-allowed' : 'pointer' }}
                           >
                             {isSavingThisUser ? 'Saving...' : 'Save Change'}
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={() => handlePasswordReset(item)}
+                            disabled={isBusyUser}
+                            style={{ padding: '8px 12px', borderRadius: 10, border: 'none', background: isBusyUser ? '#cbd5e1' : '#0f766e', color: '#fff', fontWeight: 800, cursor: isBusyUser ? 'not-allowed' : 'pointer' }}
+                          >
+                            {isResettingPassword ? 'Sending...' : 'Reset Password'}
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={() => handleDeleteUser(item)}
+                            disabled={!canDeleteUserRow || isBusyUser}
+                            style={{ padding: '8px 12px', borderRadius: 10, border: 'none', background: !canDeleteUserRow || isBusyUser ? '#cbd5e1' : '#dc2626', color: '#fff', fontWeight: 800, cursor: !canDeleteUserRow || isBusyUser ? 'not-allowed' : 'pointer' }}
+                          >
+                            {isDeletingUser ? 'Deleting...' : 'Delete User'}
                           </button>
 
                           {hasPendingChange ? (
                             <button
                               type="button"
                               onClick={() => setPendingRoles(prev => ({ ...prev, [item.id]: item.role }))}
-                              disabled={isSavingThisUser}
-                              style={{ padding: '8px 12px', borderRadius: 10, border: '1px solid #cbd5e1', background: '#fff', color: '#334155', fontWeight: 800, cursor: isSavingThisUser ? 'not-allowed' : 'pointer' }}
+                              disabled={isBusyUser}
+                              style={{ padding: '8px 12px', borderRadius: 10, border: '1px solid #cbd5e1', background: '#fff', color: '#334155', fontWeight: 800, cursor: isBusyUser ? 'not-allowed' : 'pointer' }}
                             >
                               Cancel
                             </button>
-                          ) : (
-                            <div style={{ color: '#64748b', fontSize: 12, fontWeight: 700, alignSelf: 'center' }}>No pending changes</div>
-                          )}
+                          ) : null}
                         </div>
+
+                        {!hasPendingChange ? (
+                          <div style={{ color: '#64748b', fontSize: 12, fontWeight: 700 }}>
+                            {item.id === user?.id ? 'Current signed-in account cannot be deleted.' : (!canDeleteUserRow ? 'Keep at least one Admin account active.' : 'No pending role changes.')}
+                          </div>
+                        ) : null}
                       </div>
                     </div>
                   );
