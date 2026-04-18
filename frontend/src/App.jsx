@@ -14,7 +14,7 @@ import MealEligibility from './pages/MealEligibility';
 import Settings from './pages/Settings';
 import PlaceholderPage from './pages/PlaceholderPage';
 
-function App({ user, onLogout }) {
+function App({ user, setUser, onLogout }) {
   return (
     <Routes>
       <Route path="/" element={<Layout user={user} onLogout={onLogout} />}>
@@ -25,7 +25,7 @@ function App({ user, onLogout }) {
         <Route path="meal-exclusion" element={<MealExclusion />} />
         <Route path="meal-history" element={<MealHistory />} />
         <Route path="meal" element={<MealEligibility />} />
-        <Route path="settings" element={<Settings user={user} setUser={user => { if (typeof window !== 'undefined') localStorage.setItem('tic_user', JSON.stringify(user)); window.location.reload(); }} />} />
+        <Route path="settings" element={<Settings user={user} setUser={setUser} />} />
       </Route>
     </Routes>
   );

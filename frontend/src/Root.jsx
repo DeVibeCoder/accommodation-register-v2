@@ -1,27 +1,56 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import App from './App';
 import SignIn from './pages/SignIn';
+import { getSessionUser, signInWithSupabase, signOutFromSupabase, subscribeToAuthChanges } from './services/authService';
 
 export default function Root() {
-  const [user, setUser] = useState(() => {
-    // Try to restore from localStorage
-    const saved = localStorage.getItem('tic_user');
-    return saved ? JSON.parse(saved) : null;
-  });
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
 
-  const handleSignIn = (userObj) => {
-    setUser(userObj);
-    localStorage.setItem('tic_user', JSON.stringify(userObj));
+  useEffect(() => {
+    let ignore = false;
+
+    (async () => {
+      const sessionUser = await getSessionUser();
+      if (!ignore) {
+        setUser(sessionUser);
+        setLoading(false);
+      }
+    })();
+
+    const subscription = subscribeToAuthChanges((nextUser) => {
+      if (!ignore) {
+        setUser(nextUser);
+        setLoading(false);
+      }
+    });
+
+    return () => {
+      ignore = true;
+      subscription?.unsubscribe();
+    };
+  }, []);
+
+  const handleSignIn = async ({ email, password }) => {
+    const result = await signInWithSupabase(email, password);
+    if (result.user) {
+      setUser(result.user);
+    }
+    return result;
   };
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    await signOutFromSupabase();
     setUser(null);
-    localStorage.removeItem('tic_user');
   };
+
+  if (loading) {
+    return <div style={{ minHeight: '100vh', display: 'grid', placeItems: 'center', background: '#f5f7fa', color: '#1e315f', fontWeight: 800 }}>Loading...</div>;
+  }
 
   if (!user) {
     return <SignIn onSignIn={handleSignIn} />;
   }
-  // Pass logout to App via context
-  return <App user={user} onLogout={handleLogout} />;
+
+  return <App user={user} setUser={setUser} onLogout={handleLogout} />;
 }

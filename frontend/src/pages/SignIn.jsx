@@ -3,20 +3,54 @@
 import React, { useState } from 'react';
 import { FaBed, FaUtensils, FaLock, FaRocket } from 'react-icons/fa';
 
+function Feature({ icon, title, desc }) {
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 18 }}>
+      <div style={{
+        width: 48,
+        height: 48,
+        borderRadius: 12,
+        background: 'rgba(255,255,255,0.10)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        color: '#fff',
+        boxShadow: '0 2px 8px #0001',
+      }}>
+        {icon}
+      </div>
+      <div>
+        <div style={{ fontWeight: 700, fontSize: 20, marginBottom: 2 }}>{title}</div>
+        <div style={{ fontWeight: 400, fontSize: 16, color: '#e3eafc' }}>{desc}</div>
+      </div>
+    </div>
+  );
+}
+
 export default function SignIn({ onSignIn }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Simple demo: accept any non-empty email/password
-    if (email && password) {
-      setError('');
-      onSignIn({ email });
-    } else {
+
+    if (!email || !password) {
       setError('Please enter both email and password.');
+      return;
     }
+
+    setLoading(true);
+    setError('');
+
+    const result = await onSignIn({ email, password });
+
+    if (result?.error) {
+      setError(result.error);
+    }
+
+    setLoading(false);
   };
 
   return (
@@ -146,37 +180,12 @@ export default function SignIn({ onSignIn }) {
             />
           </div>
           {error && <div style={{ color: '#e74c3c', fontWeight: 600, marginBottom: 12 }}>{error}</div>}
-          <button type="submit" style={{ width: '100%', background: '#16244c', color: '#fff', fontWeight: 800, fontSize: 18, border: 'none', borderRadius: 8, padding: '12px 0', marginTop: 8, boxShadow: '0 2px 8px #d0d7e2', cursor: 'pointer', letterSpacing: 0.5 }}>
-            Sign In
+          <button type="submit" disabled={loading} style={{ width: '100%', background: '#16244c', color: '#fff', fontWeight: 800, fontSize: 18, border: 'none', borderRadius: 8, padding: '12px 0', marginTop: 8, boxShadow: '0 2px 8px #d0d7e2', cursor: loading ? 'not-allowed' : 'pointer', letterSpacing: 0.5, opacity: loading ? 0.8 : 1 }}>
+            {loading ? 'Signing In...' : 'Sign In'}
           </button>
 
         </form>
       </div>
     </div>
   );
-
-// Feature component for left panel
-function Feature({ icon, title, desc }) {
-  return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 18 }}>
-      <div style={{
-        width: 48,
-        height: 48,
-        borderRadius: 12,
-        background: 'rgba(255,255,255,0.10)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        color: '#fff',
-        boxShadow: '0 2px 8px #0001',
-      }}>
-        {icon}
-      </div>
-      <div>
-        <div style={{ fontWeight: 700, fontSize: 20, marginBottom: 2 }}>{title}</div>
-        <div style={{ fontWeight: 400, fontSize: 16, color: '#e3eafc' }}>{desc}</div>
-      </div>
-    </div>
-  );
-}
 }

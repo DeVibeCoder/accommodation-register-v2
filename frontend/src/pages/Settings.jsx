@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { updateProfileRole } from '../services/authService';
 
 const roleDescriptions = [
   {
@@ -18,12 +19,16 @@ const roleDescriptions = [
 function Settings({ user, setUser }) {
   const [selectedRole, setSelectedRole] = useState(user?.role || 'Admin');
 
-  const handleRoleChange = (e) => {
-    setSelectedRole(e.target.value);
-    // Save role to user context/localStorage
-    const updatedUser = { ...user, role: e.target.value };
-    setUser(updatedUser);
-    localStorage.setItem('tic_user', JSON.stringify(updatedUser));
+  const handleRoleChange = async (e) => {
+    const nextRole = e.target.value;
+    setSelectedRole(nextRole);
+
+    const result = await updateProfileRole(user?.id, user?.email, nextRole);
+    if (result.user) {
+      setUser(result.user);
+    } else {
+      console.error('[Supabase Roles] Role update failed and was not persisted.');
+    }
   };
 
   return (
