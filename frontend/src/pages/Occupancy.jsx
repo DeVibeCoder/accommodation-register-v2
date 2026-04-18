@@ -6,6 +6,7 @@ import {
   updateOccupant as updateOccupantRecord,
   deleteOccupant as deleteOccupantRecord,
 } from '../services/occupancyService';
+import { updateRoom as updateRoomRecord } from '../services/roomsService';
 
 const BUILDING_ORDER = ['OFFICE BUILDING', 'F&B BUILDING', 'VTV BUILDING'];
 const BUILDING_LABELS = {
@@ -36,6 +37,10 @@ const OCCUPANCY_TEMPLATE_HEADERS = [
 
 function compareRoomIds(a, b) {
   return a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' });
+}
+
+function normalizeRoomType(totalBeds) {
+  return totalBeds === 1 ? 'Single' : `${totalBeds} Share`;
 }
 
 function shortCode(value) {
@@ -248,8 +253,48 @@ function buildingCodeFrom(roomId) {
 }
 
 function Occupancy() {
-  const { occupants, setOccupants, roomsState, getNextUid, addStayHistory } = useOutletContext();
+  const { occupants, setOccupants, roomsState, setRoomsState, getNextUid, addStayHistory } = useOutletContext();
   const importInputRef = useRef(null);
+
+  const syncRoomCapacities = async (assignments = []) => {
+    if (!Array.isArray(assignments) || assignments.length === 0) return;
+
+    const requiredByRoom = new Map();
+    assignments.forEach(item => {
+      const roomId = String(item?.roomId || '').toUpperCase();
+      const bedNo = Number.parseInt(item?.bedNo, 10) || 1;
+      if (!roomId) return;
+      requiredByRoom.set(roomId, Math.max(requiredByRoom.get(roomId) || 0, bedNo));
+    });
+
+    const roomsToPersist = [];
+
+    setRoomsState(prev => prev.map(room => {
+      const roomId = String(room.id || '').toUpperCase();
+      const requiredBeds = requiredByRoom.get(roomId);
+      const currentBeds = Math.max(1, Number.parseInt(room.totalBeds, 10) || 1);
+
+      if (!requiredBeds || requiredBeds <= currentBeds) return room;
+
+      const nextRoom = {
+        ...room,
+        totalBeds: requiredBeds,
+        type: normalizeRoomType(requiredBeds),
+        beds: Array.from({ length: requiredBeds }, (_, index) => room.beds?.[index] || {
+          bedId: `Bed ${index + 1}`,
+          occupied: false,
+          occupant: null,
+        }),
+      };
+
+      roomsToPersist.push(nextRoom);
+      return nextRoom;
+    }));
+
+    for (const room of roomsToPersist) {
+      await updateRoomRecord(room.id, room);
+    }
+  };
 
   const [personTypeFilter, setPersonTypeFilter] = useState('All');
   const [buildingFilter,   setBuildingFilter]   = useState('All');
@@ -322,6 +367,7 @@ function Occupancy() {
     };
 
     setOccupants(prev => [...prev, normalized]);
+    await syncRoomCapacities([normalized]);
     addStayHistory?.({
       type: 'Check In',
       name: normalized.name,
@@ -465,6 +511,8 @@ function Occupancy() {
       });
     }
 
+    await syncRoomCapacities(moved ? [moved] : []);
+
     if (moved?.id != null) {
       await updateOccupantRecord(moved.id, moved);
     }
@@ -543,68 +591,94 @@ function Occupancy() {
     const roomIds = new Set(roomsState.map(r => r.id));
     const validTypes = new Set(['permanent', 'temporary', 'project']);
     const rows = parsed.rows;
-    let importedCount = 0;
+    const occupiedBeds = new Set(occupants.map(o => `${o.roomId}::${o.bedNo}`));
+    const additions = [];
     let skippedCount = 0;
 
-    setOccupants(prev => {
-      const occupiedBeds = new Set(prev.map(o => `${o.roomId}::${o.bedNo}`));
-      const additions = [];
+    for (const cols of rows) {
+      const get = header => cols[OCCUPANCY_TEMPLATE_HEADERS.indexOf(header)] ?? '';
+      const personTypeRaw = get('Person Type').trim();
+      const staffId = get('Staff ID').trim();
+      const fullName = get('Full Name').trim();
+      const section = get('Section').trim();
+      const department = get('Department').trim();
+      const nationality = get('Nationality').trim();
+      const roomId = get('Room ID').trim().toUpperCase();
+      const bedNoStr = get('Bed No').trim();
+      const fastingRaw = get('Fasting').trim().toLowerCase();
+      const checkIn = get('Check-in').trim();
+      const checkOut = get('Check-out').trim();
+      const statusRaw = get('Status').trim();
 
-      for (const cols of rows) {
-        const get = header => cols[OCCUPANCY_TEMPLATE_HEADERS.indexOf(header)] ?? '';
-        const personTypeRaw = get('Person Type').trim();
-        const staffId = get('Staff ID').trim();
-        const fullName = get('Full Name').trim();
-        const section = get('Section').trim();
-        const department = get('Department').trim();
-        const nationality = get('Nationality').trim();
-        const roomId = get('Room ID').trim().toUpperCase();
-        const bedNoStr = get('Bed No').trim();
-        const fastingRaw = get('Fasting').trim().toLowerCase();
-        const checkIn = get('Check-in').trim();
-        const checkOut = get('Check-out').trim();
-        const statusRaw = get('Status').trim();
+      const personTypeKey = personTypeRaw.toLowerCase();
+      const personType = personTypeKey ? personTypeKey[0].toUpperCase() + personTypeKey.slice(1) : '';
+      const bedNo = parseInt(bedNoStr, 10);
 
-        const personTypeKey = personTypeRaw.toLowerCase();
-        const personType = personTypeKey ? personTypeKey[0].toUpperCase() + personTypeKey.slice(1) : '';
-        const bedNo = parseInt(bedNoStr, 10);
-
-        if (!validTypes.has(personTypeKey) || !fullName || !roomId || !Number.isFinite(bedNo) || !roomIds.has(roomId)) {
-          skippedCount += 1;
-          continue;
-        }
-
-        const bedKey = `${roomId}::${bedNo}`;
-        if (occupiedBeds.has(bedKey)) {
-          skippedCount += 1;
-          continue;
-        }
-
-        occupiedBeds.add(bedKey);
-        additions.push({
-          _id: getNextUid(),
-          personType,
-          staffId,
-          name: fullName,
-          section,
-          department,
-          nationality,
-          roomId,
-          bedNo,
-          fasting: fastingRaw === 'yes',
-          checkIn,
-          checkOut,
-          status: statusRaw || 'Active',
-          building: buildingFrom(roomId),
-          buildingCode: buildingCodeFrom(roomId),
-        });
-        importedCount += 1;
+      if (!validTypes.has(personTypeKey) || !fullName || !roomId || !Number.isFinite(bedNo) || !roomIds.has(roomId)) {
+        skippedCount += 1;
+        continue;
       }
 
-      return [...prev, ...additions];
+      const bedKey = `${roomId}::${bedNo}`;
+      if (occupiedBeds.has(bedKey)) {
+        skippedCount += 1;
+        continue;
+      }
+
+      occupiedBeds.add(bedKey);
+      additions.push({
+        _id: getNextUid(),
+        personType,
+        staffId,
+        name: fullName,
+        section,
+        department,
+        nationality,
+        roomId,
+        bedNo,
+        fasting: fastingRaw === 'yes',
+        checkIn,
+        checkOut,
+        status: statusRaw || 'Active',
+        building: buildingFrom(roomId),
+        buildingCode: buildingCodeFrom(roomId),
+      });
+    }
+
+    if (additions.length === 0) {
+      window.alert(`Import complete. Imported: 0. Skipped: ${skippedCount}.`);
+      return;
+    }
+
+    await syncRoomCapacities(additions);
+    setOccupants(prev => [...prev, ...additions]);
+
+    const failedIds = new Set();
+    const savedByTempId = new Map();
+
+    for (const addition of additions) {
+      const saved = await addOccupantRecord(addition);
+      if (saved) {
+        savedByTempId.set(addition._id, saved);
+      } else {
+        failedIds.add(addition._id);
+      }
+    }
+
+    setOccupants(prev => prev.flatMap(o => {
+      if (failedIds.has(o._id)) return [];
+      const saved = savedByTempId.get(o._id);
+      return [saved ? { ...o, id: saved.id ?? o.id, __match: saved.__match ?? o.__match } : o];
+    }));
+
+    addStayHistory?.({
+      type: 'Edit',
+      name: 'CSV Import',
+      roomId: `${additions.length} records`,
+      details: `Imported ${savedByTempId.size} occupant records${failedIds.size ? `, ${failedIds.size} failed` : ''}`,
     });
 
-    window.alert(`Import complete. Imported: ${importedCount}. Skipped: ${skippedCount}.`);
+    window.alert(`Import complete. Imported: ${savedByTempId.size}. Skipped: ${skippedCount}${failedIds.size ? `. Failed to save: ${failedIds.size}` : ''}.`);
   };
 
   const hasFilters = personTypeFilter!=='All'||buildingFilter!=='All'||idNameSearch||roomSearch;

@@ -10,18 +10,31 @@ function isCurrentRoomId(roomId = '') {
 }
 
 function attachOccupantsToRooms(rooms, occupants) {
-  return rooms.map(room => ({
-    ...room,
-    beds: Array.from({ length: room.totalBeds }, (_, index) => {
-      const bedNumber = index + 1;
-      const occupant = occupants.find(o => o.roomId === room.id && Number(o.bedNo) === bedNumber) ?? null;
-      return {
-        bedId: `Bed ${bedNumber}`,
-        occupied: Boolean(occupant),
-        occupant,
-      };
-    }),
-  }));
+  return rooms.map(room => {
+    const roomOccupants = occupants.filter(o => o.roomId === room.id);
+    const highestOccupiedBed = roomOccupants.reduce((max, occupant) => {
+      const nextBed = Number.parseInt(occupant?.bedNo, 10) || 1;
+      return Math.max(max, nextBed);
+    }, 0);
+    const totalBeds = Math.max(Number.parseInt(room.totalBeds, 10) || 1, highestOccupiedBed || 0);
+
+    return {
+      ...room,
+      totalBeds,
+      availableBeds: Math.max(0, totalBeds - roomOccupants.length),
+      usedBeds: roomOccupants.length,
+      type: totalBeds === 1 ? 'Single' : `${totalBeds} Share`,
+      beds: Array.from({ length: totalBeds }, (_, index) => {
+        const bedNumber = index + 1;
+        const occupant = roomOccupants.find(o => Number(o.bedNo) === bedNumber) ?? null;
+        return {
+          bedId: `Bed ${bedNumber}`,
+          occupied: Boolean(occupant),
+          occupant,
+        };
+      }),
+    };
+  });
 }
 
 function Layout({ user, onLogout }) {
