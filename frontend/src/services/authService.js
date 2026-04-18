@@ -150,7 +150,11 @@ export async function updateProfileRole(userId, email, role) {
       });
     }
 
-    const user = normalizeUser(data?.user || { ...currentUser, id: targetId, email, role: nextRole }, email);
+    const user = normalizeUser(data?.user, email);
+
+    if (!user || user.role !== nextRole) {
+      return { user: null, error: 'Role change was not confirmed by the server.' };
+    }
 
     if (currentUser?.id === targetId) {
       persistUser(user);

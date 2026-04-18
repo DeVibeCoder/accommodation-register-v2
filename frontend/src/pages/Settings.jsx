@@ -146,16 +146,37 @@ function Settings({ user, setUser }) {
     const result = await updateProfileRole(targetUser.id, targetUser.email, nextRole);
 
     if (result.user) {
-      setManagedUsers(prev => prev.map(item => item.id === targetUser.id ? { ...item, role: nextRole } : item));
-      setPendingRoles(prev => {
-        const next = { ...prev };
-        delete next[targetUser.id];
-        return next;
-      });
+      try {
+        const refreshedUsers = await fetchUsersForRoleManagement();
+        setManagedUsers(refreshedUsers);
 
-      if (user?.id === targetUser.id) setUser(result.user);
-      setNotice(`Updated ${targetUser.email} to ${nextRole}.`);
+        const refreshedTarget = refreshedUsers.find(item => item.id === targetUser.id);
+        if (refreshedTarget?.role === nextRole) {
+          setPendingRoles(prev => {
+            const next = { ...prev };
+            delete next[targetUser.id];
+            return next;
+          });
+
+          if (user?.id === targetUser.id) setUser(result.user);
+          setNotice(`Updated ${targetUser.email} to ${nextRole}.`);
+        } else {
+          setPendingRoles(prev => ({ ...prev, [targetUser.id]: nextRole }));
+          setNotice(`The role for ${targetUser.email} did not save. Please try again.`);
+        }
+      } catch (error) {
+        setManagedUsers(prev => prev.map(item => item.id === targetUser.id ? { ...item, role: nextRole } : item));
+        setPendingRoles(prev => {
+          const next = { ...prev };
+          delete next[targetUser.id];
+          return next;
+        });
+
+        if (user?.id === targetUser.id) setUser(result.user);
+        setNotice(error?.message || `Updated ${targetUser.email}, but the list could not be refreshed.`);
+      }
     } else {
+      setPendingRoles(prev => ({ ...prev, [targetUser.id]: nextRole }));
       setNotice(result.error || 'Role update failed.');
     }
 

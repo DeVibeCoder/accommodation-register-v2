@@ -18,7 +18,7 @@ export default async function handler(req, res) {
       return json(res, 400, { error: 'Invalid role selected.' });
     }
 
-    const updated = await supabaseRequest('/rest/v1/profiles', {
+    const updated = await supabaseRequest('/rest/v1/profiles?on_conflict=id', {
       method: 'POST',
       service: true,
       body: [{ id: userId, email: email || null, role, active: true }],
