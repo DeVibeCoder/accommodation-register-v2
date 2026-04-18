@@ -45,7 +45,14 @@ function Layout({ user, onLogout }) {
 
   const [occupants, setOccupants] = useState([]);
   const [roomBaseState, setRoomsState] = useState([]);
-  const [stayHistory, setStayHistory] = useState([]);
+  const [stayHistory, setStayHistory] = useState(() => {
+    try {
+      const saved = localStorage.getItem('tic_stay_history');
+      return saved ? JSON.parse(saved) : [];
+    } catch {
+      return [];
+    }
+  });
 
   const addStayHistory = (entry) => {
     const optimisticEntry = {
@@ -55,13 +62,29 @@ function Layout({ user, onLogout }) {
       ...entry,
     };
 
-    setStayHistory(prev => [optimisticEntry, ...prev].slice(0, 500));
+    setStayHistory(prev => {
+      const next = [optimisticEntry, ...prev].slice(0, 500);
+      try {
+        localStorage.setItem('tic_stay_history', JSON.stringify(next));
+      } catch {
+        // ignore cache write issues
+      }
+      return next;
+    });
 
     (async () => {
       const saved = await addStayHistoryToApi(optimisticEntry);
       if (!saved) return;
 
-      setStayHistory(prev => prev.map(item => item.id === optimisticEntry.id ? saved : item));
+      setStayHistory(prev => {
+        const next = prev.map(item => item.id === optimisticEntry.id ? saved : item);
+        try {
+          localStorage.setItem('tic_stay_history', JSON.stringify(next));
+        } catch {
+          // ignore cache write issues
+        }
+        return next;
+      });
     })();
   };
 
@@ -89,12 +112,33 @@ function Layout({ user, onLogout }) {
           ? remoteOccupants.filter(occupant => isCurrentRoomId(occupant.roomId))
           : [];
 
+        const cachedHistory = (() => {
+          try {
+            const saved = localStorage.getItem('tic_stay_history');
+            return saved ? JSON.parse(saved) : [];
+          } catch {
+            return [];
+          }
+        })();
+
+        const historyEntries = Array.isArray(remoteHistory) && remoteHistory.length > 0
+          ? remoteHistory.slice(0, 500)
+          : Array.isArray(cachedHistory)
+            ? cachedHistory.slice(0, 500)
+            : [];
+
         setRoomsState(liveRooms);
         uidRef.current = 1000;
         setOccupants(liveOccupants.map(o => ({ ...o, _id: uidRef.current++ })));
-        setStayHistory(Array.isArray(remoteHistory) ? remoteHistory.slice(0, 500) : []);
+        setStayHistory(historyEntries);
 
-        console.info(`[API] Loaded ${liveRooms.length} rooms, ${liveOccupants.length} occupants, and ${Array.isArray(remoteHistory) ? remoteHistory.length : 0} history entries from backend.`);
+        try {
+          localStorage.setItem('tic_stay_history', JSON.stringify(historyEntries));
+        } catch {
+          // ignore cache write issues
+        }
+
+        console.info(`[API] Loaded ${liveRooms.length} rooms, ${liveOccupants.length} occupants, and ${historyEntries.length} history entries from backend.`);
       } catch (error) {
         if (!ignore) {
           setRoomsState([]);
