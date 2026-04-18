@@ -9,7 +9,7 @@ function normalizeUser(user = {}, emailFallback = '') {
   return {
     id: user.id || user.userId || user._id || emailFallback || 'local-user',
     email: user.email || emailFallback || '',
-    role: user.role || 'Admin',
+    role: user.role || 'Viewer',
     active: user.active !== false,
   };
 }
@@ -50,27 +50,21 @@ export async function signInWithApi(email, password) {
 
     const user = normalizeUser(data?.user ?? data, email);
 
-    if (user?.active === false) {
+    if (!user) {
+      persistUser(null);
+      return { user: null, error: 'Invalid email or password.' };
+    }
+
+    if (user.active === false) {
+      persistUser(null);
       return { user: null, error: 'This user account is inactive.' };
     }
 
     persistUser(user);
     return { user, error: null };
   } catch (error) {
-    console.warn('[API Auth] Login endpoint unavailable. Using local session fallback.', error.message || error);
-
-    const fallbackUser = normalizeUser(
-      {
-        id: email.toLowerCase(),
-        email,
-        role: 'Admin',
-        active: true,
-      },
-      email
-    );
-
-    persistUser(fallbackUser);
-    return { user: fallbackUser, error: null };
+    persistUser(null);
+    return { user: null, error: error?.message || 'Login failed.' };
   }
 }
 
@@ -79,15 +73,16 @@ export async function getSessionUser() {
     const data = await apiRequest('/api/auth/session');
     const user = normalizeUser(data?.user ?? data);
 
-    if (user) {
+    if (user && user.active !== false) {
       persistUser(user);
       return user;
     }
   } catch {
-    // fall back to local session
+    // ignore and clear stale local session
   }
 
-  return readStoredUser();
+  persistUser(null);
+  return null;
 }
 
 export function subscribeToAuthChanges(callback) {
@@ -137,12 +132,6 @@ export async function updateProfileRole(userId, email, role) {
     persistUser(user);
     return { user, error: null };
   } catch (error) {
-    const fallbackUser = normalizeUser(
-      { ...currentUser, id: userId || currentUser?.id || email || 'local-user', email, role },
-      email
-    );
-
-    persistUser(fallbackUser);
-    return { user: fallbackUser, error: null };
+    return { user: null, error: error?.message || 'Unable to update role.' };
   }
 }
