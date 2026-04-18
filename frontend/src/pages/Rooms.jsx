@@ -204,23 +204,23 @@ function Rooms() {
         <h1 style={{ fontWeight: 900, fontSize: '2rem', margin: '0 0 16px 0', color: '#1e315f', letterSpacing: 0.5 }}>
           Rooms <span style={{ fontWeight: 400, fontSize: '1.1rem', opacity: 0.7 }}>(Room Master)</span>
         </h1>
-        <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap', width: '100%' }}>
-          <select value={building} onChange={e => setBuilding(e.target.value)} style={{ padding: '10px 14px', borderRadius: 12, border: '1.5px solid #d0d7e2', fontWeight: 600, fontSize: 15, background: '#fff', minWidth: 150 }}>
+        <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'nowrap', width: '100%' }}>
+          <select value={building} onChange={e => setBuilding(e.target.value)} style={{ padding: '10px 14px', borderRadius: 12, border: '1.5px solid #d0d7e2', fontWeight: 600, fontSize: 15, background: '#fff', minWidth: 150, flexShrink: 0 }}>
             {buildingOptions.map(opt => (
               <option key={opt} value={opt}>{opt === 'All Buildings' ? 'Buildings: All' : opt}</option>
             ))}
           </select>
-          <select value={acType} onChange={e => setAcType(e.target.value)} style={{ padding: '10px 14px', borderRadius: 12, border: '1.5px solid #d0d7e2', fontWeight: 600, fontSize: 15, background: '#fff', minWidth: 110 }}>
+          <select value={acType} onChange={e => setAcType(e.target.value)} style={{ padding: '10px 14px', borderRadius: 12, border: '1.5px solid #d0d7e2', fontWeight: 600, fontSize: 15, background: '#fff', minWidth: 110, flexShrink: 0 }}>
             {['All', 'AC', 'Non-AC'].map(opt => (
               <option key={opt} value={opt}>{opt === 'All' ? 'AC: All' : opt}</option>
             ))}
           </select>
-          <select value={shareType} onChange={e => setShareType(e.target.value)} style={{ padding: '10px 14px', borderRadius: 12, border: '1.5px solid #d0d7e2', fontWeight: 600, fontSize: 15, background: '#fff', minWidth: 130 }}>
+          <select value={shareType} onChange={e => setShareType(e.target.value)} style={{ padding: '10px 14px', borderRadius: 12, border: '1.5px solid #d0d7e2', fontWeight: 600, fontSize: 15, background: '#fff', minWidth: 130, flexShrink: 0 }}>
             {shareTypeOptions.map(opt => (
               <option key={opt} value={opt}>{opt === 'All' ? 'Share: All' : opt}</option>
             ))}
           </select>
-          <select value={status} onChange={e => setStatus(e.target.value)} style={{ padding: '10px 14px', borderRadius: 12, border: '1.5px solid #d0d7e2', fontWeight: 600, fontSize: 15, background: '#fff', minWidth: 120 }}>
+          <select value={status} onChange={e => setStatus(e.target.value)} style={{ padding: '10px 14px', borderRadius: 12, border: '1.5px solid #d0d7e2', fontWeight: 600, fontSize: 15, background: '#fff', minWidth: 120, flexShrink: 0 }}>
             {STATUS_OPTIONS.map(opt => (
               <option key={opt} value={opt}>{opt === 'All' ? 'Status: All' : opt}</option>
             ))}
@@ -243,7 +243,7 @@ function Rooms() {
             placeholder="Search Room ID..."
             value={search}
             onChange={e => setSearch(e.target.value)}
-            style={{ marginLeft: 'auto', padding: '10px 14px', borderRadius: 12, border: '1.5px solid #d0d7e2', minWidth: 200, fontSize: 15, background: '#fff' }}
+            style={{ marginLeft: 'auto', padding: '10px 14px', borderRadius: 12, border: '1.5px solid #d0d7e2', minWidth: 200, maxWidth: 260, width: '100%', flex: '1 1 220px', fontSize: 15, background: '#fff' }}
           />
         </div>
       </div>
