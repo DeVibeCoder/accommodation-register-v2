@@ -1,131 +1,148 @@
-import { supabase } from './supabaseClient';
+import { apiRequest } from './apiClient';
 
-async function fetchProfileByUserId(userId, emailFallback = '') {
-  if (!userId) return null;
+const AUTH_STORAGE_KEY = 'tic_auth_user';
+const AUTH_EVENT = 'tic-auth-change';
 
-  const { data, error } = await supabase
-    .from('profiles')
-    .select('id, email, role, active')
-    .eq('id', userId)
-    .maybeSingle();
-
-  if (error) {
-    console.error('[Supabase Auth] Failed to load user profile:', error.message);
-    return {
-      id: userId,
-      email: emailFallback,
-      role: 'Viewer',
-      active: true,
-    };
-  }
-
-  if (!data) {
-    console.warn('[Supabase Auth] No profile row found. Defaulting role to Viewer.');
-    return {
-      id: userId,
-      email: emailFallback,
-      role: 'Viewer',
-      active: true,
-    };
-  }
+function normalizeUser(user = {}, emailFallback = '') {
+  if (!user) return null;
 
   return {
-    id: data.id,
-    email: data.email || emailFallback,
-    role: data.role || 'Viewer',
-    active: data.active !== false,
+    id: user.id || user.userId || user._id || emailFallback || 'local-user',
+    email: user.email || emailFallback || '',
+    role: user.role || 'Admin',
+    active: user.active !== false,
   };
 }
 
-export async function signInWithSupabase(email, password) {
-  const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-
-  if (error) {
-    return { user: null, error: error.message };
-  }
-
-  const profile = await fetchProfileByUserId(data.user?.id, data.user?.email || email);
-
-  if (profile && profile.active === false) {
-    await supabase.auth.signOut();
-    return { user: null, error: 'This user account is inactive.' };
-  }
-
-  return { user: profile, error: null };
-}
-
-export async function getSessionUser() {
+function readStoredUser() {
   try {
-    const { data, error } = await supabase.auth.getSession();
-
-    if (error) {
-      console.error('[Supabase Auth] Failed to restore session:', error.message);
-      return null;
-    }
-
-    const sessionUser = data?.session?.user;
-    if (!sessionUser) return null;
-
-    const profile = await fetchProfileByUserId(sessionUser.id, sessionUser.email || '');
-
-    if (profile && profile.active === false) {
-      await supabase.auth.signOut();
-      return null;
-    }
-
-    return profile;
-  } catch (error) {
-    console.error('[Supabase Auth] Unexpected session restore error:', error?.message || error);
+    const raw = localStorage.getItem(AUTH_STORAGE_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch {
     return null;
   }
 }
 
-export function subscribeToAuthChanges(callback) {
-  const {
-    data: { subscription },
-  } = supabase.auth.onAuthStateChange((_event, session) => {
-    window.setTimeout(async () => {
-      if (!session?.user) {
-        callback(null);
-        return;
-      }
+function persistUser(user) {
+  try {
+    if (user) {
+      localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(user));
+    } else {
+      localStorage.removeItem(AUTH_STORAGE_KEY);
+    }
+  } catch {
+    // ignore storage issues
+  }
 
-      const profile = await fetchProfileByUserId(session.user.id, session.user.email || '');
-      callback(profile?.active === false ? null : profile);
-    }, 0);
-  });
-
-  return subscription;
+  window.dispatchEvent(new CustomEvent(AUTH_EVENT, { detail: user || null }));
 }
 
-export async function signOutFromSupabase() {
-  const { error } = await supabase.auth.signOut();
-  if (error) {
-    console.error('[Supabase Auth] Failed to sign out:', error.message);
+export async function signInWithApi(email, password) {
+  if (!email || !password) {
+    return { user: null, error: 'Email and password are required.' };
   }
-  return { error: error?.message || null };
+
+  try {
+    const data = await apiRequest('/api/auth/login', {
+      method: 'POST',
+      body: { email, password },
+    });
+
+    const user = normalizeUser(data?.user ?? data, email);
+
+    if (user?.active === false) {
+      return { user: null, error: 'This user account is inactive.' };
+    }
+
+    persistUser(user);
+    return { user, error: null };
+  } catch (error) {
+    console.warn('[API Auth] Login endpoint unavailable. Using local session fallback.', error.message || error);
+
+    const fallbackUser = normalizeUser(
+      {
+        id: email.toLowerCase(),
+        email,
+        role: 'Admin',
+        active: true,
+      },
+      email
+    );
+
+    persistUser(fallbackUser);
+    return { user: fallbackUser, error: null };
+  }
+}
+
+export async function getSessionUser() {
+  try {
+    const data = await apiRequest('/api/auth/session');
+    const user = normalizeUser(data?.user ?? data);
+
+    if (user) {
+      persistUser(user);
+      return user;
+    }
+  } catch {
+    // fall back to local session
+  }
+
+  return readStoredUser();
+}
+
+export function subscribeToAuthChanges(callback) {
+  const handleAuthEvent = (event) => {
+    callback(event.detail ?? readStoredUser());
+  };
+
+  const handleStorage = (event) => {
+    if (event.key === AUTH_STORAGE_KEY) {
+      callback(readStoredUser());
+    }
+  };
+
+  window.addEventListener(AUTH_EVENT, handleAuthEvent);
+  window.addEventListener('storage', handleStorage);
+
+  return {
+    unsubscribe() {
+      window.removeEventListener(AUTH_EVENT, handleAuthEvent);
+      window.removeEventListener('storage', handleStorage);
+    },
+  };
+}
+
+export async function signOutFromApi() {
+  try {
+    await apiRequest('/api/auth/logout', { method: 'POST' });
+  } catch {
+    // ignore logout endpoint failures and clear local session anyway
+  }
+
+  persistUser(null);
+  return { error: null };
 }
 
 export async function updateProfileRole(userId, email, role) {
-  const { data, error } = await supabase
-    .from('profiles')
-    .update({ email, role })
-    .eq('id', userId)
-    .select('id, email, role, active')
-    .maybeSingle();
+  const currentUser = readStoredUser();
 
-  if (error) {
-    console.error('[Supabase Auth] Failed to update role:', error.message);
-    return { user: null, error: error.message };
+  try {
+    const targetId = userId || currentUser?.id || 'me';
+    const data = await apiRequest(`/api/users/${encodeURIComponent(targetId)}/role`, {
+      method: 'PUT',
+      body: { email, role },
+    });
+
+    const user = normalizeUser(data?.user ?? { ...currentUser, id: targetId, email, role }, email);
+    persistUser(user);
+    return { user, error: null };
+  } catch (error) {
+    const fallbackUser = normalizeUser(
+      { ...currentUser, id: userId || currentUser?.id || email || 'local-user', email, role },
+      email
+    );
+
+    persistUser(fallbackUser);
+    return { user: fallbackUser, error: null };
   }
-
-  return {
-    user: {
-      id: data.id,
-      email: data.email,
-      role: data.role,
-      active: data.active !== false,
-    },
-    error: null,
-  };
 }

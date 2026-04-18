@@ -4,8 +4,8 @@ import Sidebar from './Sidebar';
 import { Outlet } from 'react-router-dom';
 import { occupants as rawOccupants } from '../data/occupants';
 import { rooms as structuredRooms } from '../data/data';
-import { fetchOccupants as fetchOccupantsFromSupabase } from '../services/occupancyService';
-import { fetchRooms as fetchRoomsFromSupabase } from '../services/roomsService';
+import { fetchOccupants as fetchOccupantsFromApi } from '../services/occupancyService';
+import { fetchRooms as fetchRoomsFromApi } from '../services/roomsService';
 
 function buildSeedRooms() {
   return structuredRooms.map(room => ({
@@ -80,8 +80,8 @@ function Layout({ user, onLogout }) {
 
     (async () => {
       const [remoteOccupants, remoteRooms] = await Promise.all([
-        fetchOccupantsFromSupabase(),
-        fetchRoomsFromSupabase(),
+        fetchOccupantsFromApi(),
+        fetchRoomsFromApi(),
       ]);
 
       if (ignore) return;
@@ -89,18 +89,18 @@ function Layout({ user, onLogout }) {
       const compatibleRooms = Array.isArray(remoteRooms) ? remoteRooms.filter(room => isCurrentRoomId(room.id)) : [];
       if (compatibleRooms.length > 0) {
         setRoomsState(compatibleRooms);
-        console.info('[Supabase] Rooms loaded from backend.');
+        console.info('[API] Rooms loaded from backend.');
       } else {
-        console.info('[Supabase] Keeping local room master because backend room IDs are from the legacy schema.');
+        console.info('[API] Keeping local room master because the backend did not return compatible room IDs.');
       }
 
       const compatibleOccupants = Array.isArray(remoteOccupants) ? remoteOccupants.filter(occupant => isCurrentRoomId(occupant.roomId)) : [];
       if (compatibleOccupants.length > 0) {
         uidRef.current = 1000;
         setOccupants(compatibleOccupants.map(o => ({ ...o, _id: uidRef.current++ })));
-        console.info('[Supabase] Occupancy loaded from backend.');
+        console.info('[API] Occupancy loaded from backend.');
       } else {
-        console.info('[Supabase] Keeping local occupancy because backend data is still from the old format.');
+        console.info('[API] Keeping local occupancy because the backend did not return compatible records yet.');
       }
     })();
 
@@ -167,7 +167,7 @@ function Layout({ user, onLogout }) {
             </svg>
           </button>
           <div style={{ flex: 1, display: 'flex', justifyContent: 'center' }}>
-            <span style={{ fontWeight: 900, fontSize: 28, color: '#1e315f', letterSpacing: 0.5, textAlign: 'center' }}>TIC Meals and Stay</span>
+            <span style={{ fontWeight: 900, fontSize: 28, color: '#1e315f', letterSpacing: 0.5, textAlign: 'center' }}>TIC Meals & Stay</span>
           </div>
         </header>
 

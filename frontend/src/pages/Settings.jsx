@@ -27,7 +27,7 @@ function Settings({ user, setUser }) {
     if (result.user) {
       setUser(result.user);
     } else {
-      console.error('[Supabase Roles] Role update failed and was not persisted.');
+      console.error('[API Roles] Role update failed and was not persisted.');
     }
   };
 

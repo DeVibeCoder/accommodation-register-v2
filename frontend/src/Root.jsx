@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import App from './App';
 import SignIn from './pages/SignIn';
-import { getSessionUser, signInWithSupabase, signOutFromSupabase, subscribeToAuthChanges } from './services/authService';
+import { getSessionUser, signInWithApi, signOutFromApi, subscribeToAuthChanges } from './services/authService';
 
 export default function Root() {
   const [user, setUser] = useState(null);
@@ -43,7 +43,7 @@ export default function Root() {
   }, []);
 
   const handleSignIn = async ({ email, password }) => {
-    const result = await signInWithSupabase(email, password);
+    const result = await signInWithApi(email, password);
     if (result.user) {
       setUser(result.user);
     }
@@ -51,7 +51,7 @@ export default function Root() {
   };
 
   const handleLogout = async () => {
-    await signOutFromSupabase();
+    await signOutFromApi();
     setUser(null);
   };
 

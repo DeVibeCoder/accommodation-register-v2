@@ -1,7 +1,4 @@
-import { supabase } from './supabaseClient';
-
-const ROOM_TABLE_CANDIDATES = ['rooms', 'room_master', 'accommodation_rooms'];
-let resolvedRoomTable = null;
+import { apiRequest } from './apiClient';
 
 function firstDefined(...values) {
   return values.find(value => value !== undefined && value !== null);
@@ -10,7 +7,7 @@ function firstDefined(...values) {
 function toBool(value) {
   if (value === true || value === false) return value;
   const normalized = String(value ?? '').trim().toLowerCase();
-  return normalized === 'true' || normalized === 'yes' || normalized === '1';
+  return normalized === 'true' || normalized === 'yes' || normalized === '1' || normalized === 'ac' || normalized === 'attached';
 }
 
 function buildingFrom(roomId = '') {
@@ -56,90 +53,54 @@ export function normalizeRoomRecord(row = {}) {
   };
 }
 
-function toDatabasePayload(room = {}, tableName) {
+function extractList(payload, fallbackKey) {
+  if (Array.isArray(payload)) return payload;
+  if (Array.isArray(payload?.data)) return payload.data;
+  if (Array.isArray(payload?.[fallbackKey])) return payload[fallbackKey];
+  return [];
+}
+
+function toApiPayload(room = {}) {
   const normalized = normalizeRoomRecord(room);
 
-  if (tableName === 'rooms') {
-    return {
-      Room_ID: normalized.id,
-      Building: normalized.building,
-      Building_Code: normalized.buildingCode,
-      Floor: normalized.floor,
-      Room_No: normalized.roomNo || normalized.id,
-      Room_Type: normalized.roomType,
-      'AC/Non-AC': normalized.ac ? 'AC' : 'Non-AC',
-      Toilet_Type: normalized.attached ? 'Attached' : 'Common',
-      Room_Active: normalized.roomActive || 'Yes',
-      Total_Beds: normalized.totalBeds,
-      Used_Beds: normalized.beds.filter(b => b.occupied).length,
-      Available_Beds: Math.max(0, normalized.totalBeds - normalized.beds.filter(b => b.occupied).length),
-      Room_Status: normalized.totalBeds === 0 ? 'Vacant' : undefined,
-    };
-  }
-
   return {
-    room_id: normalized.id,
+    id: normalized.id,
     building: normalized.building,
-    building_code: normalized.buildingCode,
+    buildingCode: normalized.buildingCode,
     floor: normalized.floor,
-    room_type: normalized.roomType,
+    roomNo: normalized.roomNo || normalized.id,
+    roomType: normalized.roomType,
     ac: Boolean(normalized.ac),
     attached: Boolean(normalized.attached),
-    total_beds: normalized.totalBeds,
+    roomActive: normalized.roomActive || 'Yes',
+    totalBeds: normalized.totalBeds,
+    usedBeds: normalized.beds.filter(bed => bed.occupied).length,
+    availableBeds: Math.max(0, normalized.totalBeds - normalized.beds.filter(bed => bed.occupied).length),
   };
 }
 
-async function runAcrossRoomTables(executor) {
-  const tables = resolvedRoomTable
-    ? [resolvedRoomTable, ...ROOM_TABLE_CANDIDATES.filter(name => name !== resolvedRoomTable)]
-    : ROOM_TABLE_CANDIDATES;
-
-  let lastError = null;
-
-  for (const tableName of tables) {
-    try {
-      const result = await executor(tableName);
-      if (!result?.error) {
-        resolvedRoomTable = tableName;
-        return result;
-      }
-      lastError = result.error;
-      console.warn(`[Supabase] ${tableName} room request failed:`, result.error.message);
-    } catch (error) {
-      lastError = error;
-      console.warn(`[Supabase] ${tableName} room request threw an exception:`, error.message || error);
-    }
-  }
-
-  return { data: null, error: lastError };
-}
-
 export async function fetchRooms() {
-  const { data, error } = await runAcrossRoomTables(tableName =>
-    supabase.from(tableName).select('*').limit(1000)
-  );
-
-  if (error) {
-    console.error('[Supabase] Unable to fetch rooms. Falling back to local room master.', error.message || error);
+  try {
+    const data = await apiRequest('/api/rooms');
+    return extractList(data, 'rooms').map(normalizeRoomRecord);
+  } catch (error) {
+    console.error('[API] Unable to fetch rooms. Falling back to local room master.', error.message || error);
     return [];
   }
-
-  return Array.isArray(data) ? data.map(normalizeRoomRecord) : [];
 }
 
 export async function updateRoom(roomId, updates) {
   if (!roomId) return null;
 
-  const { error } = await runAcrossRoomTables(tableName => {
-    const payload = toDatabasePayload({ id: roomId, ...updates }, tableName);
-    const query = supabase.from(tableName).update(payload);
-    return tableName === 'rooms' ? query.eq('Room_ID', roomId) : query.eq('room_id', roomId);
-  });
+  try {
+    await apiRequest(`/api/rooms/${encodeURIComponent(roomId)}`, {
+      method: 'PUT',
+      body: toApiPayload({ id: roomId, ...updates }),
+    });
 
-  if (error) {
-    console.error('[Supabase] Unable to update room on backend. Local UI state was preserved.', error.message || error);
+    return true;
+  } catch (error) {
+    console.error('[API] Unable to update room on backend. Local UI state was preserved.', error.message || error);
     return null;
   }
-
-  return true;
 }

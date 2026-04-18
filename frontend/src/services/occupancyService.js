@@ -1,7 +1,4 @@
-import { supabase } from './supabaseClient';
-
-const OCCUPANT_TABLE_CANDIDATES = ['occupants', 'occupancy', 'accommodation_occupants'];
-let resolvedOccupantTable = null;
+import { apiRequest } from './apiClient';
 
 function firstDefined(...values) {
   return values.find(value => value !== undefined && value !== null);
@@ -10,7 +7,7 @@ function firstDefined(...values) {
 function toBool(value) {
   if (value === true || value === false) return value;
   const normalized = String(value ?? '').trim().toLowerCase();
-  return normalized === 'true' || normalized === 'yes' || normalized === '1';
+  return normalized === 'true' || normalized === 'yes' || normalized === '1' || normalized === 'ac' || normalized === 'attached';
 }
 
 function buildingFrom(roomId = '') {
@@ -60,138 +57,91 @@ export function normalizeOccupantRecord(row = {}) {
   };
 }
 
-function toDatabasePayload(occupant = {}, tableName) {
+function toApiPayload(occupant = {}) {
   const normalized = normalizeOccupantRecord(occupant);
 
-  if (tableName === 'occupancy') {
-    return {
-      'Staff Name': normalized.name || null,
-      Department: normalized.department || null,
-      Nationality: normalized.nationality || null,
-      Room_ID: normalized.roomId || null,
-      Bed: String(normalized.bedNo || ''),
-      Status: normalized.status || 'Active',
-    };
-  }
-
   return {
-    person_type: normalized.personType,
-    staff_id: normalized.staffId || null,
-    full_name: normalized.name || null,
+    id: normalized.id ?? undefined,
+    personType: normalized.personType,
+    staffId: normalized.staffId || null,
+    name: normalized.name || null,
     section: normalized.section || null,
     department: normalized.department || null,
     nationality: normalized.nationality || null,
-    room_id: normalized.roomId || null,
-    bed_no: normalized.bedNo || null,
+    roomId: normalized.roomId || null,
+    bedNo: normalized.bedNo || null,
     fasting: Boolean(normalized.fasting),
-    check_in: normalized.checkIn || null,
-    check_out: normalized.checkOut || null,
+    checkIn: normalized.checkIn || null,
+    checkOut: normalized.checkOut || null,
     status: normalized.status || 'Active',
     building: normalized.building || null,
-    building_code: normalized.buildingCode || null,
+    buildingCode: normalized.buildingCode || null,
   };
 }
 
-async function runAcrossOccupantTables(executor) {
-  const tables = resolvedOccupantTable
-    ? [resolvedOccupantTable, ...OCCUPANT_TABLE_CANDIDATES.filter(name => name !== resolvedOccupantTable)]
-    : OCCUPANT_TABLE_CANDIDATES;
-
-  let lastError = null;
-
-  for (const tableName of tables) {
-    try {
-      const result = await executor(tableName);
-      if (!result?.error) {
-        resolvedOccupantTable = tableName;
-        return result;
-      }
-      lastError = result.error;
-      console.warn(`[Supabase] ${tableName} request failed:`, result.error.message);
-    } catch (error) {
-      lastError = error;
-      console.warn(`[Supabase] ${tableName} request threw an exception:`, error.message || error);
-    }
-  }
-
-  return { data: null, error: lastError };
+function extractList(payload, fallbackKey) {
+  if (Array.isArray(payload)) return payload;
+  if (Array.isArray(payload?.data)) return payload.data;
+  if (Array.isArray(payload?.[fallbackKey])) return payload[fallbackKey];
+  return [];
 }
 
 export async function fetchOccupants() {
-  const { data, error } = await runAcrossOccupantTables(tableName =>
-    supabase.from(tableName).select('*').limit(2000)
-  );
-
-  if (error) {
-    console.error('[Supabase] Unable to fetch occupants. Falling back to local data.', error.message || error);
+  try {
+    const data = await apiRequest('/api/occupancy');
+    return extractList(data, 'occupants').map(normalizeOccupantRecord);
+  } catch (error) {
+    console.error('[API] Unable to fetch occupants. Falling back to local data.', error.message || error);
     return [];
   }
-
-  return Array.isArray(data) ? data.map(normalizeOccupantRecord) : [];
-}
-
-function applyOccupantMatch(query, occupant = {}, tableName) {
-  const match = occupant.__match || occupant;
-
-  if (tableName === 'occupancy') {
-    let nextQuery = query;
-    if (match.roomId != null) nextQuery = nextQuery.eq('Room_ID', match.roomId);
-    if (match.bedNo != null) nextQuery = nextQuery.eq('Bed', String(match.bedNo));
-    if (match.name) nextQuery = nextQuery.eq('Staff Name', match.name);
-    return nextQuery;
-  }
-
-  if (match.id != null) return query.eq('id', match.id);
-
-  let nextQuery = query;
-  if (match.roomId != null) nextQuery = nextQuery.eq('room_id', match.roomId);
-  if (match.bedNo != null) nextQuery = nextQuery.eq('bed_no', match.bedNo);
-  return nextQuery;
 }
 
 export async function addOccupant(occupant) {
-  const { data, error } = await runAcrossOccupantTables(tableName => {
-    const payload = toDatabasePayload(occupant, tableName);
-    return supabase.from(tableName).insert(payload).select().maybeSingle();
-  });
+  try {
+    const data = await apiRequest('/api/occupancy', {
+      method: 'POST',
+      body: toApiPayload(occupant),
+    });
 
-  if (error) {
-    console.error('[Supabase] Unable to add occupant. Kept local UI state.', error.message || error);
+    const record = data?.occupant ?? data?.data ?? data;
+    return record ? normalizeOccupantRecord(record) : null;
+  } catch (error) {
+    console.error('[API] Unable to add occupant. Kept local UI state.', error.message || error);
     return null;
   }
-
-  return data ? normalizeOccupantRecord(data) : null;
 }
 
 export async function updateOccupant(id, updates) {
   const payloadSource = id == null ? updates : { ...updates, id };
+  const payload = toApiPayload(payloadSource);
 
-  const { data, error } = await runAcrossOccupantTables(tableName => {
-    const payload = toDatabasePayload(payloadSource, tableName);
-    const query = supabase.from(tableName).update(payload);
-    return applyOccupantMatch(query, payloadSource, tableName).select().maybeSingle();
-  });
+  try {
+    const data = await apiRequest(`/api/occupancy/${encodeURIComponent(payload.id ?? payload.roomId ?? 'record')}`, {
+      method: 'PUT',
+      body: payload,
+    });
 
-  if (error) {
-    console.error('[Supabase] Unable to update occupant. UI changes were preserved locally.', error.message || error);
+    const record = data?.occupant ?? data?.data ?? data;
+    return record ? normalizeOccupantRecord(record) : null;
+  } catch (error) {
+    console.error('[API] Unable to update occupant. UI changes were preserved locally.', error.message || error);
     return null;
   }
-
-  return data ? normalizeOccupantRecord(data) : null;
 }
 
 export async function deleteOccupant(idOrOccupant) {
   const target = typeof idOrOccupant === 'object' ? idOrOccupant : { id: idOrOccupant };
+  const payload = toApiPayload(target);
 
-  const { error } = await runAcrossOccupantTables(tableName => {
-    const query = supabase.from(tableName).delete();
-    return applyOccupantMatch(query, target, tableName);
-  });
+  try {
+    await apiRequest(`/api/occupancy/${encodeURIComponent(payload.id ?? payload.roomId ?? 'record')}`, {
+      method: 'DELETE',
+      body: payload,
+    });
 
-  if (error) {
-    console.error('[Supabase] Unable to delete occupant from backend. Record was removed only from local UI.', error.message || error);
+    return true;
+  } catch (error) {
+    console.error('[API] Unable to delete occupant from backend. Record was removed only from local UI.', error.message || error);
     return null;
   }
-
-  return true;
 }
