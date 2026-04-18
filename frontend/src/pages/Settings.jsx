@@ -204,152 +204,165 @@ function Settings({ user, setUser }) {
       ) : null}
 
       <div style={cardStyle}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', gap: 14, alignItems: 'center', flexWrap: 'wrap', marginBottom: 16 }}>
-          <div>
-            <h2 style={{ fontWeight: 800, fontSize: '1.25rem', color: '#1e315f', margin: 0 }}>User Access Management</h2>
-            <p style={{ color: '#64748b', fontWeight: 600, margin: '6px 0 0' }}>Assign roles to newly created users directly from the app.</p>
-          </div>
-          {isAdmin ? (
-            <input
-              type="text"
-              placeholder="Search by email or role..."
-              value={userSearch}
-              onChange={e => setUserSearch(e.target.value)}
-              style={{ ...inputStyle, minWidth: 260 }}
-            />
-          ) : null}
+        <h2 style={{ fontWeight: 800, fontSize: '1.25rem', color: '#1e315f', margin: 0 }}>My Access</h2>
+        <p style={{ color: '#64748b', fontWeight: 600, margin: '6px 0 16px' }}>Your current permission level in the accommodation system.</p>
+
+        <div style={{ display: 'inline-flex', padding: '8px 14px', borderRadius: 999, background: '#eef2ff', color: '#3730a3', fontWeight: 900, fontSize: 13, marginBottom: 14 }}>
+          {user?.role || 'Viewer'}
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 12, marginBottom: 18 }}>
-          {roleDescriptions.map(item => (
-            <div key={item.role} style={{ borderRadius: 14, border: '1px solid #dbe4f0', background: '#f8fbff', padding: '14px 16px' }}>
-              <div style={{ fontWeight: 900, color: '#1e315f', fontSize: 16 }}>{item.role}</div>
-              <div style={{ marginTop: 4, color: '#64748b', fontSize: 13, minHeight: 36 }}>{item.desc}</div>
-              <div style={{ marginTop: 10, display: 'inline-flex', padding: '4px 10px', borderRadius: 999, background: '#e0e7ff', color: '#3730a3', fontWeight: 800, fontSize: 12 }}>
-                {roleCounts[item.role]} users
+        <div style={{ color: '#475569', fontWeight: 600 }}>
+          {(roleDescriptions.find(item => item.role === (user?.role || 'Viewer')) || roleDescriptions[0]).desc}
+        </div>
+      </div>
+
+      {isAdmin ? (
+        <>
+          <div style={cardStyle}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', gap: 14, alignItems: 'center', flexWrap: 'wrap', marginBottom: 16 }}>
+              <div>
+                <h2 style={{ fontWeight: 800, fontSize: '1.25rem', color: '#1e315f', margin: 0 }}>User Access Management</h2>
+                <p style={{ color: '#64748b', fontWeight: 600, margin: '6px 0 0' }}>Assign roles to newly created users directly from the app.</p>
               </div>
+              <input
+                type="text"
+                placeholder="Search by email or role..."
+                value={userSearch}
+                onChange={e => setUserSearch(e.target.value)}
+                style={{ ...inputStyle, minWidth: 260 }}
+              />
             </div>
-          ))}
-        </div>
 
-        {!isAdmin ? (
-          <div style={{ color: '#b45309', fontWeight: 700 }}>Only Admin can manage roles.</div>
-        ) : usersLoading ? (
-          <div style={{ color: '#64748b', fontWeight: 700 }}>Loading users...</div>
-        ) : (
-          <div style={{ display: 'grid', gap: 10 }}>
-            {filteredUsers.length === 0 ? (
-              <div style={{ color: '#94a3b8', fontWeight: 700, padding: '10px 0' }}>No users found.</div>
-            ) : filteredUsers.map(item => (
-              <div key={item.id} style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1.5fr) 140px 140px 170px', gap: 12, alignItems: 'center', border: '1px solid #e2e8f0', borderRadius: 14, padding: '12px 14px', background: '#fff' }}>
-                <div style={{ minWidth: 0 }}>
-                  <div style={{ fontWeight: 800, color: '#1e293b', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.email || 'No email'}</div>
-                  <div style={{ fontSize: 12, color: '#64748b', marginTop: 3 }}>Created: {formatDate(item.createdAt)}</div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 12, marginBottom: 18 }}>
+              {roleDescriptions.map(item => (
+                <div key={item.role} style={{ borderRadius: 14, border: '1px solid #dbe4f0', background: '#f8fbff', padding: '14px 16px' }}>
+                  <div style={{ fontWeight: 900, color: '#1e315f', fontSize: 16 }}>{item.role}</div>
+                  <div style={{ marginTop: 4, color: '#64748b', fontSize: 13, minHeight: 36 }}>{item.desc}</div>
+                  <div style={{ marginTop: 10, display: 'inline-flex', padding: '4px 10px', borderRadius: 999, background: '#e0e7ff', color: '#3730a3', fontWeight: 800, fontSize: 12 }}>
+                    {roleCounts[item.role]} users
+                  </div>
                 </div>
-                <div style={{ fontWeight: 700, color: item.emailConfirmed ? '#166534' : '#b45309' }}>{item.emailConfirmed ? 'Confirmed' : 'Pending'}</div>
-                <div>
-                  <span style={{ display: 'inline-flex', padding: '5px 10px', borderRadius: 999, background: '#eef2ff', color: '#3730a3', fontWeight: 800, fontSize: 12 }}>{item.role}</span>
-                </div>
-                <select value={item.role} onChange={e => handleManagedUserRoleChange(item, e.target.value)} style={inputStyle}>
-                  {roleDescriptions.map(r => (
-                    <option key={r.role} value={r.role}>{r.role}</option>
-                  ))}
-                </select>
+              ))}
+            </div>
+
+            {usersLoading ? (
+              <div style={{ color: '#64748b', fontWeight: 700 }}>Loading users...</div>
+            ) : (
+              <div style={{ display: 'grid', gap: 10 }}>
+                {filteredUsers.length === 0 ? (
+                  <div style={{ color: '#94a3b8', fontWeight: 700, padding: '10px 0' }}>No users found.</div>
+                ) : filteredUsers.map(item => (
+                  <div key={item.id} style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1.5fr) 140px 140px 170px', gap: 12, alignItems: 'center', border: '1px solid #e2e8f0', borderRadius: 14, padding: '12px 14px', background: '#fff' }}>
+                    <div style={{ minWidth: 0 }}>
+                      <div style={{ fontWeight: 800, color: '#1e293b', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.email || 'No email'}</div>
+                      <div style={{ fontSize: 12, color: '#64748b', marginTop: 3 }}>Created: {formatDate(item.createdAt)}</div>
+                    </div>
+                    <div style={{ fontWeight: 700, color: item.emailConfirmed ? '#166534' : '#b45309' }}>{item.emailConfirmed ? 'Confirmed' : 'Pending'}</div>
+                    <div>
+                      <span style={{ display: 'inline-flex', padding: '5px 10px', borderRadius: 999, background: '#eef2ff', color: '#3730a3', fontWeight: 800, fontSize: 12 }}>{item.role}</span>
+                    </div>
+                    <select value={item.role} onChange={e => handleManagedUserRoleChange(item, e.target.value)} style={inputStyle}>
+                      {roleDescriptions.map(r => (
+                        <option key={r.role} value={r.role}>{r.role}</option>
+                      ))}
+                    </select>
+                  </div>
+                ))}
               </div>
-            ))}
+            )}
           </div>
-        )}
-      </div>
 
-      <div style={cardStyle}>
-        <h2 style={{ fontWeight: 800, fontSize: '1.2rem', color: '#1e315f', marginBottom: 10 }}>Test Data Reset</h2>
-        <p style={{ color: '#64748b', fontWeight: 600, margin: '0 0 16px' }}>
-          Clear live occupancy and stay history while keeping all room cards and room master data untouched.
-        </p>
-        <button
-          onClick={handleResetData}
-          disabled={!isAdmin || isResetting}
-          style={{ padding: '11px 18px', borderRadius: 10, border: 'none', background: !isAdmin || isResetting ? '#cbd5e1' : '#dc2626', color: '#fff', fontWeight: 800, cursor: !isAdmin || isResetting ? 'not-allowed' : 'pointer' }}
-        >
-          {isResetting ? 'Clearing Data...' : 'Clear Occupancy Data'}
-        </button>
-      </div>
-
-      <div style={cardStyle}>
-        <h2 style={{ fontWeight: 800, fontSize: '1.2rem', color: '#1e315f', marginBottom: 10 }}>Add Room</h2>
-        <p style={{ color: '#64748b', fontWeight: 600, margin: '0 0 18px' }}>
-          Add a new room to the live room master so it appears in the Rooms section for future use.
-        </p>
-
-        <form onSubmit={handleAddRoom} style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 14 }}>
-          <label style={labelStyle}>Building
-            <select name="building" value={roomForm.building} onChange={handleRoomInput} style={inputStyle}>
-              <option value="OFFICE BUILDING">Office Building</option>
-              <option value="F&B BUILDING">F&B Building</option>
-              <option value="VTV BUILDING">VTV Building</option>
-            </select>
-          </label>
-
-          <label style={labelStyle}>Building Code
-            <select name="buildingCode" value={roomForm.buildingCode} onChange={handleRoomInput} style={inputStyle}>
-              <option value="OB">OB</option>
-              <option value="FB">FB</option>
-              <option value="VTV">VTV</option>
-            </select>
-          </label>
-
-          <label style={labelStyle}>Floor
-            <input name="floor" value={roomForm.floor} onChange={handleRoomInput} style={inputStyle} />
-          </label>
-
-          <label style={labelStyle}>Room No
-            <input name="roomNo" value={roomForm.roomNo} onChange={handleRoomInput} style={inputStyle} placeholder="108" />
-          </label>
-
-          <label style={labelStyle}>Room Type
-            <select name="roomType" value={roomForm.roomType} onChange={handleRoomInput} style={inputStyle}>
-              <option value="Internal">Internal</option>
-              <option value="Project">Project</option>
-              <option value="Quarantine">Quarantine</option>
-            </select>
-          </label>
-
-          <label style={labelStyle}>AC / Non-AC
-            <select name="acType" value={roomForm.acType} onChange={handleRoomInput} style={inputStyle}>
-              <option value="AC">AC</option>
-              <option value="Non-AC">Non-AC</option>
-            </select>
-          </label>
-
-          <label style={labelStyle}>Toilet Type
-            <select name="toiletType" value={roomForm.toiletType} onChange={handleRoomInput} style={inputStyle}>
-              <option value="Attached">Attached</option>
-              <option value="Common">Common</option>
-            </select>
-          </label>
-
-          <label style={labelStyle}>Room Active
-            <select name="roomActive" value={roomForm.roomActive} onChange={handleRoomInput} style={inputStyle}>
-              <option value="Yes">Yes</option>
-              <option value="No">No</option>
-            </select>
-          </label>
-
-          <label style={labelStyle}>Total Beds
-            <input name="totalBeds" type="number" min="1" value={roomForm.totalBeds} onChange={handleRoomInput} style={inputStyle} />
-          </label>
-
-          <div style={{ display: 'flex', alignItems: 'end' }}>
+          <div style={cardStyle}>
+            <h2 style={{ fontWeight: 800, fontSize: '1.2rem', color: '#1e315f', marginBottom: 10 }}>Test Data Reset</h2>
+            <p style={{ color: '#64748b', fontWeight: 600, margin: '0 0 16px' }}>
+              Clear live occupancy and stay history while keeping all room cards and room master data untouched.
+            </p>
             <button
-              type="submit"
-              disabled={!isAdmin || isSavingRoom}
-              style={{ width: '100%', padding: '11px 18px', borderRadius: 10, border: 'none', background: !isAdmin || isSavingRoom ? '#cbd5e1' : '#2563eb', color: '#fff', fontWeight: 800, cursor: !isAdmin || isSavingRoom ? 'not-allowed' : 'pointer' }}
+              onClick={handleResetData}
+              disabled={!isAdmin || isResetting}
+              style={{ padding: '11px 18px', borderRadius: 10, border: 'none', background: !isAdmin || isResetting ? '#cbd5e1' : '#dc2626', color: '#fff', fontWeight: 800, cursor: !isAdmin || isResetting ? 'not-allowed' : 'pointer' }}
             >
-              {isSavingRoom ? 'Adding Room...' : 'Add Room'}
+              {isResetting ? 'Clearing Data...' : 'Clear Occupancy Data'}
             </button>
           </div>
-        </form>
-      </div>
+
+          <div style={cardStyle}>
+            <h2 style={{ fontWeight: 800, fontSize: '1.2rem', color: '#1e315f', marginBottom: 10 }}>Add Room</h2>
+            <p style={{ color: '#64748b', fontWeight: 600, margin: '0 0 18px' }}>
+              Add a new room to the live room master so it appears in the Rooms section for future use.
+            </p>
+
+            <form onSubmit={handleAddRoom} style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 14 }}>
+              <label style={labelStyle}>Building
+                <select name="building" value={roomForm.building} onChange={handleRoomInput} style={inputStyle}>
+                  <option value="OFFICE BUILDING">Office Building</option>
+                  <option value="F&B BUILDING">F&B Building</option>
+                  <option value="VTV BUILDING">VTV Building</option>
+                </select>
+              </label>
+
+              <label style={labelStyle}>Building Code
+                <select name="buildingCode" value={roomForm.buildingCode} onChange={handleRoomInput} style={inputStyle}>
+                  <option value="OB">OB</option>
+                  <option value="FB">FB</option>
+                  <option value="VTV">VTV</option>
+                </select>
+              </label>
+
+              <label style={labelStyle}>Floor
+                <input name="floor" value={roomForm.floor} onChange={handleRoomInput} style={inputStyle} />
+              </label>
+
+              <label style={labelStyle}>Room No
+                <input name="roomNo" value={roomForm.roomNo} onChange={handleRoomInput} style={inputStyle} placeholder="108" />
+              </label>
+
+              <label style={labelStyle}>Room Type
+                <select name="roomType" value={roomForm.roomType} onChange={handleRoomInput} style={inputStyle}>
+                  <option value="Internal">Internal</option>
+                  <option value="Project">Project</option>
+                  <option value="Quarantine">Quarantine</option>
+                </select>
+              </label>
+
+              <label style={labelStyle}>AC / Non-AC
+                <select name="acType" value={roomForm.acType} onChange={handleRoomInput} style={inputStyle}>
+                  <option value="AC">AC</option>
+                  <option value="Non-AC">Non-AC</option>
+                </select>
+              </label>
+
+              <label style={labelStyle}>Toilet Type
+                <select name="toiletType" value={roomForm.toiletType} onChange={handleRoomInput} style={inputStyle}>
+                  <option value="Attached">Attached</option>
+                  <option value="Common">Common</option>
+                </select>
+              </label>
+
+              <label style={labelStyle}>Room Active
+                <select name="roomActive" value={roomForm.roomActive} onChange={handleRoomInput} style={inputStyle}>
+                  <option value="Yes">Yes</option>
+                  <option value="No">No</option>
+                </select>
+              </label>
+
+              <label style={labelStyle}>Total Beds
+                <input name="totalBeds" type="number" min="1" value={roomForm.totalBeds} onChange={handleRoomInput} style={inputStyle} />
+              </label>
+
+              <div style={{ display: 'flex', alignItems: 'end' }}>
+                <button
+                  type="submit"
+                  disabled={!isAdmin || isSavingRoom}
+                  style={{ width: '100%', padding: '11px 18px', borderRadius: 10, border: 'none', background: !isAdmin || isSavingRoom ? '#cbd5e1' : '#2563eb', color: '#fff', fontWeight: 800, cursor: !isAdmin || isSavingRoom ? 'not-allowed' : 'pointer' }}
+                >
+                  {isSavingRoom ? 'Adding Room...' : 'Add Room'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </>
+      ) : null}
     </div>
   );
 }
