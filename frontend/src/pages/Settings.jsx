@@ -35,6 +35,46 @@ function formatDate(value) {
   }
 }
 
+function ConfirmationDialog({ config, busy, onCancel, onConfirm }) {
+  if (!config?.open) return null;
+
+  const isDanger = config.variant === 'danger';
+
+  return (
+    <div style={{ position: 'fixed', inset: 0, background: 'rgba(15, 23, 42, 0.45)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: 16 }}>
+      <div style={{ width: '100%', maxWidth: 460, background: '#fff', borderRadius: 20, boxShadow: '0 24px 60px rgba(15,23,42,.22)', border: '1px solid #dbe4f0', overflow: 'hidden' }}>
+        <div style={{ padding: '20px 22px', background: isDanger ? 'linear-gradient(135deg, #7f1d1d 0%, #dc2626 100%)' : 'linear-gradient(135deg, #1e3a8a 0%, #0ea5e9 100%)', color: '#fff' }}>
+          <div style={{ fontSize: 12, fontWeight: 800, letterSpacing: 0.5, textTransform: 'uppercase', opacity: 0.9 }}>Please Confirm</div>
+          <div style={{ fontSize: 22, fontWeight: 900, marginTop: 4 }}>{config.title}</div>
+        </div>
+
+        <div style={{ padding: '20px 22px 22px' }}>
+          <p style={{ margin: 0, color: '#475569', fontSize: 15, lineHeight: 1.6, fontWeight: 600 }}>{config.message}</p>
+
+          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10, marginTop: 22, flexWrap: 'wrap' }}>
+            <button
+              type="button"
+              onClick={onCancel}
+              disabled={busy}
+              style={{ padding: '10px 14px', borderRadius: 10, border: '1px solid #cbd5e1', background: '#fff', color: '#334155', fontWeight: 800, cursor: busy ? 'not-allowed' : 'pointer' }}
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              onClick={onConfirm}
+              disabled={busy}
+              style={{ padding: '10px 14px', borderRadius: 10, border: 'none', background: isDanger ? '#dc2626' : '#2563eb', color: '#fff', fontWeight: 800, cursor: busy ? 'not-allowed' : 'pointer' }}
+            >
+              {busy ? 'Please wait...' : (config.confirmLabel || 'Confirm')}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function Settings({ user, setUser }) {
   const { roomsState = [], setRoomsState, setOccupants, setStayHistory } = useOutletContext();
   const [roomForm, setRoomForm] = useState(defaultRoomForm);
@@ -45,6 +85,8 @@ function Settings({ user, setUser }) {
   const [userSearch, setUserSearch] = useState('');
   const [pendingRoles, setPendingRoles] = useState({});
   const [savingRoleUserId, setSavingRoleUserId] = useState('');
+  const [confirmConfig, setConfirmConfig] = useState({ open: false });
+  const [confirmBusy, setConfirmBusy] = useState(false);
   const [notice, setNotice] = useState('');
   const isAdmin = (user?.role || 'Admin') === 'Admin';
 
@@ -92,18 +134,12 @@ function Settings({ user, setUser }) {
     setNotice('');
   };
 
-  const handleManagedUserRoleChange = async (targetUser) => {
-    if (!isAdmin) return;
+  const closeConfirmDialog = () => {
+    if (confirmBusy) return;
+    setConfirmConfig({ open: false });
+  };
 
-    const nextRole = pendingRoles[targetUser.id] || targetUser.role;
-    if (!nextRole || nextRole === targetUser.role) {
-      setNotice(`No changes to save for ${targetUser.email}.`);
-      return;
-    }
-
-    const confirmed = window.confirm(`Change ${targetUser.email} to ${nextRole}?`);
-    if (!confirmed) return;
-
+  const submitRoleChange = async (targetUser, nextRole) => {
     setSavingRoleUserId(targetUser.id);
     setNotice('');
 
@@ -126,12 +162,7 @@ function Settings({ user, setUser }) {
     setSavingRoleUserId('');
   };
 
-  const handleResetData = async () => {
-    if (!isAdmin || isResetting) return;
-
-    const confirmed = window.confirm('This will remove all live occupancy and stay history data while keeping the room master. Continue?');
-    if (!confirmed) return;
-
+  const runResetData = async () => {
     setIsResetting(true);
     setNotice('');
 
@@ -146,6 +177,53 @@ function Settings({ user, setUser }) {
     }
 
     setIsResetting(false);
+  };
+
+  const handleManagedUserRoleChange = async (targetUser) => {
+    if (!isAdmin) return;
+
+    const nextRole = pendingRoles[targetUser.id] || targetUser.role;
+    if (!nextRole || nextRole === targetUser.role) {
+      setNotice(`No changes to save for ${targetUser.email}.`);
+      return;
+    }
+
+    setConfirmConfig({
+      open: true,
+      variant: 'primary',
+      title: 'Confirm Role Change',
+      message: `Are you sure you want to change ${targetUser.email} to ${nextRole}?`,
+      confirmLabel: 'Yes, Save Change',
+      action: async () => submitRoleChange(targetUser, nextRole),
+    });
+  };
+
+  const handleResetData = async () => {
+    if (!isAdmin || isResetting) return;
+
+    setConfirmConfig({
+      open: true,
+      variant: 'danger',
+      title: 'Clear Live Data',
+      message: 'This will remove all live occupancy and stay history data while keeping the room master untouched.',
+      confirmLabel: 'Yes, Clear Data',
+      action: runResetData,
+    });
+  };
+
+  const handleConfirmAction = async () => {
+    if (!confirmConfig?.action) {
+      setConfirmConfig({ open: false });
+      return;
+    }
+
+    setConfirmBusy(true);
+    try {
+      await confirmConfig.action();
+      setConfirmConfig({ open: false });
+    } finally {
+      setConfirmBusy(false);
+    }
   };
 
   const handleRoomInput = (e) => {
@@ -423,6 +501,13 @@ function Settings({ user, setUser }) {
           </div>
         </>
       ) : null}
+
+      <ConfirmationDialog
+        config={confirmConfig}
+        busy={confirmBusy}
+        onCancel={closeConfirmDialog}
+        onConfirm={handleConfirmAction}
+      />
     </div>
   );
 }
