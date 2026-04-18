@@ -1,22 +1,13 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useOutletContext } from 'react-router-dom';
-import { updateProfileRole } from '../services/authService';
+import { fetchUsersForRoleManagement, updateProfileRole } from '../services/authService';
 import { clearAllOccupancyData } from '../services/occupancyService';
 import { createRoom } from '../services/roomsService';
 
 const roleDescriptions = [
-  {
-    role: 'Viewer',
-    desc: 'Can only view everything. Cannot edit any data.'
-  },
-  {
-    role: 'Accommodation',
-    desc: 'Can view and edit Dashboard, Rooms, Occupancy, Stay History. Meals sections are hidden.'
-  },
-  {
-    role: 'Admin',
-    desc: 'Can do everything.'
-  }
+  { role: 'Viewer', desc: 'Read-only access across the accommodation module.' },
+  { role: 'Accommodation', desc: 'Can manage rooms, occupancy, and stay history.' },
+  { role: 'Admin', desc: 'Full control over users, settings, and data tools.' },
 ];
 
 const defaultRoomForm = {
@@ -31,36 +22,79 @@ const defaultRoomForm = {
   totalBeds: '1',
 };
 
-function normalizeType(totalBeds) {
-  return totalBeds === 1 ? 'Single' : `${totalBeds} Share`;
-}
-
 function compareRoomIds(a, b) {
   return a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' });
 }
 
+function formatDate(value) {
+  if (!value) return 'Never';
+  try {
+    return new Date(value).toLocaleString();
+  } catch {
+    return value;
+  }
+}
+
 function Settings({ user, setUser }) {
   const { roomsState = [], setRoomsState, setOccupants, setStayHistory } = useOutletContext();
-  const [selectedRole, setSelectedRole] = useState(user?.role || 'Admin');
   const [roomForm, setRoomForm] = useState(defaultRoomForm);
   const [isResetting, setIsResetting] = useState(false);
   const [isSavingRoom, setIsSavingRoom] = useState(false);
+  const [usersLoading, setUsersLoading] = useState(false);
+  const [managedUsers, setManagedUsers] = useState([]);
+  const [userSearch, setUserSearch] = useState('');
   const [notice, setNotice] = useState('');
   const isAdmin = (user?.role || 'Admin') === 'Admin';
 
   const existingRoomIds = useMemo(() => new Set(roomsState.map(room => String(room.id || '').toUpperCase())), [roomsState]);
 
-  const handleRoleChange = async (e) => {
-    const nextRole = e.target.value;
-    setSelectedRole(nextRole);
+  useEffect(() => {
+    if (!isAdmin) return;
 
-    const result = await updateProfileRole(user?.id, user?.email, nextRole);
+    let cancelled = false;
+    setUsersLoading(true);
+
+    fetchUsersForRoleManagement()
+      .then(users => {
+        if (!cancelled) setManagedUsers(users);
+      })
+      .catch(error => {
+        if (!cancelled) setNotice(error?.message || 'Unable to load user list.');
+      })
+      .finally(() => {
+        if (!cancelled) setUsersLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [isAdmin]);
+
+  const filteredUsers = useMemo(() => {
+    const q = userSearch.trim().toLowerCase();
+    if (!q) return managedUsers;
+    return managedUsers.filter(item =>
+      String(item.email || '').toLowerCase().includes(q) ||
+      String(item.role || '').toLowerCase().includes(q)
+    );
+  }, [managedUsers, userSearch]);
+
+  const roleCounts = useMemo(() => ({
+    Admin: managedUsers.filter(item => item.role === 'Admin').length,
+    Accommodation: managedUsers.filter(item => item.role === 'Accommodation').length,
+    Viewer: managedUsers.filter(item => item.role === 'Viewer').length,
+  }), [managedUsers]);
+
+  const handleManagedUserRoleChange = async (targetUser, nextRole) => {
+    if (!isAdmin) return;
+
+    const result = await updateProfileRole(targetUser.id, targetUser.email, nextRole);
     if (result.user) {
-      setUser(result.user);
-      setNotice(`Role updated to ${nextRole}.`);
+      setManagedUsers(prev => prev.map(item => item.id === targetUser.id ? { ...item, role: nextRole } : item));
+      if (user?.id === targetUser.id) setUser(result.user);
+      setNotice(`Updated ${targetUser.email} to ${nextRole}.`);
     } else {
-      console.error('[API Roles] Role update failed and was not persisted.');
-      setNotice('Role update failed.');
+      setNotice(result.error || 'Role update failed.');
     }
   };
 
@@ -144,37 +178,87 @@ function Settings({ user, setUser }) {
     setIsSavingRoom(false);
   };
 
-  const cardStyle = { background: '#fff', borderRadius: 12, boxShadow: '0 2px 8px #d0d7e2', padding: '24px 28px', marginBottom: 24 };
+  const cardStyle = { background: '#fff', borderRadius: 18, boxShadow: '0 10px 28px rgba(30,49,95,.08)', border: '1px solid #dfe6f1', padding: '22px 24px', marginBottom: 22 };
   const labelStyle = { display: 'flex', flexDirection: 'column', gap: 6, color: '#334155', fontWeight: 700, fontSize: 13 };
-  const inputStyle = { fontSize: 14, padding: '10px 12px', borderRadius: 8, border: '1.5px solid #d0d7e2', fontWeight: 600, background: '#fff' };
+  const inputStyle = { fontSize: 14, padding: '10px 12px', borderRadius: 10, border: '1.5px solid #d0d7e2', fontWeight: 600, background: '#fff' };
 
   return (
-    <div className="page-container" style={{ width: '100%', maxWidth: '100%', margin: 0, padding: '32px 32px 24px 32px', background: 'none', fontFamily: 'Inter, Segoe UI, Arial, sans-serif', boxSizing: 'border-box' }}>
+    <div className="page-container" style={{ width: '100%', maxWidth: '100%', margin: 0, padding: '24px 32px 24px 32px', background: 'none', fontFamily: 'Inter, Segoe UI, Arial, sans-serif', boxSizing: 'border-box' }}>
+      <div style={{ background: 'linear-gradient(125deg, #0f172a 0%, #1e3a8a 45%, #0ea5e9 100%)', color: '#fff', borderRadius: 18, padding: '24px 26px', boxShadow: '0 16px 32px rgba(15,23,42,.18)', marginBottom: 18 }}>
+        <div style={{ fontSize: 12, opacity: 0.92, letterSpacing: 0.5, textTransform: 'uppercase', fontWeight: 700 }}>System Control Center</div>
+        <div style={{ display: 'flex', justifyContent: 'space-between', gap: 16, alignItems: 'flex-end', flexWrap: 'wrap', marginTop: 8 }}>
+          <div>
+            <h1 style={{ margin: 0, fontSize: '1.8rem', lineHeight: 1.1, fontWeight: 900 }}>Settings</h1>
+            <p style={{ margin: '8px 0 0', opacity: 0.92 }}>Manage access, testing tools, and room master setup from one place.</p>
+          </div>
+          <div style={{ background: 'rgba(255,255,255,0.14)', padding: '10px 14px', borderRadius: 12, fontWeight: 800 }}>
+            Signed in as {user?.role || 'Viewer'}
+          </div>
+        </div>
+      </div>
+
       {notice ? (
-        <div style={{ marginBottom: 16, background: '#eff6ff', color: '#1d4ed8', border: '1px solid #bfdbfe', borderRadius: 10, padding: '12px 14px', fontWeight: 700 }}>
+        <div style={{ marginBottom: 16, background: '#eff6ff', color: '#1d4ed8', border: '1px solid #bfdbfe', borderRadius: 12, padding: '12px 14px', fontWeight: 700 }}>
           {notice}
         </div>
       ) : null}
 
       <div style={cardStyle}>
-        <h2 style={{ fontWeight: 800, fontSize: '1.3rem', color: '#1e315f', marginBottom: 18 }}>Role Management</h2>
-        <div style={{ marginBottom: 18 }}>
-          <label htmlFor="role-select" style={{ fontWeight: 700, fontSize: 16, marginRight: 16 }}>Select Role:</label>
-          <select id="role-select" value={selectedRole} onChange={handleRoleChange} disabled={!isAdmin} style={{ fontSize: 16, padding: '8px 18px', borderRadius: 8, border: '1.5px solid #d0d7e2', fontWeight: 600, background: !isAdmin ? '#f1f5f9' : '#fff', cursor: !isAdmin ? 'not-allowed' : 'pointer' }}>
-            {roleDescriptions.map(r => (
-              <option key={r.role} value={r.role}>{r.role}</option>
-            ))}
-          </select>
+        <div style={{ display: 'flex', justifyContent: 'space-between', gap: 14, alignItems: 'center', flexWrap: 'wrap', marginBottom: 16 }}>
+          <div>
+            <h2 style={{ fontWeight: 800, fontSize: '1.25rem', color: '#1e315f', margin: 0 }}>User Access Management</h2>
+            <p style={{ color: '#64748b', fontWeight: 600, margin: '6px 0 0' }}>Assign roles to newly created users directly from the app.</p>
+          </div>
+          {isAdmin ? (
+            <input
+              type="text"
+              placeholder="Search by email or role..."
+              value={userSearch}
+              onChange={e => setUserSearch(e.target.value)}
+              style={{ ...inputStyle, minWidth: 260 }}
+            />
+          ) : null}
         </div>
-        {!isAdmin ? <div style={{ marginBottom: 14, color: '#b45309', fontWeight: 700 }}>Only Admin can change user roles.</div> : null}
-        <div style={{ display: 'flex', gap: 18, flexWrap: 'wrap' }}>
-          {roleDescriptions.map(r => (
-            <div key={r.role} style={{ background: selectedRole === r.role ? '#e3eafc' : '#f5f7fa', color: '#1e315f', borderRadius: 10, padding: '18px 24px', fontWeight: 700, fontSize: 16, flex: '1 1 220px', textAlign: 'center', border: selectedRole === r.role ? '2px solid #1e315f' : '1.5px solid #d0d7e2' }}>
-              <div style={{ fontWeight: 800, fontSize: 18, marginBottom: 8 }}>{r.role}</div>
-              <div>{r.desc}</div>
+
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 12, marginBottom: 18 }}>
+          {roleDescriptions.map(item => (
+            <div key={item.role} style={{ borderRadius: 14, border: '1px solid #dbe4f0', background: '#f8fbff', padding: '14px 16px' }}>
+              <div style={{ fontWeight: 900, color: '#1e315f', fontSize: 16 }}>{item.role}</div>
+              <div style={{ marginTop: 4, color: '#64748b', fontSize: 13, minHeight: 36 }}>{item.desc}</div>
+              <div style={{ marginTop: 10, display: 'inline-flex', padding: '4px 10px', borderRadius: 999, background: '#e0e7ff', color: '#3730a3', fontWeight: 800, fontSize: 12 }}>
+                {roleCounts[item.role]} users
+              </div>
             </div>
           ))}
         </div>
+
+        {!isAdmin ? (
+          <div style={{ color: '#b45309', fontWeight: 700 }}>Only Admin can manage roles.</div>
+        ) : usersLoading ? (
+          <div style={{ color: '#64748b', fontWeight: 700 }}>Loading users...</div>
+        ) : (
+          <div style={{ display: 'grid', gap: 10 }}>
+            {filteredUsers.length === 0 ? (
+              <div style={{ color: '#94a3b8', fontWeight: 700, padding: '10px 0' }}>No users found.</div>
+            ) : filteredUsers.map(item => (
+              <div key={item.id} style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1.5fr) 140px 140px 170px', gap: 12, alignItems: 'center', border: '1px solid #e2e8f0', borderRadius: 14, padding: '12px 14px', background: '#fff' }}>
+                <div style={{ minWidth: 0 }}>
+                  <div style={{ fontWeight: 800, color: '#1e293b', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.email || 'No email'}</div>
+                  <div style={{ fontSize: 12, color: '#64748b', marginTop: 3 }}>Created: {formatDate(item.createdAt)}</div>
+                </div>
+                <div style={{ fontWeight: 700, color: item.emailConfirmed ? '#166534' : '#b45309' }}>{item.emailConfirmed ? 'Confirmed' : 'Pending'}</div>
+                <div>
+                  <span style={{ display: 'inline-flex', padding: '5px 10px', borderRadius: 999, background: '#eef2ff', color: '#3730a3', fontWeight: 800, fontSize: 12 }}>{item.role}</span>
+                </div>
+                <select value={item.role} onChange={e => handleManagedUserRoleChange(item, e.target.value)} style={inputStyle}>
+                  {roleDescriptions.map(r => (
+                    <option key={r.role} value={r.role}>{r.role}</option>
+                  ))}
+                </select>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       <div style={cardStyle}>

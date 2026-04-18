@@ -140,9 +140,22 @@ export async function updateProfileRole(userId, email, role) {
     });
 
     const user = normalizeUser(data?.user || { ...currentUser, id: targetId, email, role }, email);
-    persistUser(user);
+
+    if (currentUser?.id === targetId) {
+      persistUser(user);
+    }
+
     return { user, error: null };
   } catch (error) {
     return { user: null, error: error?.message || 'Unable to update role.' };
+  }
+}
+
+export async function fetchUsersForRoleManagement() {
+  try {
+    const data = await apiRequest('/api/users');
+    return Array.isArray(data?.users) ? data.users : [];
+  } catch (error) {
+    throw new Error(error?.message || 'Unable to load users.');
   }
 }

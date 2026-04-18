@@ -14,11 +14,11 @@ export default async function handler(req, res) {
       return json(res, 400, { error: 'User ID and role are required.' });
     }
 
-    const updated = await supabaseRequest(`/rest/v1/profiles?id=eq.${encodeURIComponent(userId)}`, {
-      method: 'PATCH',
+    const updated = await supabaseRequest('/rest/v1/profiles', {
+      method: 'POST',
       service: true,
-      body: { email: email || null, role },
-      prefer: 'return=representation',
+      body: [{ id: userId, email: email || null, role, active: true }],
+      prefer: 'resolution=merge-duplicates,return=representation',
     });
 
     const user = Array.isArray(updated) && updated[0] ? formatUserForClient(updated[0]) : null;
