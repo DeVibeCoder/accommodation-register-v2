@@ -3,14 +3,25 @@ import { apiRequest } from './apiClient';
 const AUTH_STORAGE_KEY = 'tic_auth_user';
 const AUTH_EVENT = 'tic-auth-change';
 
-function normalizeUser(user = {}, emailFallback = '') {
-  if (!user) return null;
+function normalizeUser(user = null, emailFallback = '') {
+  const candidate = user && typeof user === 'object' && 'user' in user ? user.user : user;
+
+  if (!candidate || typeof candidate !== 'object') {
+    return null;
+  }
+
+  const resolvedId = candidate.id || candidate.userId || candidate._id || (emailFallback || null);
+  const resolvedEmail = candidate.email || emailFallback || '';
+
+  if (!resolvedId && !resolvedEmail) {
+    return null;
+  }
 
   return {
-    id: user.id || user.userId || user._id || emailFallback || 'local-user',
-    email: user.email || emailFallback || '',
-    role: user.role || 'Viewer',
-    active: user.active !== false,
+    id: resolvedId || resolvedEmail,
+    email: resolvedEmail,
+    role: candidate.role || 'Viewer',
+    active: candidate.active !== false,
   };
 }
 
@@ -48,7 +59,7 @@ export async function signInWithApi(email, password) {
       body: { email, password },
     });
 
-    const user = normalizeUser(data?.user ?? data, email);
+    const user = normalizeUser(data, email);
 
     if (!user) {
       persistUser(null);
@@ -71,7 +82,7 @@ export async function signInWithApi(email, password) {
 export async function getSessionUser() {
   try {
     const data = await apiRequest('/api/auth/session');
-    const user = normalizeUser(data?.user ?? data);
+    const user = normalizeUser(data);
 
     if (user && user.active !== false) {
       persistUser(user);
@@ -128,7 +139,7 @@ export async function updateProfileRole(userId, email, role) {
       body: { email, role },
     });
 
-    const user = normalizeUser(data?.user ?? { ...currentUser, id: targetId, email, role }, email);
+    const user = normalizeUser(data?.user || { ...currentUser, id: targetId, email, role }, email);
     persistUser(user);
     return { user, error: null };
   } catch (error) {
