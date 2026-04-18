@@ -43,6 +43,39 @@ function normalizeRoomType(totalBeds) {
   return totalBeds === 1 ? 'Single' : `${totalBeds} Share`;
 }
 
+function normalizeImportedRoomId(value) {
+  return String(value || '')
+    .toUpperCase()
+    .replace(/[\s_/]+/g, '-')
+    .replace(/-+/g, '-')
+    .trim();
+}
+
+function resolveRoomId(rawRoomId, rooms = []) {
+  const normalized = normalizeImportedRoomId(rawRoomId);
+  if (!normalized) return '';
+
+  const exact = rooms.find(room => String(room.id || '').toUpperCase() === normalized);
+  if (exact) return exact.id;
+
+  const compact = normalized.replace(/-/g, '');
+  const compactExact = rooms.find(room => String(room.id || '').toUpperCase().replace(/-/g, '') === compact);
+  if (compactExact) return compactExact.id;
+
+  const match = normalized.match(/^(OB|FB|VTV)-?(?:(\d+)-)?(\d+)$/i);
+  if (!match) return normalized;
+
+  const [, code, floor, roomNo] = match;
+  const candidates = rooms.filter(room => {
+    const id = String(room.id || '').toUpperCase();
+    if (!id.startsWith(`${code}-`)) return false;
+    if (floor && id === `${code}-${floor}-${roomNo}`) return true;
+    return id.endsWith(`-${roomNo}`);
+  });
+
+  return candidates.length === 1 ? candidates[0].id : normalized;
+}
+
 function shortCode(value) {
   if (!value) return '-';
   const cleaned = value
@@ -603,7 +636,8 @@ function Occupancy() {
       const section = get('Section').trim();
       const department = get('Department').trim();
       const nationality = get('Nationality').trim();
-      const roomId = get('Room ID').trim().toUpperCase();
+      const rawRoomId = get('Room ID').trim();
+      const roomId = resolveRoomId(rawRoomId, roomsState);
       const bedNoStr = get('Bed No').trim();
       const fastingRaw = get('Fasting').trim().toLowerCase();
       const checkIn = get('Check-in').trim();
