@@ -2,21 +2,8 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import Sidebar from './Sidebar';
 import { Outlet } from 'react-router-dom';
-import { occupants as rawOccupants } from '../data/occupants';
-import { rooms as structuredRooms } from '../data/data';
 import { fetchOccupants as fetchOccupantsFromApi } from '../services/occupancyService';
 import { fetchRooms as fetchRoomsFromApi } from '../services/roomsService';
-
-function buildSeedRooms() {
-  return structuredRooms.map(room => ({
-    ...room,
-    beds: Array.from({ length: room.totalBeds }, (_, index) => ({
-      bedId: `Bed ${index + 1}`,
-      occupied: Boolean(room.beds?.[index]?.occupied),
-      occupant: room.beds?.[index]?.occupant ?? null,
-    })),
-  }));
-}
 
 function isCurrentRoomId(roomId = '') {
   return /^(OB|FB|VTV)-/i.test(String(roomId));
@@ -42,8 +29,8 @@ function Layout({ user, onLogout }) {
   const uidRef = useRef(1000);
   const getNextUid = () => uidRef.current++;
 
-  const [occupants, setOccupants] = useState(() => rawOccupants.map(o => ({ ...o, _id: uidRef.current++ })));
-  const [roomBaseState, setRoomsState] = useState(() => buildSeedRooms());
+  const [occupants, setOccupants] = useState([]);
+  const [roomBaseState, setRoomsState] = useState([]);
   const [stayHistory, setStayHistory] = useState(() => {
     try {
       const saved = localStorage.getItem('tic_stay_history');
@@ -79,28 +66,33 @@ function Layout({ user, onLogout }) {
     let ignore = false;
 
     (async () => {
-      const [remoteOccupants, remoteRooms] = await Promise.all([
-        fetchOccupantsFromApi(),
-        fetchRoomsFromApi(),
-      ]);
+      try {
+        const [remoteOccupants, remoteRooms] = await Promise.all([
+          fetchOccupantsFromApi(),
+          fetchRoomsFromApi(),
+        ]);
 
-      if (ignore) return;
+        if (ignore) return;
 
-      const compatibleRooms = Array.isArray(remoteRooms) ? remoteRooms.filter(room => isCurrentRoomId(room.id)) : [];
-      if (compatibleRooms.length > 0) {
-        setRoomsState(compatibleRooms);
-        console.info('[API] Rooms loaded from backend.');
-      } else {
-        console.info('[API] Keeping local room master because the backend did not return compatible room IDs.');
-      }
+        const liveRooms = Array.isArray(remoteRooms)
+          ? remoteRooms.filter(room => isCurrentRoomId(room.id))
+          : [];
 
-      const compatibleOccupants = Array.isArray(remoteOccupants) ? remoteOccupants.filter(occupant => isCurrentRoomId(occupant.roomId)) : [];
-      if (compatibleOccupants.length > 0) {
+        const liveOccupants = Array.isArray(remoteOccupants)
+          ? remoteOccupants.filter(occupant => isCurrentRoomId(occupant.roomId))
+          : [];
+
+        setRoomsState(liveRooms);
         uidRef.current = 1000;
-        setOccupants(compatibleOccupants.map(o => ({ ...o, _id: uidRef.current++ })));
-        console.info('[API] Occupancy loaded from backend.');
-      } else {
-        console.info('[API] Keeping local occupancy because the backend did not return compatible records yet.');
+        setOccupants(liveOccupants.map(o => ({ ...o, _id: uidRef.current++ })));
+
+        console.info(`[API] Loaded ${liveRooms.length} rooms and ${liveOccupants.length} occupants from backend.`);
+      } catch (error) {
+        if (!ignore) {
+          setRoomsState([]);
+          setOccupants([]);
+        }
+        console.error('[API] Failed to load live accommodation data.', error?.message || error);
       }
     })();
 

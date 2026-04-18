@@ -11,14 +11,14 @@ export default async function handler(req, res) {
       return json(res, 400, { error: 'Room ID is required.' });
     }
 
-    await supabaseRequest(`/rest/v1/rooms?room_id=eq.${encodeURIComponent(roomId)}`, {
-      method: 'PATCH',
+    const saved = await supabaseRequest('/rest/v1/rooms', {
+      method: 'POST',
       service: true,
-      body: toRoomRow({ ...payload, id: roomId }),
-      prefer: 'return=minimal',
+      body: [toRoomRow({ ...payload, id: roomId })],
+      prefer: 'resolution=merge-duplicates,return=representation',
     });
 
-    return json(res, 200, { success: true });
+    return json(res, 200, { success: true, room: Array.isArray(saved) ? saved[0] : saved });
   } catch (error) {
     return json(res, 500, { error: error.message || 'Unable to update room.' });
   }
