@@ -83,7 +83,8 @@ function Sidebar({ collapsed = false, setCollapsed, onLogout, user }) {
   const sidebarWidth = collapsed ? 70 : 220;
 
   // Role-based menu filtering
-  const role = user?.role || 'Admin';
+  const role = user?.role || 'Viewer';
+  const roleInitial = String(role).charAt(0).toUpperCase() || 'U';
   const filteredSections = navSections.map(section => {
     // Meals section hidden for Accommodation role
     if (section.label === 'Meals' && role === 'Accommodation') return null;
@@ -237,8 +238,8 @@ function Sidebar({ collapsed = false, setCollapsed, onLogout, user }) {
         </button>
         <div style={{ color: '#b6c3e0', fontSize: 11, fontWeight: 500, textAlign: 'center', margin: '0 0 2px 0', width: '100%', display: 'flex', alignItems: 'center', justifyContent: collapsed ? 'center' : 'flex-start', paddingLeft: collapsed ? 0 : 8 }}>
           <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-            <svg width="14" height="14" fill="none" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke="#b6c3e0" strokeWidth="2"/><text x="50%" y="55%" textAnchor="middle" fill="#b6c3e0" fontSize="7" fontWeight="bold" dy=".3em">A</text></svg>
-            {collapsed ? '' : 'Logged in as: Admin'}
+            <svg width="14" height="14" fill="none" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke="#b6c3e0" strokeWidth="2"/><text x="50%" y="55%" textAnchor="middle" fill="#b6c3e0" fontSize="7" fontWeight="bold" dy=".3em">{roleInitial}</text></svg>
+            {collapsed ? '' : `Logged in as: ${role}`}
           </span>
         </div>
       </div>
