@@ -1,7 +1,7 @@
 import { allowMethods, formatUserForClient, json, readBody, requireRole, supabaseRequest } from '../../_lib/supabase.js';
 
 export default async function handler(req, res) {
-  if (!allowMethods(req, res, ['PUT'])) return;
+  if (!allowMethods(req, res, ['PUT', 'POST'])) return;
 
   try {
     const admin = await requireRole(req, res, ['Admin']);
@@ -12,6 +12,10 @@ export default async function handler(req, res) {
 
     if (!userId || !role) {
       return json(res, 400, { error: 'User ID and role are required.' });
+    }
+
+    if (!['Viewer', 'Accommodation', 'Admin'].includes(role)) {
+      return json(res, 400, { error: 'Invalid role selected.' });
     }
 
     const updated = await supabaseRequest('/rest/v1/profiles', {

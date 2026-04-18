@@ -43,6 +43,8 @@ function Settings({ user, setUser }) {
   const [usersLoading, setUsersLoading] = useState(false);
   const [managedUsers, setManagedUsers] = useState([]);
   const [userSearch, setUserSearch] = useState('');
+  const [pendingRoles, setPendingRoles] = useState({});
+  const [savingRoleUserId, setSavingRoleUserId] = useState('');
   const [notice, setNotice] = useState('');
   const isAdmin = (user?.role || 'Admin') === 'Admin';
 
@@ -85,17 +87,43 @@ function Settings({ user, setUser }) {
     Viewer: managedUsers.filter(item => item.role === 'Viewer').length,
   }), [managedUsers]);
 
-  const handleManagedUserRoleChange = async (targetUser, nextRole) => {
+  const handleRoleSelectionChange = (userId, nextRole) => {
+    setPendingRoles(prev => ({ ...prev, [userId]: nextRole }));
+    setNotice('');
+  };
+
+  const handleManagedUserRoleChange = async (targetUser) => {
     if (!isAdmin) return;
 
+    const nextRole = pendingRoles[targetUser.id] || targetUser.role;
+    if (!nextRole || nextRole === targetUser.role) {
+      setNotice(`No changes to save for ${targetUser.email}.`);
+      return;
+    }
+
+    const confirmed = window.confirm(`Change ${targetUser.email} to ${nextRole}?`);
+    if (!confirmed) return;
+
+    setSavingRoleUserId(targetUser.id);
+    setNotice('');
+
     const result = await updateProfileRole(targetUser.id, targetUser.email, nextRole);
+
     if (result.user) {
       setManagedUsers(prev => prev.map(item => item.id === targetUser.id ? { ...item, role: nextRole } : item));
+      setPendingRoles(prev => {
+        const next = { ...prev };
+        delete next[targetUser.id];
+        return next;
+      });
+
       if (user?.id === targetUser.id) setUser(result.user);
       setNotice(`Updated ${targetUser.email} to ${nextRole}.`);
     } else {
       setNotice(result.error || 'Role update failed.');
     }
+
+    setSavingRoleUserId('');
   };
 
   const handleResetData = async () => {
@@ -222,7 +250,7 @@ function Settings({ user, setUser }) {
             <div style={{ display: 'flex', justifyContent: 'space-between', gap: 14, alignItems: 'center', flexWrap: 'wrap', marginBottom: 16 }}>
               <div>
                 <h2 style={{ fontWeight: 800, fontSize: '1.25rem', color: '#1e315f', margin: 0 }}>User Access Management</h2>
-                <p style={{ color: '#64748b', fontWeight: 600, margin: '6px 0 0' }}>Assign roles to newly created users directly from the app.</p>
+                <p style={{ color: '#64748b', fontWeight: 600, margin: '6px 0 0' }}>Choose a role, then save and confirm the change.</p>
               </div>
               <input
                 type="text"
@@ -251,23 +279,55 @@ function Settings({ user, setUser }) {
               <div style={{ display: 'grid', gap: 10 }}>
                 {filteredUsers.length === 0 ? (
                   <div style={{ color: '#94a3b8', fontWeight: 700, padding: '10px 0' }}>No users found.</div>
-                ) : filteredUsers.map(item => (
-                  <div key={item.id} style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1.5fr) 140px 140px 170px', gap: 12, alignItems: 'center', border: '1px solid #e2e8f0', borderRadius: 14, padding: '12px 14px', background: '#fff' }}>
-                    <div style={{ minWidth: 0 }}>
-                      <div style={{ fontWeight: 800, color: '#1e293b', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.email || 'No email'}</div>
-                      <div style={{ fontSize: 12, color: '#64748b', marginTop: 3 }}>Created: {formatDate(item.createdAt)}</div>
+                ) : filteredUsers.map(item => {
+                  const selectedRole = pendingRoles[item.id] || item.role;
+                  const hasPendingChange = selectedRole !== item.role;
+                  const isSavingThisUser = savingRoleUserId === item.id;
+
+                  return (
+                    <div key={item.id} style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1.4fr) 120px 120px minmax(220px, 1fr)', gap: 12, alignItems: 'center', border: '1px solid #e2e8f0', borderRadius: 14, padding: '12px 14px', background: '#fff' }}>
+                      <div style={{ minWidth: 0 }}>
+                        <div style={{ fontWeight: 800, color: '#1e293b', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.email || 'No email'}</div>
+                        <div style={{ fontSize: 12, color: '#64748b', marginTop: 3 }}>Created: {formatDate(item.createdAt)}</div>
+                      </div>
+                      <div style={{ fontWeight: 700, color: item.emailConfirmed ? '#166534' : '#b45309' }}>{item.emailConfirmed ? 'Confirmed' : 'Pending'}</div>
+                      <div>
+                        <span style={{ display: 'inline-flex', padding: '5px 10px', borderRadius: 999, background: '#eef2ff', color: '#3730a3', fontWeight: 800, fontSize: 12 }}>{item.role}</span>
+                      </div>
+                      <div style={{ display: 'grid', gap: 8 }}>
+                        <select value={selectedRole} onChange={e => handleRoleSelectionChange(item.id, e.target.value)} style={inputStyle} disabled={isSavingThisUser}>
+                          {roleDescriptions.map(r => (
+                            <option key={r.role} value={r.role}>{r.role}</option>
+                          ))}
+                        </select>
+
+                        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                          <button
+                            type="button"
+                            onClick={() => handleManagedUserRoleChange(item)}
+                            disabled={!hasPendingChange || isSavingThisUser}
+                            style={{ padding: '8px 12px', borderRadius: 10, border: 'none', background: !hasPendingChange || isSavingThisUser ? '#cbd5e1' : '#2563eb', color: '#fff', fontWeight: 800, cursor: !hasPendingChange || isSavingThisUser ? 'not-allowed' : 'pointer' }}
+                          >
+                            {isSavingThisUser ? 'Saving...' : 'Save Change'}
+                          </button>
+
+                          {hasPendingChange ? (
+                            <button
+                              type="button"
+                              onClick={() => setPendingRoles(prev => ({ ...prev, [item.id]: item.role }))}
+                              disabled={isSavingThisUser}
+                              style={{ padding: '8px 12px', borderRadius: 10, border: '1px solid #cbd5e1', background: '#fff', color: '#334155', fontWeight: 800, cursor: isSavingThisUser ? 'not-allowed' : 'pointer' }}
+                            >
+                              Cancel
+                            </button>
+                          ) : (
+                            <div style={{ color: '#64748b', fontSize: 12, fontWeight: 700, alignSelf: 'center' }}>No pending changes</div>
+                          )}
+                        </div>
+                      </div>
                     </div>
-                    <div style={{ fontWeight: 700, color: item.emailConfirmed ? '#166534' : '#b45309' }}>{item.emailConfirmed ? 'Confirmed' : 'Pending'}</div>
-                    <div>
-                      <span style={{ display: 'inline-flex', padding: '5px 10px', borderRadius: 999, background: '#eef2ff', color: '#3730a3', fontWeight: 800, fontSize: 12 }}>{item.role}</span>
-                    </div>
-                    <select value={item.role} onChange={e => handleManagedUserRoleChange(item, e.target.value)} style={inputStyle}>
-                      {roleDescriptions.map(r => (
-                        <option key={r.role} value={r.role}>{r.role}</option>
-                      ))}
-                    </select>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </div>

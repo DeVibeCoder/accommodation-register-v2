@@ -131,15 +131,26 @@ export async function signOutFromApi() {
 
 export async function updateProfileRole(userId, email, role) {
   const currentUser = readStoredUser();
+  const allowedRoles = ['Viewer', 'Accommodation', 'Admin'];
+  const nextRole = allowedRoles.includes(role) ? role : 'Viewer';
 
   try {
     const targetId = userId || currentUser?.id || 'me';
-    const data = await apiRequest(`/api/users/${encodeURIComponent(targetId)}/role`, {
-      method: 'PUT',
-      body: { email, role },
-    });
+    let data;
 
-    const user = normalizeUser(data?.user || { ...currentUser, id: targetId, email, role }, email);
+    try {
+      data = await apiRequest(`/api/users/${encodeURIComponent(targetId)}/role`, {
+        method: 'PUT',
+        body: { email, role: nextRole },
+      });
+    } catch {
+      data = await apiRequest(`/api/users/${encodeURIComponent(targetId)}/role`, {
+        method: 'POST',
+        body: { email, role: nextRole },
+      });
+    }
+
+    const user = normalizeUser(data?.user || { ...currentUser, id: targetId, email, role: nextRole }, email);
 
     if (currentUser?.id === targetId) {
       persistUser(user);
