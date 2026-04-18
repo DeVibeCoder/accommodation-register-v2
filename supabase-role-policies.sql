@@ -15,43 +15,23 @@ DROP POLICY IF EXISTS "Allow anon delete rooms" ON public.rooms;
 -- Profiles policies
 DROP POLICY IF EXISTS "Profiles select own or admin" ON public.profiles;
 DROP POLICY IF EXISTS "Profiles update admin only" ON public.profiles;
+DROP POLICY IF EXISTS "Profiles select own" ON public.profiles;
+DROP POLICY IF EXISTS "Profiles update own" ON public.profiles;
 
-CREATE POLICY "Profiles select own or admin"
+CREATE POLICY "Profiles select own"
 ON public.profiles
 FOR SELECT
 TO authenticated
-USING (
-  id = auth.uid()
-  OR EXISTS (
-    SELECT 1
-    FROM public.profiles me
-    WHERE me.id = auth.uid()
-      AND me.role = 'Admin'
-      AND me.active = true
-  )
-);
+USING (id = auth.uid());
 
-CREATE POLICY "Profiles update admin only"
+CREATE POLICY "Profiles update own"
 ON public.profiles
 FOR UPDATE
 TO authenticated
-USING (
-  EXISTS (
-    SELECT 1
-    FROM public.profiles me
-    WHERE me.id = auth.uid()
-      AND me.role = 'Admin'
-      AND me.active = true
-  )
-)
+USING (id = auth.uid())
 WITH CHECK (
-  EXISTS (
-    SELECT 1
-    FROM public.profiles me
-    WHERE me.id = auth.uid()
-      AND me.role = 'Admin'
-      AND me.active = true
-  )
+  id = auth.uid()
+  AND role IN ('Admin', 'Accommodation', 'Viewer')
 );
 
 -- Occupancy policies

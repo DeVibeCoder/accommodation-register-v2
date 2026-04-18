@@ -9,12 +9,22 @@ export default function Root() {
 
   useEffect(() => {
     let ignore = false;
+    const fallbackTimer = window.setTimeout(() => {
+      if (!ignore) setLoading(false);
+    }, 4000);
 
     (async () => {
-      const sessionUser = await getSessionUser();
-      if (!ignore) {
-        setUser(sessionUser);
-        setLoading(false);
+      try {
+        const sessionUser = await getSessionUser();
+        if (!ignore) {
+          setUser(sessionUser);
+        }
+      } catch (error) {
+        console.error('[Auth] Initial session check failed:', error?.message || error);
+      } finally {
+        if (!ignore) {
+          setLoading(false);
+        }
       }
     })();
 
@@ -27,6 +37,7 @@ export default function Root() {
 
     return () => {
       ignore = true;
+      window.clearTimeout(fallbackTimer);
       subscription?.unsubscribe();
     };
   }, []);

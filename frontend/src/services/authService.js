@@ -55,37 +55,44 @@ export async function signInWithSupabase(email, password) {
 }
 
 export async function getSessionUser() {
-  const { data, error } = await supabase.auth.getSession();
+  try {
+    const { data, error } = await supabase.auth.getSession();
 
-  if (error) {
-    console.error('[Supabase Auth] Failed to restore session:', error.message);
+    if (error) {
+      console.error('[Supabase Auth] Failed to restore session:', error.message);
+      return null;
+    }
+
+    const sessionUser = data?.session?.user;
+    if (!sessionUser) return null;
+
+    const profile = await fetchProfileByUserId(sessionUser.id, sessionUser.email || '');
+
+    if (profile && profile.active === false) {
+      await supabase.auth.signOut();
+      return null;
+    }
+
+    return profile;
+  } catch (error) {
+    console.error('[Supabase Auth] Unexpected session restore error:', error?.message || error);
     return null;
   }
-
-  const sessionUser = data?.session?.user;
-  if (!sessionUser) return null;
-
-  const profile = await fetchProfileByUserId(sessionUser.id, sessionUser.email || '');
-
-  if (profile && profile.active === false) {
-    await supabase.auth.signOut();
-    return null;
-  }
-
-  return profile;
 }
 
 export function subscribeToAuthChanges(callback) {
   const {
     data: { subscription },
-  } = supabase.auth.onAuthStateChange(async (_event, session) => {
-    if (!session?.user) {
-      callback(null);
-      return;
-    }
+  } = supabase.auth.onAuthStateChange((_event, session) => {
+    window.setTimeout(async () => {
+      if (!session?.user) {
+        callback(null);
+        return;
+      }
 
-    const profile = await fetchProfileByUserId(session.user.id, session.user.email || '');
-    callback(profile?.active === false ? null : profile);
+      const profile = await fetchProfileByUserId(session.user.id, session.user.email || '');
+      callback(profile?.active === false ? null : profile);
+    }, 0);
   });
 
   return subscription;
