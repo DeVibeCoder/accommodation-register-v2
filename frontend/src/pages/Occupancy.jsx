@@ -141,25 +141,104 @@ function parseCsvText(text) {
 
 /* ── Swap Modal ── */
 function SwapModal({ open, onClose, occupant, allOccupants, onSwap }) {
-  const [targetId, setTargetId] = useState('');
+  const [search, setSearch] = useState('');
+  const [targetId, setTargetId] = useState(null);
+  const searchRef = useRef(null);
+
+  React.useEffect(() => {
+    if (open) { setSearch(''); setTargetId(null); setTimeout(() => searchRef.current?.focus(), 80); }
+  }, [open]);
+
   if (!open || !occupant) return null;
+
+  const q = search.trim().toLowerCase();
   const others = allOccupants.filter(o => o._id !== occupant._id);
-  const hasTarget = targetId !== '';
+  const filtered = q
+    ? others.filter(o =>
+        o.name.toLowerCase().includes(q) ||
+        String(o.staffId).toLowerCase().includes(q) ||
+        o.roomId.toLowerCase().includes(q) ||
+        (o.section || '').toLowerCase().includes(q) ||
+        (o.department || '').toLowerCase().includes(q)
+      )
+    : others;
+  const selected = targetId != null ? others.find(o => o._id === targetId) : null;
+
   return (
     <div onClick={onClose} style={{ position:'fixed',inset:0,zIndex:3000,background:'rgba(20,30,60,.55)',display:'flex',alignItems:'center',justifyContent:'center' }}>
-      <div onClick={e=>e.stopPropagation()} style={{ background:'#fff',borderRadius:18,padding:'32px 40px',maxWidth:520,width:'95%',boxShadow:'0 8px 40px rgba(30,50,120,.18)',position:'relative' }}>
-        <button onClick={onClose} style={{ position:'absolute',top:16,right:20,fontSize:22,border:'none',background:'none',cursor:'pointer',color:'#64748b' }}>×</button>
-        <h2 style={{ fontWeight:800,fontSize:'1.15rem',marginBottom:8,color:'#1e315f' }}>Swap Occupant</h2>
-        <p style={{ fontSize:13,color:'#64748b',marginBottom:20 }}>Swapping <strong>{occupant.name}</strong> ({occupant.roomId} / Bed {occupant.bedNo}) with:</p>
-        <select value={targetId} onChange={e=>setTargetId(e.target.value)} style={{ width:'100%',padding:'10px 14px',borderRadius:10,border:'1.5px solid #d0d7e2',fontSize:14,marginBottom:24 }}>
-          <option value="">Select occupant to swap with…</option>
-          {others.map(o=>(
-            <option key={o._id} value={o._id}>{o.name} — {o.roomId} / Bed {o.bedNo}</option>
-          ))}
-        </select>
-        <div style={{ display:'flex',justifyContent:'flex-end',gap:12 }}>
-          <button onClick={onClose} style={{ padding:'9px 28px',borderRadius:10,border:'none',background:'#e3eafc',color:'#1e315f',fontWeight:700,cursor:'pointer' }}>Cancel</button>
-          <button disabled={!hasTarget} onClick={()=>{ onSwap(occupant._id, +targetId); onClose(); setTargetId(''); }} style={{ padding:'9px 28px',borderRadius:10,border:'none',background:hasTarget?'#3b82f6':'#93c5fd',color:'#fff',fontWeight:700,cursor:hasTarget?'pointer':'not-allowed' }}>Confirm Swap</button>
+      <div onClick={e=>e.stopPropagation()} style={{ background:'#fff',borderRadius:18,padding:'28px 32px',maxWidth:560,width:'95%',boxShadow:'0 8px 40px rgba(30,50,120,.18)',position:'relative',display:'flex',flexDirection:'column',maxHeight:'88vh' }}>
+        <button onClick={onClose} style={{ position:'absolute',top:14,right:18,fontSize:22,border:'none',background:'none',cursor:'pointer',color:'#64748b' }}>×</button>
+        <h2 style={{ fontWeight:800,fontSize:'1.1rem',marginBottom:4,color:'#1e315f' }}>Swap Occupant</h2>
+        <p style={{ fontSize:12,color:'#64748b',marginBottom:14 }}>
+          Swapping <strong>{occupant.name}</strong> — {occupant.roomId} / Bed {occupant.bedNo}
+        </p>
+
+        {/* Search */}
+        <div style={{ position:'relative',marginBottom:10 }}>
+          <svg style={{ position:'absolute',left:10,top:'50%',transform:'translateY(-50%)',color:'#94a3b8',pointerEvents:'none' }} width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input
+            ref={searchRef}
+            type="text"
+            placeholder="Search by name, ID, room, section…"
+            value={search}
+            onChange={e => { setSearch(e.target.value); setTargetId(null); }}
+            style={{ width:'100%',boxSizing:'border-box',paddingLeft:32,paddingRight:10,paddingTop:9,paddingBottom:9,borderRadius:10,border:'1.5px solid #d0d7e2',fontSize:13,background:'#f8fafc' }}
+          />
+        </div>
+
+        {/* Results list */}
+        <div style={{ flex:1,overflowY:'auto',border:'1.5px solid #e2e8f0',borderRadius:12,marginBottom:16,minHeight:0 }}>
+          {filtered.length === 0 && (
+            <div style={{ padding:'24px',textAlign:'center',color:'#94a3b8',fontSize:13 }}>No occupants match your search.</div>
+          )}
+          {filtered.map(o => {
+            const isSelected = o._id === targetId;
+            return (
+              <div
+                key={o._id}
+                onClick={() => setTargetId(isSelected ? null : o._id)}
+                style={{
+                  display:'grid',gridTemplateColumns:'1fr auto',alignItems:'center',gap:10,
+                  padding:'10px 14px',cursor:'pointer',
+                  background: isSelected ? '#eff6ff' : 'transparent',
+                  borderBottom:'1px solid #f1f5f9',
+                  transition:'background .12s',
+                }}
+                onMouseEnter={e => { if (!isSelected) e.currentTarget.style.background='#f8fafc'; }}
+                onMouseLeave={e => { if (!isSelected) e.currentTarget.style.background='transparent'; }}
+              >
+                <div>
+                  <div style={{ fontWeight:700,fontSize:13,color:'#1e293b' }}>{o.name}</div>
+                  <div style={{ fontSize:11,color:'#64748b',marginTop:2 }}>
+                    {o.roomId} / Bed {o.bedNo}
+                    {o.section ? <span style={{ marginLeft:8,color:'#94a3b8' }}>· {o.section}</span> : null}
+                    {o.staffId ? <span style={{ marginLeft:8,color:'#94a3b8' }}>· ID {o.staffId}</span> : null}
+                  </div>
+                </div>
+                {isSelected && (
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                )}
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Selected preview */}
+        {selected && (
+          <div style={{ background:'#eff6ff',border:'1.5px solid #bfdbfe',borderRadius:10,padding:'8px 14px',marginBottom:14,fontSize:12,color:'#1e40af' }}>
+            Swapping with: <strong>{selected.name}</strong> — {selected.roomId} / Bed {selected.bedNo}
+          </div>
+        )}
+
+        <div style={{ display:'flex',justifyContent:'flex-end',gap:10 }}>
+          <button onClick={onClose} style={{ padding:'9px 26px',borderRadius:10,border:'none',background:'#e3eafc',color:'#1e315f',fontWeight:700,cursor:'pointer' }}>Cancel</button>
+          <button
+            disabled={targetId == null}
+            onClick={() => { onSwap(occupant._id, targetId); onClose(); }}
+            style={{ padding:'9px 26px',borderRadius:10,border:'none',background:targetId!=null?'#3b82f6':'#93c5fd',color:'#fff',fontWeight:700,cursor:targetId!=null?'pointer':'not-allowed' }}
+          >
+            Confirm Swap
+          </button>
         </div>
       </div>
     </div>
@@ -516,9 +595,7 @@ function Occupancy() {
     }
 
     for (const occupant of swapped) {
-      if (occupant?.id != null) {
-        await updateOccupantRecord(occupant.id, occupant);
-      }
+      await updateOccupantRecord(occupant.id, occupant);
     }
   };
 
@@ -554,7 +631,7 @@ function Occupancy() {
 
     await syncRoomCapacities(moved ? [moved] : []);
 
-    if (moved?.id != null) {
+    if (moved) {
       await updateOccupantRecord(moved.id, moved);
     }
   };

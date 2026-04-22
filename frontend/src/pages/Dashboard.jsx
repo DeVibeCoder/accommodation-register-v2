@@ -116,7 +116,7 @@ function Dashboard() {
     const totalBeds = roomsState.reduce((sum, room) => sum + room.beds.length, 0);
     const occupied = occupants.length;
     const available = Math.max(totalBeds - occupied, 0);
-    const mealHeadcount = occupants.filter(o => String(o.status || 'active').toLowerCase() === 'active').length;
+    const mealHeadcount = occupants.length;
 
     const typeBreakdown = { Permanent: 0, Temporary: 0, Project: 0 };
     occupants.forEach(o => {

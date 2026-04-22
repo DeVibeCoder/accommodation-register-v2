@@ -13,6 +13,7 @@ export default async function handler(req, res) {
       });
 
       const occupants = Array.isArray(rows) ? rows.map(formatOccupantForClient) : [];
+      res.setHeader('Cache-Control', 'no-store');
       return json(res, 200, { occupants });
     }
 

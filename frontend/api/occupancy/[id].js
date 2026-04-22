@@ -13,6 +13,24 @@ function buildFilter(routeId, payload = {}) {
   if (payload.name) parts.push(`full_name=eq.${encodeURIComponent(payload.name)}`);
 
   return parts.join('&');
+  // routeId was set by the client to payload.id when available,
+  // so if it doesn't look like a room code, treat it as the record's DB id
+  if (routeId && !isRoomIdPattern(routeId)) {
+    return `id=eq.${encodeURIComponent(routeId)}`;
+  }
+
+  const roomId = payload.roomId || routeId;
+  const parts = [];
+
+  if (roomId) parts.push(`room_id=eq.${encodeURIComponent(roomId)}`);
+  if (payload.bedNo != null) parts.push(`bed_no=eq.${encodeURIComponent(payload.bedNo)}`);
+  if (payload.name) parts.push(`full_name=eq.${encodeURIComponent(payload.name)}`);
+
+  return parts.join('&');
+}
+
+function isRoomIdPattern(value) {
+  return /^(OB|FB|VTV)-/i.test(String(value || ''));
 }
 
 export default async function handler(req, res) {
