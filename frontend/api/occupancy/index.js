@@ -44,18 +44,15 @@ export default async function handler(req, res) {
     let inserted = null;
 
     if (row.room_id && row.bed_no != null) {
-      const existing = await supabaseRequest(
-        `/rest/v1/occupancy?select=id&room_id=eq.${encodeURIComponent(row.room_id)}&bed_no=eq.${encodeURIComponent(row.bed_no)}&limit=1`,
-        { service: true }
-      );
+      const updated = await supabaseRequest(`/rest/v1/occupancy?room_id=eq.${encodeURIComponent(row.room_id)}&bed_no=eq.${encodeURIComponent(row.bed_no)}`, {
+        method: 'PATCH',
+        service: true,
+        body: row,
+        prefer: 'return=representation',
+      });
 
-      if (Array.isArray(existing) && existing[0]?.id) {
-        inserted = await supabaseRequest(`/rest/v1/occupancy?id=eq.${encodeURIComponent(existing[0].id)}`, {
-          method: 'PATCH',
-          service: true,
-          body: row,
-          prefer: 'return=representation',
-        });
+      if (Array.isArray(updated) && updated.length > 0) {
+        inserted = updated;
       }
     }
 

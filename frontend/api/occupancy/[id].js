@@ -103,7 +103,7 @@ async function resolveLegacyCandidate(payload = {}) {
   const staffId = String(payload.staffId || match.staffId || '').trim().toLowerCase();
 
   const rows = await supabaseRequest(
-    `/rest/v1/occupancy?select=id,room_id,bed_no,staff_id,full_name&room_id=eq.${encodeURIComponent(roomId)}&order=created_at.desc&limit=100`,
+    `/rest/v1/occupancy?select=*&room_id=eq.${encodeURIComponent(roomId)}&limit=100`,
     { service: true }
   );
 
@@ -118,6 +118,20 @@ async function resolveLegacyCandidate(payload = {}) {
   }).sort((a, b) => b.score - a.score);
 
   return scored[0]?.score > 0 ? scored[0].row : null;
+}
+
+function filterFromLegacyRow(row = {}) {
+  if (row.id) return `id=eq.${encodeURIComponent(row.id)}`;
+  if (row.room_id && row.bed_no != null) {
+    return `room_id=eq.${encodeURIComponent(row.room_id)}&bed_no=eq.${encodeURIComponent(row.bed_no)}`;
+  }
+  if (row.room_id && row.full_name) {
+    return `room_id=eq.${encodeURIComponent(row.room_id)}&full_name=eq.${encodeURIComponent(row.full_name)}`;
+  }
+  if (row.room_id && row.staff_id) {
+    return `room_id=eq.${encodeURIComponent(row.room_id)}&staff_id=eq.${encodeURIComponent(row.staff_id)}`;
+  }
+  return '';
 }
 
 export default async function handler(req, res) {
@@ -153,17 +167,20 @@ export default async function handler(req, res) {
       }
 
       const legacy = await resolveLegacyCandidate(payload);
-      if (legacy?.id) {
-        const updated = await supabaseRequest(`/rest/v1/occupancy?id=eq.${encodeURIComponent(legacy.id)}`, {
+      if (legacy) {
+        const legacyFilter = filterFromLegacyRow(legacy);
+        if (legacyFilter) {
+          const updated = await supabaseRequest(`/rest/v1/occupancy?${legacyFilter}`, {
           method: 'PATCH',
           service: true,
           body,
           prefer: 'return=representation',
         });
 
-        if (Array.isArray(updated) && updated.length > 0) {
-          const occupant = formatOccupantForClient(updated[0]);
-          return json(res, 200, { occupant });
+          if (Array.isArray(updated) && updated.length > 0) {
+            const occupant = formatOccupantForClient(updated[0]);
+            return json(res, 200, { occupant });
+          }
         }
       }
 
@@ -183,15 +200,18 @@ export default async function handler(req, res) {
     }
 
     const legacy = await resolveLegacyCandidate(payload);
-    if (legacy?.id) {
-      const deleted = await supabaseRequest(`/rest/v1/occupancy?id=eq.${encodeURIComponent(legacy.id)}`, {
+    if (legacy) {
+      const legacyFilter = filterFromLegacyRow(legacy);
+      if (legacyFilter) {
+        const deleted = await supabaseRequest(`/rest/v1/occupancy?${legacyFilter}`, {
         method: 'DELETE',
         service: true,
         prefer: 'return=representation',
       });
 
-      if (Array.isArray(deleted) && deleted.length > 0) {
-        return json(res, 200, { success: true });
+        if (Array.isArray(deleted) && deleted.length > 0) {
+          return json(res, 200, { success: true });
+        }
       }
     }
 
