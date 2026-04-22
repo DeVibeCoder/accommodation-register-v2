@@ -494,6 +494,7 @@ function Occupancy() {
     const saved = await addOccupantRecord(normalized);
     if (!saved) {
       await refreshOccupantsFromBackend();
+      window.alert('Unable to add occupant to live data. Please try again.');
       return;
     }
 
@@ -524,6 +525,7 @@ function Occupancy() {
     const saved = await updateOccupantRecord(updated?.id, updated);
     if (!saved) {
       await refreshOccupantsFromBackend();
+      window.alert('Unable to save occupant changes to live data.');
       return;
     }
 
@@ -542,7 +544,10 @@ function Occupancy() {
     const deleted = await deleteOccupantRecord(occupant);
     await refreshOccupantsFromBackend();
 
-    if (!deleted) return;
+    if (!deleted) {
+      window.alert('Delete failed on live data. Please refresh and try again.');
+      return;
+    }
 
     addStayHistory?.({
       type: 'Edit',
@@ -558,7 +563,10 @@ function Occupancy() {
     const deleted = await deleteOccupantRecord(occupant);
     await refreshOccupantsFromBackend();
 
-    if (!deleted) return;
+    if (!deleted) {
+      window.alert('Check-out failed on live data. Please refresh and try again.');
+      return;
+    }
 
     addStayHistory?.({
       type: 'Check Out',
@@ -620,6 +628,8 @@ function Occupancy() {
         bedNo: `${beforeA.bedNo} ⇄ ${beforeB.bedNo}`,
         details: 'Swapped occupant room and bed assignments',
       });
+    } else if (!allSaved) {
+      window.alert('Swap failed to save on live data.');
     }
   };
 
@@ -657,6 +667,8 @@ function Occupancy() {
           bedNo: moved.bedNo,
           details: `Moved from ${original.roomId} / Bed ${original.bedNo} to ${moved.roomId} / Bed ${moved.bedNo}`,
         });
+      } else if (!saved) {
+        window.alert('Move failed to save on live data.');
       }
       return;
     }

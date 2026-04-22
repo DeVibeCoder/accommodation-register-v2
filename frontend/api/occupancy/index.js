@@ -21,13 +21,13 @@ export default async function handler(req, res) {
       const user = await requireRole(req, res, ['Admin']);
       if (!user) return;
 
-      await supabaseRequest('/rest/v1/occupancy?id=not.is.null', {
+      await supabaseRequest('/rest/v1/occupancy?room_id=not.is.null', {
         method: 'DELETE',
         service: true,
         prefer: 'return=minimal',
       });
 
-      await supabaseRequest('/rest/v1/stay_history?id=not.is.null', {
+      await supabaseRequest('/rest/v1/stay_history?action=not.is.null', {
         method: 'DELETE',
         service: true,
         prefer: 'return=minimal',

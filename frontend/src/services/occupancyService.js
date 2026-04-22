@@ -142,7 +142,7 @@ export async function updateOccupant(id, updates) {
 
 export async function deleteOccupant(idOrOccupant) {
   const target = typeof idOrOccupant === 'object' ? idOrOccupant : { id: idOrOccupant };
-  const payload = toApiPayload(target);
+  const payload = { ...toApiPayload(target), __method: 'DELETE' };
 
   try {
     const targetId = payload.match?.id ?? payload.id ?? payload.roomId ?? 'record';

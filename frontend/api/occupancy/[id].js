@@ -25,6 +25,12 @@ function buildRecordFilter(source = {}) {
 }
 
 function buildFilter(routeId, payload = {}) {
+  // For delete, target the currently selected row values first.
+  if (payload.__method === 'DELETE') {
+    const payloadFilterForDelete = buildRecordFilter(payload);
+    if (payloadFilterForDelete) return payloadFilterForDelete;
+  }
+
   const matchFilter = buildRecordFilter(payload.match || payload.__match || {});
   if (matchFilter) return matchFilter;
 
