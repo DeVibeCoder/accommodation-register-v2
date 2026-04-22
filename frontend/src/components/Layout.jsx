@@ -101,20 +101,9 @@ function Layout({ user, onLogout }) {
           ? remoteOccupants.filter(occupant => isCurrentRoomId(occupant.roomId))
           : [];
 
-        const cachedHistory = (() => {
-          try {
-            const saved = localStorage.getItem('tic_stay_history');
-            return saved ? JSON.parse(saved) : [];
-          } catch {
-            return [];
-          }
-        })();
-
-        const historyEntries = Array.isArray(remoteHistory) && remoteHistory.length > 0
+        const historyEntries = Array.isArray(remoteHistory)
           ? remoteHistory.slice(0, 500)
-          : Array.isArray(cachedHistory)
-            ? cachedHistory.slice(0, 500)
-            : [];
+          : [];
 
         setRoomsState(liveRooms);
         uidRef.current = 1000;
