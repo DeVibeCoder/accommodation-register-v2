@@ -55,29 +55,18 @@ function Layout({ user, onLogout }) {
   });
 
   const addStayHistory = (entry) => {
-    const optimisticEntry = {
-      id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+    const payload = {
       timestamp: new Date().toISOString(),
       user: user?.role || 'Admin',
       ...entry,
     };
 
-    setStayHistory(prev => {
-      const next = [optimisticEntry, ...prev].slice(0, 500);
-      try {
-        localStorage.setItem('tic_stay_history', JSON.stringify(next));
-      } catch {
-        // ignore cache write issues
-      }
-      return next;
-    });
-
     (async () => {
-      const saved = await addStayHistoryToApi(optimisticEntry);
+      const saved = await addStayHistoryToApi(payload);
       if (!saved) return;
 
       setStayHistory(prev => {
-        const next = prev.map(item => item.id === optimisticEntry.id ? saved : item);
+        const next = [saved, ...prev].slice(0, 500);
         try {
           localStorage.setItem('tic_stay_history', JSON.stringify(next));
         } catch {

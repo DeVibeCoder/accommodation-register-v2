@@ -2,6 +2,7 @@ import React, { useMemo, useRef, useState } from 'react';
 import { useOutletContext } from 'react-router-dom';
 import AddOccupantModal from '../components/AddOccupantModal';
 import {
+  fetchOccupants as fetchOccupantsFromApi,
   addOccupant as addOccupantRecord,
   updateOccupant as updateOccupantRecord,
   deleteOccupant as deleteOccupantRecord,
@@ -368,6 +369,16 @@ function Occupancy() {
   const { occupants, setOccupants, roomsState, setRoomsState, getNextUid, addStayHistory, canEditAccommodation = true } = useOutletContext();
   const importInputRef = useRef(null);
 
+  const refreshOccupantsFromBackend = async () => {
+    const remote = await fetchOccupantsFromApi();
+    const live = Array.isArray(remote)
+      ? remote.filter(item => /^(OB|FB|VTV)-/i.test(String(item?.roomId || '')))
+      : [];
+
+    setOccupants(live.map(item => ({ ...item, _id: getNextUid() })));
+    return live;
+  };
+
   const syncRoomCapacities = async (assignments = []) => {
     if (!Array.isArray(assignments) || assignments.length === 0) return;
 
@@ -480,20 +491,21 @@ function Occupancy() {
       buildingCode: buildingCodeFrom(form.roomId),
     };
 
-    setOccupants(prev => [...prev, normalized]);
-    await syncRoomCapacities([normalized]);
+    const saved = await addOccupantRecord(normalized);
+    if (!saved) {
+      await refreshOccupantsFromBackend();
+      return;
+    }
+
+    await syncRoomCapacities([saved]);
+    await refreshOccupantsFromBackend();
     addStayHistory?.({
       type: 'Check In',
-      name: normalized.name,
-      roomId: normalized.roomId,
-      bedNo: normalized.bedNo,
-      details: `Checked in to ${normalized.roomId} / Bed ${normalized.bedNo}`,
+      name: saved.name,
+      roomId: saved.roomId,
+      bedNo: saved.bedNo,
+      details: `Checked in to ${saved.roomId} / Bed ${saved.bedNo}`,
     });
-
-    const saved = await addOccupantRecord(normalized);
-    if (saved) {
-      setOccupants(prev => prev.map(o => o._id === normalized._id ? { ...o, id: saved.id ?? o.id, __match: saved.__match ?? o.__match } : o));
-    }
   };
 
   const handleEdit = async updated => {
@@ -509,23 +521,29 @@ function Occupancy() {
       });
     }
 
+    const saved = await updateOccupantRecord(updated?.id, updated);
+    if (!saved) {
+      await refreshOccupantsFromBackend();
+      return;
+    }
+
+    await refreshOccupantsFromBackend();
     addStayHistory?.({
       type: 'Edit',
-      name: updated.name,
-      roomId: updated.roomId,
-      bedNo: updated.bedNo,
+      name: saved.name,
+      roomId: saved.roomId,
+      bedNo: saved.bedNo,
       details: changedFields.length > 0 ? `Updated ${changedFields.join(', ')}` : 'Occupant details edited',
     });
-
-    const saved = await updateOccupantRecord(updated?.id, updated);
-    if (saved) {
-      setOccupants(prev => prev.map(o => o._id === updated._id ? { ...o, id: saved.id ?? o.id, __match: saved.__match ?? o.__match } : o));
-    }
   };
 
   const handleDelete = async occupant => {
     if (!occupant || !canEditAccommodation) return;
-    setOccupants(prev => prev.filter(o => o._id !== occupant._id));
+    const deleted = await deleteOccupantRecord(occupant);
+    await refreshOccupantsFromBackend();
+
+    if (!deleted) return;
+
     addStayHistory?.({
       type: 'Edit',
       name: occupant.name,
@@ -533,12 +551,15 @@ function Occupancy() {
       bedNo: occupant.bedNo,
       details: 'Occupant record deleted',
     });
-    await deleteOccupantRecord(occupant);
   };
 
   const handleCheckout = async occupant => {
     if (!occupant || !canEditAccommodation) return;
-    setOccupants(prev => prev.filter(o => o._id !== occupant._id));
+    const deleted = await deleteOccupantRecord(occupant);
+    await refreshOccupantsFromBackend();
+
+    if (!deleted) return;
+
     addStayHistory?.({
       type: 'Check Out',
       name: occupant.name,
@@ -546,7 +567,6 @@ function Occupancy() {
       bedNo: occupant.bedNo,
       details: `Checked out from ${occupant.roomId} / Bed ${occupant.bedNo}`,
     });
-    await deleteOccupantRecord(occupant);
   };
 
   const handleSwap = async (idA, idB) => {
@@ -584,7 +604,15 @@ function Occupancy() {
       return next;
     });
 
-    if (beforeA && beforeB) {
+    let allSaved = swapped.length > 0;
+    for (const occupant of swapped) {
+      const saved = await updateOccupantRecord(occupant.id, occupant);
+      if (!saved) allSaved = false;
+    }
+
+    await refreshOccupantsFromBackend();
+
+    if (allSaved && beforeA && beforeB) {
       addStayHistory?.({
         type: 'Swap',
         name: `${beforeA.name} ⇄ ${beforeB.name}`,
@@ -592,10 +620,6 @@ function Occupancy() {
         bedNo: `${beforeA.bedNo} ⇄ ${beforeB.bedNo}`,
         details: 'Swapped occupant room and bed assignments',
       });
-    }
-
-    for (const occupant of swapped) {
-      await updateOccupantRecord(occupant.id, occupant);
     }
   };
 
@@ -619,21 +643,25 @@ function Occupancy() {
       return moved;
     }));
 
-    if (original && moved) {
-      addStayHistory?.({
-        type: 'Move',
-        name: moved.name,
-        roomId: moved.roomId,
-        bedNo: moved.bedNo,
-        details: `Moved from ${original.roomId} / Bed ${original.bedNo} to ${moved.roomId} / Bed ${moved.bedNo}`,
-      });
-    }
-
     await syncRoomCapacities(moved ? [moved] : []);
 
     if (moved) {
-      await updateOccupantRecord(moved.id, moved);
+      const saved = await updateOccupantRecord(moved.id, moved);
+      await refreshOccupantsFromBackend();
+
+      if (saved && original) {
+        addStayHistory?.({
+          type: 'Move',
+          name: moved.name,
+          roomId: moved.roomId,
+          bedNo: moved.bedNo,
+          details: `Moved from ${original.roomId} / Bed ${original.bedNo} to ${moved.roomId} / Bed ${moved.bedNo}`,
+        });
+      }
+      return;
     }
+
+    await refreshOccupantsFromBackend();
   };
 
   const downloadCsv = (fileName, csvContent) => {

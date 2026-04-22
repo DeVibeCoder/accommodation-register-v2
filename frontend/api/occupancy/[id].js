@@ -9,9 +9,16 @@ function buildRecordFilter(source = {}) {
     return `id=eq.${encodeURIComponent(source.id)}`;
   }
 
+  // Room + bed is the most stable natural key in this app when DB id is absent.
+  if (source.roomId && source.bedNo != null) {
+    return `room_id=eq.${encodeURIComponent(source.roomId)}&bed_no=eq.${encodeURIComponent(source.bedNo)}`;
+  }
+
+  if (source.roomId) {
+    return `room_id=eq.${encodeURIComponent(source.roomId)}`;
+  }
+
   const parts = [];
-  if (source.roomId) parts.push(`room_id=eq.${encodeURIComponent(source.roomId)}`);
-  if (source.bedNo != null) parts.push(`bed_no=eq.${encodeURIComponent(source.bedNo)}`);
   if (source.staffId) parts.push(`staff_id=eq.${encodeURIComponent(source.staffId)}`);
   if (source.name) parts.push(`full_name=eq.${encodeURIComponent(source.name)}`);
   return parts.join('&');
