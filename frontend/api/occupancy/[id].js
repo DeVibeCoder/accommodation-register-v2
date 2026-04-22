@@ -1,36 +1,36 @@
 import { allowMethods, formatOccupantForClient, json, readBody, requireRole, supabaseRequest, toOccupancyRow } from '../_lib/supabase.js';
 
-function buildFilter(routeId, payload = {}) {
-  if (payload.id) {
-    return `id=eq.${encodeURIComponent(payload.id)}`;
+function isRoomIdPattern(value) {
+  return /^(OB|FB|VTV)-/i.test(String(value || ''));
+}
+
+function buildRecordFilter(source = {}) {
+  if (source.id) {
+    return `id=eq.${encodeURIComponent(source.id)}`;
   }
 
-  const roomId = payload.roomId || routeId;
   const parts = [];
-
-  if (roomId) parts.push(`room_id=eq.${encodeURIComponent(roomId)}`);
-  if (payload.bedNo != null) parts.push(`bed_no=eq.${encodeURIComponent(payload.bedNo)}`);
-  if (payload.name) parts.push(`full_name=eq.${encodeURIComponent(payload.name)}`);
-
+  if (source.roomId) parts.push(`room_id=eq.${encodeURIComponent(source.roomId)}`);
+  if (source.bedNo != null) parts.push(`bed_no=eq.${encodeURIComponent(source.bedNo)}`);
+  if (source.staffId) parts.push(`staff_id=eq.${encodeURIComponent(source.staffId)}`);
+  if (source.name) parts.push(`full_name=eq.${encodeURIComponent(source.name)}`);
   return parts.join('&');
-  // routeId was set by the client to payload.id when available,
-  // so if it doesn't look like a room code, treat it as the record's DB id
+}
+
+function buildFilter(routeId, payload = {}) {
+  const matchFilter = buildRecordFilter(payload.match || payload.__match || {});
+  if (matchFilter) return matchFilter;
+
+  const payloadFilter = buildRecordFilter(payload);
+  if (payloadFilter) return payloadFilter;
+
   if (routeId && !isRoomIdPattern(routeId)) {
     return `id=eq.${encodeURIComponent(routeId)}`;
   }
 
-  const roomId = payload.roomId || routeId;
-  const parts = [];
-
-  if (roomId) parts.push(`room_id=eq.${encodeURIComponent(roomId)}`);
-  if (payload.bedNo != null) parts.push(`bed_no=eq.${encodeURIComponent(payload.bedNo)}`);
-  if (payload.name) parts.push(`full_name=eq.${encodeURIComponent(payload.name)}`);
-
-  return parts.join('&');
-}
-
-function isRoomIdPattern(value) {
-  return /^(OB|FB|VTV)-/i.test(String(value || ''));
+  return routeId && isRoomIdPattern(routeId)
+    ? `room_id=eq.${encodeURIComponent(routeId)}`
+    : '';
 }
 
 export default async function handler(req, res) {
@@ -57,15 +57,23 @@ export default async function handler(req, res) {
         prefer: 'return=representation',
       });
 
+      if (!Array.isArray(updated) || updated.length === 0) {
+        return json(res, 404, { error: 'Occupancy record not found for update.' });
+      }
+
       const occupant = Array.isArray(updated) && updated[0] ? formatOccupantForClient(updated[0]) : null;
       return json(res, 200, { occupant });
     }
 
-    await supabaseRequest(`/rest/v1/occupancy?${filter}`, {
+    const deleted = await supabaseRequest(`/rest/v1/occupancy?${filter}`, {
       method: 'DELETE',
       service: true,
-      prefer: 'return=minimal',
+      prefer: 'return=representation',
     });
+
+    if (!Array.isArray(deleted) || deleted.length === 0) {
+      return json(res, 404, { error: 'Occupancy record not found for delete.' });
+    }
 
     return json(res, 200, { success: true });
   } catch (error) {

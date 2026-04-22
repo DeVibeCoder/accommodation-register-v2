@@ -59,6 +59,9 @@ export function normalizeOccupantRecord(row = {}) {
 
 function toApiPayload(occupant = {}) {
   const normalized = normalizeOccupantRecord(occupant);
+  const match = occupant?.__match && typeof occupant.__match === 'object'
+    ? occupant.__match
+    : normalized.__match;
 
   return {
     id: normalized.id ?? undefined,
@@ -76,6 +79,13 @@ function toApiPayload(occupant = {}) {
     status: normalized.status || 'Active',
     building: normalized.building || null,
     buildingCode: normalized.buildingCode || null,
+    match: {
+      id: match?.id ?? undefined,
+      roomId: match?.roomId ?? undefined,
+      bedNo: match?.bedNo ?? undefined,
+      staffId: match?.staffId ?? undefined,
+      name: match?.name ?? undefined,
+    },
   };
 }
 
@@ -116,7 +126,8 @@ export async function updateOccupant(id, updates) {
   const payload = toApiPayload(payloadSource);
 
   try {
-    const data = await apiRequest(`/api/occupancy/${encodeURIComponent(payload.id ?? payload.roomId ?? 'record')}`, {
+    const targetId = payload.match?.id ?? payload.id ?? payload.roomId ?? 'record';
+    const data = await apiRequest(`/api/occupancy/${encodeURIComponent(targetId)}`, {
       method: 'PUT',
       body: payload,
     });
@@ -134,7 +145,8 @@ export async function deleteOccupant(idOrOccupant) {
   const payload = toApiPayload(target);
 
   try {
-    await apiRequest(`/api/occupancy/${encodeURIComponent(payload.id ?? payload.roomId ?? 'record')}`, {
+    const targetId = payload.match?.id ?? payload.id ?? payload.roomId ?? 'record';
+    await apiRequest(`/api/occupancy/${encodeURIComponent(targetId)}`, {
       method: 'DELETE',
       body: payload,
     });
