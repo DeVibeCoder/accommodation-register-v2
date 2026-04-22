@@ -88,6 +88,38 @@ function buildFilterCandidates(routeId, payload = {}) {
   return uniqueFilters(candidates);
 }
 
+function toInt(value) {
+  const parsed = Number.parseInt(String(value ?? '').replace(/[^0-9-]/g, ''), 10);
+  return Number.isFinite(parsed) ? parsed : null;
+}
+
+async function resolveLegacyCandidate(payload = {}) {
+  const match = payload.match || payload.__match || {};
+  const roomId = payload.roomId || match.roomId;
+  if (!roomId) return null;
+
+  const bedNo = toInt(payload.bedNo ?? match.bedNo);
+  const name = String(payload.name || match.name || '').trim().toLowerCase();
+  const staffId = String(payload.staffId || match.staffId || '').trim().toLowerCase();
+
+  const rows = await supabaseRequest(
+    `/rest/v1/occupancy?select=id,room_id,bed_no,staff_id,full_name&room_id=eq.${encodeURIComponent(roomId)}&order=created_at.desc&limit=100`,
+    { service: true }
+  );
+
+  if (!Array.isArray(rows) || rows.length === 0) return null;
+
+  const scored = rows.map(row => {
+    let score = 0;
+    if (bedNo != null && toInt(row.bed_no) === bedNo) score += 4;
+    if (name && String(row.full_name || '').trim().toLowerCase() === name) score += 3;
+    if (staffId && String(row.staff_id || '').trim().toLowerCase() === staffId) score += 3;
+    return { row, score };
+  }).sort((a, b) => b.score - a.score);
+
+  return scored[0]?.score > 0 ? scored[0].row : null;
+}
+
 export default async function handler(req, res) {
   if (!allowMethods(req, res, ['PUT', 'DELETE'])) return;
 
@@ -120,11 +152,39 @@ export default async function handler(req, res) {
         }
       }
 
+      const legacy = await resolveLegacyCandidate(payload);
+      if (legacy?.id) {
+        const updated = await supabaseRequest(`/rest/v1/occupancy?id=eq.${encodeURIComponent(legacy.id)}`, {
+          method: 'PATCH',
+          service: true,
+          body,
+          prefer: 'return=representation',
+        });
+
+        if (Array.isArray(updated) && updated.length > 0) {
+          const occupant = formatOccupantForClient(updated[0]);
+          return json(res, 200, { occupant });
+        }
+      }
+
       return json(res, 404, { error: 'Occupancy record not found for update.' });
     }
 
     for (const filter of candidates) {
       const deleted = await supabaseRequest(`/rest/v1/occupancy?${filter}`, {
+        method: 'DELETE',
+        service: true,
+        prefer: 'return=representation',
+      });
+
+      if (Array.isArray(deleted) && deleted.length > 0) {
+        return json(res, 200, { success: true });
+      }
+    }
+
+    const legacy = await resolveLegacyCandidate(payload);
+    if (legacy?.id) {
+      const deleted = await supabaseRequest(`/rest/v1/occupancy?id=eq.${encodeURIComponent(legacy.id)}`, {
         method: 'DELETE',
         service: true,
         prefer: 'return=representation',

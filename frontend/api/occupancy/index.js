@@ -40,12 +40,33 @@ export default async function handler(req, res) {
     if (!user) return;
 
     const payload = await readBody(req);
-    const inserted = await supabaseRequest('/rest/v1/occupancy', {
-      method: 'POST',
-      service: true,
-      body: [toOccupancyRow(payload)],
-      prefer: 'return=representation',
-    });
+    const row = toOccupancyRow(payload);
+    let inserted = null;
+
+    if (row.room_id && row.bed_no != null) {
+      const existing = await supabaseRequest(
+        `/rest/v1/occupancy?select=id&room_id=eq.${encodeURIComponent(row.room_id)}&bed_no=eq.${encodeURIComponent(row.bed_no)}&limit=1`,
+        { service: true }
+      );
+
+      if (Array.isArray(existing) && existing[0]?.id) {
+        inserted = await supabaseRequest(`/rest/v1/occupancy?id=eq.${encodeURIComponent(existing[0].id)}`, {
+          method: 'PATCH',
+          service: true,
+          body: row,
+          prefer: 'return=representation',
+        });
+      }
+    }
+
+    if (!inserted) {
+      inserted = await supabaseRequest('/rest/v1/occupancy', {
+        method: 'POST',
+        service: true,
+        body: [row],
+        prefer: 'return=representation',
+      });
+    }
 
     const occupant = Array.isArray(inserted) && inserted[0] ? formatOccupantForClient(inserted[0]) : null;
     return json(res, 200, { occupant });
