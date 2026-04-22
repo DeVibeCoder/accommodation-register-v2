@@ -46,6 +46,48 @@ function buildFilter(routeId, payload = {}) {
     : '';
 }
 
+function uniqueFilters(filters = []) {
+  const seen = new Set();
+  const list = [];
+
+  for (const item of filters) {
+    const value = String(item || '').trim();
+    if (!value || seen.has(value)) continue;
+    seen.add(value);
+    list.push(value);
+  }
+
+  return list;
+}
+
+function buildFilterCandidates(routeId, payload = {}) {
+  const candidates = [];
+  const match = payload.match || payload.__match || {};
+
+  const primary = buildFilter(routeId, payload);
+  if (primary) candidates.push(primary);
+
+  if (payload.roomId && payload.name) {
+    candidates.push(`room_id=eq.${encodeURIComponent(payload.roomId)}&full_name=eq.${encodeURIComponent(payload.name)}`);
+  }
+  if (payload.roomId && payload.staffId) {
+    candidates.push(`room_id=eq.${encodeURIComponent(payload.roomId)}&staff_id=eq.${encodeURIComponent(payload.staffId)}`);
+  }
+
+  if (match.roomId && match.name) {
+    candidates.push(`room_id=eq.${encodeURIComponent(match.roomId)}&full_name=eq.${encodeURIComponent(match.name)}`);
+  }
+  if (match.roomId && match.staffId) {
+    candidates.push(`room_id=eq.${encodeURIComponent(match.roomId)}&staff_id=eq.${encodeURIComponent(match.staffId)}`);
+  }
+
+  if (routeId && !isRoomIdPattern(routeId)) {
+    candidates.push(`id=eq.${encodeURIComponent(routeId)}`);
+  }
+
+  return uniqueFilters(candidates);
+}
+
 export default async function handler(req, res) {
   if (!allowMethods(req, res, ['PUT', 'DELETE'])) return;
 
@@ -56,39 +98,44 @@ export default async function handler(req, res) {
 
     const routeId = req.query.id;
     const payload = await readBody(req);
-    const filter = buildFilter(routeId, payload);
+    const candidates = buildFilterCandidates(routeId, payload);
 
-    if (!filter) {
+    if (candidates.length === 0) {
       return json(res, 400, { error: 'Occupancy identifier is required.' });
     }
 
     if (req.method === 'PUT') {
-      const updated = await supabaseRequest(`/rest/v1/occupancy?${filter}`, {
-        method: 'PATCH',
+      const body = toOccupancyRow(payload);
+      for (const filter of candidates) {
+        const updated = await supabaseRequest(`/rest/v1/occupancy?${filter}`, {
+          method: 'PATCH',
+          service: true,
+          body,
+          prefer: 'return=representation',
+        });
+
+        if (Array.isArray(updated) && updated.length > 0) {
+          const occupant = formatOccupantForClient(updated[0]);
+          return json(res, 200, { occupant });
+        }
+      }
+
+      return json(res, 404, { error: 'Occupancy record not found for update.' });
+    }
+
+    for (const filter of candidates) {
+      const deleted = await supabaseRequest(`/rest/v1/occupancy?${filter}`, {
+        method: 'DELETE',
         service: true,
-        body: toOccupancyRow(payload),
         prefer: 'return=representation',
       });
 
-      if (!Array.isArray(updated) || updated.length === 0) {
-        return json(res, 404, { error: 'Occupancy record not found for update.' });
+      if (Array.isArray(deleted) && deleted.length > 0) {
+        return json(res, 200, { success: true });
       }
-
-      const occupant = Array.isArray(updated) && updated[0] ? formatOccupantForClient(updated[0]) : null;
-      return json(res, 200, { occupant });
     }
 
-    const deleted = await supabaseRequest(`/rest/v1/occupancy?${filter}`, {
-      method: 'DELETE',
-      service: true,
-      prefer: 'return=representation',
-    });
-
-    if (!Array.isArray(deleted) || deleted.length === 0) {
-      return json(res, 404, { error: 'Occupancy record not found for delete.' });
-    }
-
-    return json(res, 200, { success: true });
+    return json(res, 404, { error: 'Occupancy record not found for delete.' });
   } catch (error) {
     return json(res, 500, { error: error.message || 'Unable to update occupancy.' });
   }
