@@ -125,12 +125,23 @@ export async function updateOccupant(id, updates) {
   const payloadSource = id == null ? updates : { ...updates, id };
   const payload = toApiPayload(payloadSource);
 
+  if (updates?.__action) {
+    payload.__action = updates.__action;
+  }
+  if (updates?.__method) {
+    payload.__method = updates.__method;
+  }
+
   try {
     const targetId = payload.match?.id ?? payload.id ?? payload.roomId ?? 'record';
     const data = await apiRequest(`/api/occupancy/${encodeURIComponent(targetId)}`, {
       method: 'PUT',
       body: payload,
     });
+
+    if (data?.success) {
+      return { success: true };
+    }
 
     const record = data?.occupant ?? data?.data ?? data;
     return record ? normalizeOccupantRecord(record) : null;
