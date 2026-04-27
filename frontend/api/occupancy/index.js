@@ -23,15 +23,15 @@ export default async function handler(req, res) {
 
       try {
         await supabaseRequest('/rest/v1/occupancy?room_id=not.is.null', {
-          method: 'PATCH',
+          method: 'DELETE',
           service: true,
-          body: { status: 'Deleted' },
           prefer: 'return=minimal',
         });
       } catch {
         await supabaseRequest('/rest/v1/occupancy?room_id=not.is.null', {
-          method: 'DELETE',
+          method: 'PATCH',
           service: true,
+          body: { status: 'Deleted' },
           prefer: 'return=minimal',
         });
       }
