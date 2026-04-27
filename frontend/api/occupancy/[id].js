@@ -185,6 +185,29 @@ export default async function handler(req, res) {
       return json(res, 400, { error: 'Occupancy identifier is required.' });
     }
 
+    const isDeleteAction = payload.__action === 'checkout' || payload.__action === 'delete';
+    if (req.method === 'PUT' && isDeleteAction) {
+      for (const filter of candidates) {
+        const result = await runDeleteAction(filter, payload);
+        if (result.success) {
+          return json(res, 200, { success: true });
+        }
+      }
+
+      const legacy = await resolveLegacyCandidate(payload);
+      if (legacy) {
+        const legacyFilter = filterFromLegacyRow(legacy);
+        if (legacyFilter) {
+          const result = await runDeleteAction(legacyFilter, payload);
+          if (result.success) {
+            return json(res, 200, { success: true });
+          }
+        }
+      }
+
+      return json(res, 404, { error: 'Occupancy record not found for action.' });
+    }
+
     if (req.method === 'PUT') {
       const body = toOccupancyRow(payload);
       for (const filter of candidates) {
