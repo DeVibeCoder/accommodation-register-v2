@@ -51,6 +51,18 @@ function normalizeImportedRoomId(value) {
     .trim();
 }
 
+function normalizeImportedStatus(status, checkOut = '') {
+  const normalized = String(status || '').trim().toLowerCase();
+  if (!normalized) return checkOut ? 'Checked Out' : 'Active';
+  if (normalized === 'active') return 'Active';
+  if (normalized.includes('check') && normalized.includes('out')) return 'Checked Out';
+  return normalized
+    .split(/\s+/)
+    .filter(Boolean)
+    .map(part => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(' ');
+}
+
 function resolveRoomId(rawRoomId, rooms = []) {
   const normalized = normalizeImportedRoomId(rawRoomId);
   if (!normalized) return '';
@@ -785,6 +797,7 @@ function Occupancy() {
       const checkIn = get('Check-in').trim();
       const checkOut = get('Check-out').trim();
       const statusRaw = get('Status').trim();
+      const status = normalizeImportedStatus(statusRaw, checkOut);
 
       const personTypeKey = personTypeRaw.toLowerCase();
       const personType = personTypeKey ? personTypeKey[0].toUpperCase() + personTypeKey.slice(1) : '';
@@ -815,7 +828,7 @@ function Occupancy() {
         fasting: fastingRaw === 'yes',
         checkIn,
         checkOut,
-        status: statusRaw || 'Active',
+        status,
         building: buildingFrom(roomId),
         buildingCode: buildingCodeFrom(roomId),
       });
@@ -827,7 +840,6 @@ function Occupancy() {
     }
 
     await syncRoomCapacities(additions);
-    setOccupants(prev => [...prev, ...additions]);
 
     const failedIds = new Set();
     const savedByTempId = new Map();
@@ -841,20 +853,21 @@ function Occupancy() {
       }
     }
 
-    setOccupants(prev => prev.flatMap(o => {
-      if (failedIds.has(o._id)) return [];
-      const saved = savedByTempId.get(o._id);
-      return [saved ? { ...o, id: saved.id ?? o.id, __match: saved.__match ?? o.__match } : o];
-    }));
+    await refreshOccupantsFromBackend();
 
-    addStayHistory?.({
-      type: 'Edit',
-      name: 'CSV Import',
-      roomId: `${additions.length} records`,
-      details: `Imported ${savedByTempId.size} occupant records${failedIds.size ? `, ${failedIds.size} failed` : ''}`,
-    });
+    const importMessage = `Import complete. Imported: ${savedByTempId.size}. Skipped: ${skippedCount}${failedIds.size ? `. Failed to save: ${failedIds.size}` : ''}.`;
+    window.alert(importMessage);
 
-    window.alert(`Import complete. Imported: ${savedByTempId.size}. Skipped: ${skippedCount}${failedIds.size ? `. Failed to save: ${failedIds.size}` : ''}.`);
+    try {
+      addStayHistory?.({
+        type: 'Edit',
+        name: 'CSV Import',
+        roomId: `${additions.length} records`,
+        details: `Imported ${savedByTempId.size} occupant records${failedIds.size ? `, ${failedIds.size} failed` : ''}`,
+      });
+    } catch (error) {
+      console.error('[Occupancy] Unable to log CSV import history.', error);
+    }
   };
 
   const hasFilters = personTypeFilter!=='All'||buildingFilter!=='All'||idNameSearch||roomSearch;

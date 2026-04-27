@@ -322,7 +322,20 @@ export function formatOccupantForClient(row = {}) {
   };
 }
 
+function normalizeOccupancyStatus(status, checkOut = null) {
+  const normalized = String(status ?? '').trim().toLowerCase();
+  if (!normalized) return checkOut ? 'Checked Out' : 'Active';
+  if (normalized === 'active') return 'Active';
+  if (normalized.includes('check') && normalized.includes('out')) return 'Checked Out';
+  return normalized
+    .split(/\s+/)
+    .filter(Boolean)
+    .map(part => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(' ');
+}
+
 export function toOccupancyRow(payload = {}) {
+  const checkOut = payload.checkOut || null;
   return {
     person_type: payload.personType || 'Permanent',
     staff_id: payload.staffId || null,
@@ -334,8 +347,8 @@ export function toOccupancyRow(payload = {}) {
     bed_no: Number.parseInt(payload.bedNo, 10) || null,
     fasting: Boolean(payload.fasting),
     check_in: payload.checkIn || null,
-    check_out: payload.checkOut || null,
-    status: payload.status || 'Active',
+    check_out: checkOut,
+    status: normalizeOccupancyStatus(payload.status, checkOut),
     building: payload.building || null,
     building_code: payload.buildingCode || null,
   };

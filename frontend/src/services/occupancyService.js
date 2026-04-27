@@ -4,6 +4,18 @@ function firstDefined(...values) {
   return values.find(value => value !== undefined && value !== null);
 }
 
+function normalizeOccupancyStatus(status, checkOut = '') {
+  const normalized = String(status ?? '').trim().toLowerCase();
+  if (!normalized) return checkOut ? 'Checked Out' : 'Active';
+  if (normalized === 'active') return 'Active';
+  if (normalized.includes('check') && normalized.includes('out')) return 'Checked Out';
+  return normalized
+    .split(/\s+/)
+    .filter(Boolean)
+    .map(part => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(' ');
+}
+
 function toBool(value) {
   if (value === true || value === false) return value;
   const normalized = String(value ?? '').trim().toLowerCase();
@@ -29,6 +41,7 @@ export function normalizeOccupantRecord(row = {}) {
   const bedValue = firstDefined(row.bedNo, row.bed_no, row.Bed, row['Bed'], 1);
   const staffId = String(firstDefined(row.staffId, row.staff_id, row['Staff ID'], '') || '');
   const name = firstDefined(row.name, row.fullName, row.full_name, row['Staff Name'], row['Full Name'], '');
+  const checkOut = String(firstDefined(row.checkOut, row.check_out, row['Check-out'], '') || '');
 
   return {
     ...row,
@@ -43,8 +56,8 @@ export function normalizeOccupantRecord(row = {}) {
     bedNo: Number.parseInt(bedValue, 10) || 1,
     fasting: toBool(firstDefined(row.fasting, row['Fasting'], false)),
     checkIn: String(firstDefined(row.checkIn, row.check_in, row['Check-in'], '') || ''),
-    checkOut: String(firstDefined(row.checkOut, row.check_out, row['Check-out'], '') || ''),
-    status: firstDefined(row.status, row['Status'], 'Active'),
+    checkOut,
+    status: normalizeOccupancyStatus(firstDefined(row.status, row['Status'], 'Active'), checkOut),
     building: firstDefined(row.building, row.building_name, row['Building'], buildingFrom(roomId)),
     buildingCode: firstDefined(row.buildingCode, row.building_code, row['Building_Code'], buildingCodeFrom(roomId)),
     __match: {
@@ -76,7 +89,7 @@ function toApiPayload(occupant = {}) {
     fasting: Boolean(normalized.fasting),
     checkIn: normalized.checkIn || null,
     checkOut: normalized.checkOut || null,
-    status: normalized.status || 'Active',
+    status: normalizeOccupancyStatus(normalized.status, normalized.checkOut),
     building: normalized.building || null,
     buildingCode: normalized.buildingCode || null,
     match: {
