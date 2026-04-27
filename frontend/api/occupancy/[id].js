@@ -135,27 +135,6 @@ function filterFromLegacyRow(row = {}) {
 }
 
 async function runDeleteAction(filter, payload = {}) {
-  const nextStatus = payload.__action === 'checkout' ? 'Checked Out' : 'Deleted';
-  const patchBody = {
-    status: nextStatus,
-    check_out: payload.__action === 'checkout' ? (payload.checkOut || new Date().toISOString()) : (payload.checkOut || null),
-  };
-
-  try {
-    const patched = await supabaseRequest(`/rest/v1/occupancy?${filter}`, {
-      method: 'PATCH',
-      service: true,
-      body: patchBody,
-      prefer: 'return=representation',
-    });
-
-    if (Array.isArray(patched) && patched.length > 0) {
-      return { success: true, rows: patched };
-    }
-  } catch {
-    // Fall back to hard delete for legacy schemas/constraints.
-  }
-
   const deleted = await supabaseRequest(`/rest/v1/occupancy?${filter}`, {
     method: 'DELETE',
     service: true,

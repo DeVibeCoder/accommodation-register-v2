@@ -5,6 +5,7 @@ import {
   fetchOccupants as fetchOccupantsFromApi,
   addOccupant as addOccupantRecord,
   updateOccupant as updateOccupantRecord,
+  deleteOccupant as deleteOccupantRecord,
 } from '../services/occupancyService';
 import { updateRoom as updateRoomRecord } from '../services/roomsService';
 
@@ -540,11 +541,7 @@ function Occupancy() {
 
   const handleDelete = async occupant => {
     if (!occupant || !canEditAccommodation) return;
-    const deleted = await updateOccupantRecord(occupant?.id, {
-      ...occupant,
-      __action: 'delete',
-      __method: 'DELETE',
-    });
+    const deleted = await deleteOccupantRecord({ ...occupant, __action: 'delete' });
     await refreshOccupantsFromBackend();
 
     if (!deleted || deleted?.success === false) {
@@ -563,12 +560,7 @@ function Occupancy() {
 
   const handleCheckout = async occupant => {
     if (!occupant || !canEditAccommodation) return;
-    const deleted = await updateOccupantRecord(occupant?.id, {
-      ...occupant,
-      __action: 'checkout',
-      __method: 'DELETE',
-      checkOut: new Date().toISOString(),
-    });
+    const deleted = await deleteOccupantRecord({ ...occupant, __action: 'checkout', checkOut: new Date().toISOString() });
     await refreshOccupantsFromBackend();
 
     if (!deleted || deleted?.success === false) {
