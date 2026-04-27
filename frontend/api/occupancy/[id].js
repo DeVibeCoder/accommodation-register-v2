@@ -134,6 +134,41 @@ function filterFromLegacyRow(row = {}) {
   return '';
 }
 
+async function runDeleteAction(filter, payload = {}) {
+  const nextStatus = payload.__action === 'checkout' ? 'Checked Out' : 'Deleted';
+  const patchBody = {
+    status: nextStatus,
+    check_out: payload.__action === 'checkout' ? (payload.checkOut || new Date().toISOString()) : (payload.checkOut || null),
+  };
+
+  try {
+    const patched = await supabaseRequest(`/rest/v1/occupancy?${filter}`, {
+      method: 'PATCH',
+      service: true,
+      body: patchBody,
+      prefer: 'return=representation',
+    });
+
+    if (Array.isArray(patched) && patched.length > 0) {
+      return { success: true, rows: patched };
+    }
+  } catch {
+    // Fall back to hard delete for legacy schemas/constraints.
+  }
+
+  const deleted = await supabaseRequest(`/rest/v1/occupancy?${filter}`, {
+    method: 'DELETE',
+    service: true,
+    prefer: 'return=representation',
+  });
+
+  if (Array.isArray(deleted) && deleted.length > 0) {
+    return { success: true, rows: deleted };
+  }
+
+  return { success: false, rows: [] };
+}
+
 export default async function handler(req, res) {
   if (!allowMethods(req, res, ['PUT', 'DELETE'])) return;
 
@@ -187,20 +222,9 @@ export default async function handler(req, res) {
       return json(res, 404, { error: 'Occupancy record not found for update.' });
     }
 
-    const nextStatus = payload.__action === 'checkout' ? 'Checked Out' : 'Deleted';
-
     for (const filter of candidates) {
-      const deleted = await supabaseRequest(`/rest/v1/occupancy?${filter}`, {
-        method: 'PATCH',
-        service: true,
-        body: {
-          status: nextStatus,
-          check_out: payload.__action === 'checkout' ? (payload.checkOut || new Date().toISOString()) : (payload.checkOut || null),
-        },
-        prefer: 'return=representation',
-      });
-
-      if (Array.isArray(deleted) && deleted.length > 0) {
+      const result = await runDeleteAction(filter, payload);
+      if (result.success) {
         return json(res, 200, { success: true });
       }
     }
@@ -209,17 +233,8 @@ export default async function handler(req, res) {
     if (legacy) {
       const legacyFilter = filterFromLegacyRow(legacy);
       if (legacyFilter) {
-        const deleted = await supabaseRequest(`/rest/v1/occupancy?${legacyFilter}`, {
-        method: 'PATCH',
-        service: true,
-        body: {
-          status: nextStatus,
-          check_out: payload.__action === 'checkout' ? (payload.checkOut || new Date().toISOString()) : (payload.checkOut || null),
-        },
-        prefer: 'return=representation',
-      });
-
-        if (Array.isArray(deleted) && deleted.length > 0) {
+        const result = await runDeleteAction(legacyFilter, payload);
+        if (result.success) {
           return json(res, 200, { success: true });
         }
       }
