@@ -124,6 +124,7 @@ export async function addOccupant(occupant) {
 export async function updateOccupant(id, updates) {
   const payloadSource = id == null ? updates : { ...updates, id };
   const payload = toApiPayload(payloadSource);
+  payload.__operation = 'mutate';
 
   if (updates?.__action) {
     payload.__action = updates.__action;
@@ -133,8 +134,7 @@ export async function updateOccupant(id, updates) {
   }
 
   try {
-    const targetId = payload.match?.id ?? payload.id ?? payload.roomId ?? 'record';
-    const data = await apiRequest(`/api/occupancy/${encodeURIComponent(targetId)}`, {
+    const data = await apiRequest('/api/occupancy', {
       method: 'POST',
       body: payload,
     });
@@ -156,13 +156,13 @@ export async function deleteOccupant(idOrOccupant) {
   const target = typeof idOrOccupant === 'object' ? idOrOccupant : { id: idOrOccupant };
   const payload = {
     ...toApiPayload(target),
+    __operation: 'mutate',
     __method: 'DELETE',
     __action: target?.__action === 'checkout' ? 'checkout' : 'delete',
   };
 
   try {
-    const targetId = payload.match?.id ?? payload.id ?? payload.roomId ?? 'record';
-    await apiRequest(`/api/occupancy/${encodeURIComponent(targetId)}`, {
+    await apiRequest('/api/occupancy', {
       method: 'POST',
       body: payload,
     });
