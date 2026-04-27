@@ -1,5 +1,13 @@
 import { allowMethods, formatOccupantForClient, json, readBody, requireRole, supabaseRequest, toOccupancyRow } from '../_lib/supabase.js';
 
+function isActiveStatus(value) {
+  return String(value || 'Active').trim().toLowerCase() === 'active';
+}
+
+function isActiveStatus(value) {
+  return String(value || 'Active').trim().toLowerCase() === 'active';
+}
+
 function toInt(value) {
   const parsed = Number.parseInt(String(value ?? '').replace(/[^0-9-]/g, ''), 10);
   return Number.isFinite(parsed) ? parsed : null;
@@ -87,6 +95,43 @@ async function resolveTargetFilter(payload = {}) {
   return { filter: fallbackFilter, row: best.row };
 }
 
+async function findActiveConflict(row = {}, excludeId = null) {
+  if (!row?.room_id || row?.bed_no == null || !isActiveStatus(row.status)) {
+    return null;
+  }
+
+  const rows = await supabaseRequest(
+    `/rest/v1/occupancy?select=*&status=eq.Active&room_id=eq.${encodeURIComponent(row.room_id)}&bed_no=eq.${encodeURIComponent(row.bed_no)}&limit=10`,
+    { service: true }
+  );
+
+  if (!Array.isArray(rows) || rows.length === 0) {
+    return null;
+  }
+
+  return rows.find(item => String(item?.id || '') !== String(excludeId || '')) || null;
+}
+
+async function findActiveConflict(row = {}, excludeId = null) {
+  if (!row?.room_id || row?.bed_no == null || !isActiveStatus(row.status)) {
+    return null;
+  }
+
+  const rows = await supabaseRequest(
+    `/rest/v1/occupancy?select=*&status=eq.Active&room_id=eq.${encodeURIComponent(row.room_id)}&bed_no=eq.${encodeURIComponent(row.bed_no)}&limit=10`,
+    { service: true }
+  );
+
+  if (!Array.isArray(rows) || rows.length === 0) {
+    return null;
+  }
+
+  return rows.find(item => {
+    if (!excludeId) return true;
+    return String(item?.id || '') !== String(excludeId);
+  }) || null;
+}
+
 export default async function handler(req, res) {
   if (!allowMethods(req, res, ['GET', 'POST', 'DELETE'])) return;
 
@@ -149,10 +194,18 @@ export default async function handler(req, res) {
         return json(res, 500, { error: 'Occupancy action could not remove the target row.' });
       }
 
+      const nextRow = toOccupancyRow(payload);
+      const conflict = await findActiveConflict(nextRow, target.row?.id);
+      if (conflict) {
+        return json(res, 409, {
+          error: `Bed ${nextRow.bed_no} in ${nextRow.room_id} is already assigned to ${conflict.full_name || 'another active occupant'}.`,
+        });
+      }
+
       const updated = await supabaseRequest(`/rest/v1/occupancy?${target.filter}`, {
         method: 'PATCH',
         service: true,
-        body: toOccupancyRow(payload),
+        body: nextRow,
         prefer: 'return=representation',
       });
 
@@ -164,7 +217,14 @@ export default async function handler(req, res) {
     }
 
     const row = toOccupancyRow(payload);
+    const conflict = await findActiveConflict(row);
     let inserted = null;
+
+    if (conflict && !(row.room_id && row.bed_no != null)) {
+      return json(res, 409, {
+        error: `Bed ${row.bed_no} in ${row.room_id} is already assigned to ${conflict.full_name || 'another active occupant'}.`,
+      });
+    }
 
     if (row.room_id && row.bed_no != null) {
       const updated = await supabaseRequest(`/rest/v1/occupancy?room_id=eq.${encodeURIComponent(row.room_id)}&bed_no=eq.${encodeURIComponent(row.bed_no)}`, {
