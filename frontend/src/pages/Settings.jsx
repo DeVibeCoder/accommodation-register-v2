@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { useOutletContext } from 'react-router-dom';
 import { deleteManagedUser, fetchUsersForRoleManagement, sendPasswordResetForUser, updateProfileRole } from '../services/authService';
 import { clearAllOccupancyData } from '../services/occupancyService';
+import { fetchOccupancyHealth } from '../services/healthService';
 import { createRoom } from '../services/roomsService';
 
 const roleDescriptions = [
@@ -89,6 +90,8 @@ function Settings({ user, setUser }) {
   const [confirmConfig, setConfirmConfig] = useState({ open: false });
   const [confirmBusy, setConfirmBusy] = useState(false);
   const [notice, setNotice] = useState('');
+  const [healthLoading, setHealthLoading] = useState(false);
+  const [healthSummary, setHealthSummary] = useState(null);
   const isAdmin = (user?.role || 'Admin') === 'Admin';
 
   const existingRoomIds = useMemo(() => new Set(roomsState.map(room => String(room.id || '').toUpperCase())), [roomsState]);
@@ -109,6 +112,25 @@ function Settings({ user, setUser }) {
       .finally(() => {
         if (!cancelled) setUsersLoading(false);
       });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [isAdmin]);
+
+  useEffect(() => {
+    if (!isAdmin) return;
+
+    let cancelled = false;
+
+    (async () => {
+      setHealthLoading(true);
+      const result = await fetchOccupancyHealth();
+      if (!cancelled) {
+        setHealthSummary(result);
+        setHealthLoading(false);
+      }
+    })();
 
     return () => {
       cancelled = true;
@@ -326,6 +348,14 @@ function Settings({ user, setUser }) {
     }));
   };
 
+  const handleRefreshHealth = async () => {
+    if (!isAdmin || healthLoading) return;
+    setHealthLoading(true);
+    const result = await fetchOccupancyHealth();
+    setHealthSummary(result);
+    setHealthLoading(false);
+  };
+
   const handleAddRoom = async (e) => {
     e.preventDefault();
     if (!isAdmin || isSavingRoom) return;
@@ -523,6 +553,67 @@ function Settings({ user, setUser }) {
                 })}
               </div>
             )}
+          </div>
+
+          <div style={cardStyle}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', gap: 14, alignItems: 'center', flexWrap: 'wrap', marginBottom: 14 }}>
+              <div>
+                <h2 style={{ fontWeight: 800, fontSize: '1.2rem', color: '#1e315f', margin: 0 }}>System Health</h2>
+                <p style={{ color: '#64748b', fontWeight: 600, margin: '6px 0 0' }}>Backend integrity snapshot for live occupancy and stay history.</p>
+              </div>
+              <button
+                type="button"
+                onClick={handleRefreshHealth}
+                disabled={healthLoading}
+                style={{ padding: '10px 14px', borderRadius: 10, border: 'none', background: healthLoading ? '#cbd5e1' : '#1d4ed8', color: '#fff', fontWeight: 800, cursor: healthLoading ? 'not-allowed' : 'pointer' }}
+              >
+                {healthLoading ? 'Refreshing...' : 'Refresh Health'}
+              </button>
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 12, marginBottom: 14 }}>
+              <div style={{ borderRadius: 14, border: '1px solid #dbe4f0', background: '#f8fbff', padding: '14px 16px' }}>
+                <div style={{ fontSize: 12, color: '#64748b', fontWeight: 800, textTransform: 'uppercase' }}>Health Status</div>
+                <div style={{ marginTop: 8, fontWeight: 900, fontSize: 18, color: healthSummary?.ok ? '#166534' : '#b91c1c' }}>
+                  {healthLoading && !healthSummary ? 'Checking...' : (healthSummary?.ok ? 'Healthy' : 'Needs Attention')}
+                </div>
+              </div>
+              <div style={{ borderRadius: 14, border: '1px solid #dbe4f0', background: '#f8fbff', padding: '14px 16px' }}>
+                <div style={{ fontSize: 12, color: '#64748b', fontWeight: 800, textTransform: 'uppercase' }}>Active Occupants</div>
+                <div style={{ marginTop: 8, fontWeight: 900, fontSize: 18, color: '#1e315f' }}>{healthSummary?.activeOccupants ?? '-'}</div>
+              </div>
+              <div style={{ borderRadius: 14, border: '1px solid #dbe4f0', background: '#f8fbff', padding: '14px 16px' }}>
+                <div style={{ fontSize: 12, color: '#64748b', fontWeight: 800, textTransform: 'uppercase' }}>Total Occupancy Rows</div>
+                <div style={{ marginTop: 8, fontWeight: 900, fontSize: 18, color: '#1e315f' }}>{healthSummary?.totalRows ?? '-'}</div>
+              </div>
+              <div style={{ borderRadius: 14, border: '1px solid #dbe4f0', background: '#f8fbff', padding: '14px 16px' }}>
+                <div style={{ fontSize: 12, color: '#64748b', fontWeight: 800, textTransform: 'uppercase' }}>Stay History Entries</div>
+                <div style={{ marginTop: 8, fontWeight: 900, fontSize: 18, color: '#1e315f' }}>{healthSummary?.stayHistoryEntries ?? '-'}</div>
+              </div>
+            </div>
+
+            {healthSummary?.error ? (
+              <div style={{ marginBottom: 12, background: '#fef2f2', color: '#b91c1c', border: '1px solid #fecaca', borderRadius: 12, padding: '12px 14px', fontWeight: 700 }}>
+                {healthSummary.error}
+              </div>
+            ) : null}
+
+            <div style={{ color: '#475569', fontWeight: 700, fontSize: 13 }}>
+              Last checked: {healthSummary?.checkedAt ? formatDate(healthSummary.checkedAt) : 'Not checked yet'}
+            </div>
+
+            {Array.isArray(healthSummary?.duplicateActiveBeds) && healthSummary.duplicateActiveBeds.length > 0 ? (
+              <div style={{ marginTop: 14, borderRadius: 14, border: '1px solid #fecaca', background: '#fff5f5', padding: '14px 16px' }}>
+                <div style={{ fontWeight: 900, color: '#b91c1c', marginBottom: 8 }}>Duplicate Active Bed Assignments</div>
+                <div style={{ display: 'grid', gap: 8 }}>
+                  {healthSummary.duplicateActiveBeds.map(item => (
+                    <div key={item.key} style={{ color: '#7f1d1d', fontWeight: 700, fontSize: 13 }}>
+                      {item.key}: {item.occupants.join(', ')}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ) : null}
           </div>
 
           <div style={cardStyle}>
