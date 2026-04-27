@@ -163,7 +163,7 @@ export async function deleteOccupant(idOrOccupant) {
   try {
     const targetId = payload.match?.id ?? payload.id ?? payload.roomId ?? 'record';
     await apiRequest(`/api/occupancy/${encodeURIComponent(targetId)}`, {
-      method: 'DELETE',
+      method: 'PUT',
       body: payload,
     });
 
