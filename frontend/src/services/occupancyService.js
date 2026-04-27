@@ -135,7 +135,7 @@ export async function updateOccupant(id, updates) {
   try {
     const targetId = payload.match?.id ?? payload.id ?? payload.roomId ?? 'record';
     const data = await apiRequest(`/api/occupancy/${encodeURIComponent(targetId)}`, {
-      method: 'PUT',
+      method: 'POST',
       body: payload,
     });
 
@@ -163,7 +163,7 @@ export async function deleteOccupant(idOrOccupant) {
   try {
     const targetId = payload.match?.id ?? payload.id ?? payload.roomId ?? 'record';
     await apiRequest(`/api/occupancy/${encodeURIComponent(targetId)}`, {
-      method: 'PUT',
+      method: 'POST',
       body: payload,
     });
 

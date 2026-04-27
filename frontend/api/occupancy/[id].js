@@ -171,10 +171,10 @@ async function findTargetRow(candidates = [], payload = {}) {
 }
 
 export default async function handler(req, res) {
-  if (!allowMethods(req, res, ['PUT', 'DELETE'])) return;
+  if (!allowMethods(req, res, ['PUT', 'POST', 'DELETE'])) return;
 
   try {
-    const allowedRoles = req.method === 'DELETE' ? ['Admin', 'Accommodation'] : ['Admin', 'Accommodation'];
+    const allowedRoles = ['Admin', 'Accommodation'];
     const user = await requireRole(req, res, allowedRoles);
     if (!user) return;
 
@@ -187,7 +187,7 @@ export default async function handler(req, res) {
     }
 
     const isDeleteAction = payload.__action === 'checkout' || payload.__action === 'delete';
-    if (req.method === 'PUT' && isDeleteAction) {
+    if ((req.method === 'PUT' || req.method === 'POST') && isDeleteAction) {
       const target = await findTargetRow(candidates, payload);
       if (!target.row || !target.filter) {
         return json(res, 404, {
@@ -205,7 +205,7 @@ export default async function handler(req, res) {
       });
     }
 
-    if (req.method === 'PUT') {
+    if (req.method === 'PUT' || req.method === 'POST') {
       const body = toOccupancyRow(payload);
       const target = await findTargetRow(candidates, payload);
       if (!target.row || !target.filter) {
