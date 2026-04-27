@@ -169,6 +169,28 @@ async function runDeleteAction(filter, payload = {}) {
   return { success: false, rows: [] };
 }
 
+async function findTargetRow(candidates = [], payload = {}) {
+  for (const filter of candidates) {
+    const rows = await supabaseRequest(`/rest/v1/occupancy?select=*&${filter}&limit=5`, {
+      service: true,
+    });
+
+    if (Array.isArray(rows) && rows.length > 0) {
+      return { row: rows[0], filter, source: 'candidate' };
+    }
+  }
+
+  const legacy = await resolveLegacyCandidate(payload);
+  if (legacy) {
+    const legacyFilter = filterFromLegacyRow(legacy);
+    if (legacyFilter) {
+      return { row: legacy, filter: legacyFilter, source: 'legacy' };
+    }
+  }
+
+  return { row: null, filter: '', source: 'none' };
+}
+
 export default async function handler(req, res) {
   if (!allowMethods(req, res, ['PUT', 'DELETE'])) return;
 
@@ -187,83 +209,60 @@ export default async function handler(req, res) {
 
     const isDeleteAction = payload.__action === 'checkout' || payload.__action === 'delete';
     if (req.method === 'PUT' && isDeleteAction) {
-      for (const filter of candidates) {
-        const result = await runDeleteAction(filter, payload);
-        if (result.success) {
-          return json(res, 200, { success: true });
-        }
+      const target = await findTargetRow(candidates, payload);
+      if (!target.row || !target.filter) {
+        return json(res, 404, {
+          error: `Occupancy action target not found. routeId=${String(routeId || '')}; room=${String(payload.roomId || payload.match?.roomId || '')}; bed=${String(payload.bedNo ?? payload.match?.bedNo ?? '')}; name=${String(payload.name || payload.match?.name || '')}`,
+        });
       }
 
-      const legacy = await resolveLegacyCandidate(payload);
-      if (legacy) {
-        const legacyFilter = filterFromLegacyRow(legacy);
-        if (legacyFilter) {
-          const result = await runDeleteAction(legacyFilter, payload);
-          if (result.success) {
-            return json(res, 200, { success: true });
-          }
-        }
+      const result = await runDeleteAction(target.filter, payload);
+      if (result.success) {
+        return json(res, 200, { success: true });
       }
 
-      return json(res, 404, { error: 'Occupancy record not found for action.' });
+      return json(res, 500, {
+        error: `Occupancy action failed after resolving target via ${target.source} filter ${target.filter}`,
+      });
     }
 
     if (req.method === 'PUT') {
       const body = toOccupancyRow(payload);
-      for (const filter of candidates) {
-        const updated = await supabaseRequest(`/rest/v1/occupancy?${filter}`, {
-          method: 'PATCH',
-          service: true,
-          body,
-          prefer: 'return=representation',
+      const target = await findTargetRow(candidates, payload);
+      if (!target.row || !target.filter) {
+        return json(res, 404, {
+          error: `Occupancy update target not found. routeId=${String(routeId || '')}; room=${String(payload.roomId || payload.match?.roomId || '')}; bed=${String(payload.bedNo ?? payload.match?.bedNo ?? '')}; name=${String(payload.name || payload.match?.name || '')}`,
         });
-
-        if (Array.isArray(updated) && updated.length > 0) {
-          const occupant = formatOccupantForClient(updated[0]);
-          return json(res, 200, { occupant });
-        }
       }
 
-      const legacy = await resolveLegacyCandidate(payload);
-      if (legacy) {
-        const legacyFilter = filterFromLegacyRow(legacy);
-        if (legacyFilter) {
-          const updated = await supabaseRequest(`/rest/v1/occupancy?${legacyFilter}`, {
-          method: 'PATCH',
-          service: true,
-          body,
-          prefer: 'return=representation',
-        });
+      const updated = await supabaseRequest(`/rest/v1/occupancy?${target.filter}`, {
+        method: 'PATCH',
+        service: true,
+        body,
+        prefer: 'return=representation',
+      });
 
-          if (Array.isArray(updated) && updated.length > 0) {
-            const occupant = formatOccupantForClient(updated[0]);
-            return json(res, 200, { occupant });
-          }
-        }
+      if (Array.isArray(updated) && updated.length > 0) {
+        const occupant = formatOccupantForClient(updated[0]);
+        return json(res, 200, { occupant });
       }
 
-      return json(res, 404, { error: 'Occupancy record not found for update.' });
+      return json(res, 500, { error: `Occupancy update failed after resolving target via ${target.source} filter ${target.filter}` });
     }
 
-    for (const filter of candidates) {
-      const result = await runDeleteAction(filter, payload);
-      if (result.success) {
-        return json(res, 200, { success: true });
-      }
+    const target = await findTargetRow(candidates, payload);
+    if (!target.row || !target.filter) {
+      return json(res, 404, {
+        error: `Occupancy delete target not found. routeId=${String(routeId || '')}; room=${String(payload.roomId || payload.match?.roomId || '')}; bed=${String(payload.bedNo ?? payload.match?.bedNo ?? '')}; name=${String(payload.name || payload.match?.name || '')}`,
+      });
     }
 
-    const legacy = await resolveLegacyCandidate(payload);
-    if (legacy) {
-      const legacyFilter = filterFromLegacyRow(legacy);
-      if (legacyFilter) {
-        const result = await runDeleteAction(legacyFilter, payload);
-        if (result.success) {
-          return json(res, 200, { success: true });
-        }
-      }
+    const result = await runDeleteAction(target.filter, payload);
+    if (result.success) {
+      return json(res, 200, { success: true });
     }
 
-    return json(res, 404, { error: 'Occupancy record not found for delete.' });
+    return json(res, 500, { error: `Occupancy delete failed after resolving target via ${target.source} filter ${target.filter}` });
   } catch (error) {
     return json(res, 500, { error: error.message || 'Unable to update occupancy.' });
   }

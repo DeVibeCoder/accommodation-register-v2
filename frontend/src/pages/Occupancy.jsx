@@ -522,9 +522,9 @@ function Occupancy() {
     }
 
     const saved = await updateOccupantRecord(updated?.id, updated);
-    if (!saved) {
+    if (!saved || saved?.success === false) {
       await refreshOccupantsFromBackend();
-      window.alert('Unable to save occupant changes to live data.');
+      window.alert(saved?.error || 'Unable to save occupant changes to live data.');
       return;
     }
 
@@ -547,8 +547,8 @@ function Occupancy() {
     });
     await refreshOccupantsFromBackend();
 
-    if (!deleted) {
-      window.alert('Delete failed on live data. Please refresh and try again.');
+    if (!deleted || deleted?.success === false) {
+      window.alert(deleted?.error || 'Delete failed on live data. Please refresh and try again.');
       return;
     }
 
@@ -571,8 +571,8 @@ function Occupancy() {
     });
     await refreshOccupantsFromBackend();
 
-    if (!deleted) {
-      window.alert('Check-out failed on live data. Please refresh and try again.');
+    if (!deleted || deleted?.success === false) {
+      window.alert(deleted?.error || 'Check-out failed on live data. Please refresh and try again.');
       return;
     }
 
@@ -623,7 +623,7 @@ function Occupancy() {
     let allSaved = swapped.length > 0;
     for (const occupant of swapped) {
       const saved = await updateOccupantRecord(occupant.id, occupant);
-      if (!saved) allSaved = false;
+      if (!saved || saved?.success === false) allSaved = false;
     }
 
     await refreshOccupantsFromBackend();
@@ -667,7 +667,7 @@ function Occupancy() {
       const saved = await updateOccupantRecord(moved.id, moved);
       await refreshOccupantsFromBackend();
 
-      if (saved && original) {
+      if (saved && saved?.success !== false && original) {
         addStayHistory?.({
           type: 'Move',
           name: moved.name,
@@ -675,8 +675,8 @@ function Occupancy() {
           bedNo: moved.bedNo,
           details: `Moved from ${original.roomId} / Bed ${original.bedNo} to ${moved.roomId} / Bed ${moved.bedNo}`,
         });
-      } else if (!saved) {
-        window.alert('Move failed to save on live data.');
+      } else if (!saved || saved?.success === false) {
+        window.alert(saved?.error || 'Move failed to save on live data.');
       }
       return;
     }

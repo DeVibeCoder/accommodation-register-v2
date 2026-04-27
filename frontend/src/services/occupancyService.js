@@ -146,8 +146,9 @@ export async function updateOccupant(id, updates) {
     const record = data?.occupant ?? data?.data ?? data;
     return record ? normalizeOccupantRecord(record) : null;
   } catch (error) {
-    console.error('[API] Unable to update occupant. UI changes were preserved locally.', error.message || error);
-    return null;
+    const message = error?.message || 'Unable to update occupant.';
+    console.error('[API] Unable to update occupant. UI changes were preserved locally.', message);
+    return { success: false, error: message };
   }
 }
 
@@ -168,8 +169,9 @@ export async function deleteOccupant(idOrOccupant) {
 
     return true;
   } catch (error) {
-    console.error('[API] Unable to delete occupant from backend. Record was removed only from local UI.', error.message || error);
-    return null;
+    const message = error?.message || 'Unable to delete occupant from backend.';
+    console.error('[API] Unable to delete occupant from backend. Record was removed only from local UI.', message);
+    return { success: false, error: message };
   }
 }
 
