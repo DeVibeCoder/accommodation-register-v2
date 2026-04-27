@@ -4,6 +4,7 @@ import AddOccupantModal from '../components/AddOccupantModal';
 import {
   fetchOccupants as fetchOccupantsFromApi,
   addOccupant as addOccupantRecord,
+  importOccupants as importOccupantsRecord,
   updateOccupant as updateOccupantRecord,
 } from '../services/occupancyService';
 import { updateRoom as updateRoomRecord } from '../services/roomsService';
@@ -764,109 +765,94 @@ function Occupancy() {
     e.target.value = '';
     if (!file) return;
 
-    const text = await file.text();
-    const parsed = parseCsvText(text);
-    const normalizedExpected = OCCUPANCY_TEMPLATE_HEADERS.map(normalizeHeader);
-    const normalizedHeaders = parsed.headers.map(normalizeHeader);
-    const isExactTemplate = normalizedExpected.every((h, idx) => normalizedHeaders[idx] === h);
-
-    if (!isExactTemplate) {
-      window.alert('Import failed: CSV does not match the occupancy template format. Please use the Template file.');
-      return;
-    }
-
-    const roomIds = new Set(roomsState.map(r => r.id));
-    const validTypes = new Set(['permanent', 'temporary', 'project']);
-    const rows = parsed.rows;
-    const occupiedBeds = new Set(occupants.map(o => `${o.roomId}::${o.bedNo}`));
-    const additions = [];
-    let skippedCount = 0;
-
-    for (const cols of rows) {
-      const get = header => cols[OCCUPANCY_TEMPLATE_HEADERS.indexOf(header)] ?? '';
-      const personTypeRaw = get('Person Type').trim();
-      const staffId = get('Staff ID').trim();
-      const fullName = get('Full Name').trim();
-      const section = get('Section').trim();
-      const department = get('Department').trim();
-      const nationality = get('Nationality').trim();
-      const rawRoomId = get('Room ID').trim();
-      const roomId = resolveRoomId(rawRoomId, roomsState);
-      const bedNoStr = get('Bed No').trim();
-      const fastingRaw = get('Fasting').trim().toLowerCase();
-      const checkIn = get('Check-in').trim();
-      const checkOut = get('Check-out').trim();
-      const statusRaw = get('Status').trim();
-      const status = normalizeImportedStatus(statusRaw, checkOut);
-
-      const personTypeKey = personTypeRaw.toLowerCase();
-      const personType = personTypeKey ? personTypeKey[0].toUpperCase() + personTypeKey.slice(1) : '';
-      const bedNo = parseInt(bedNoStr, 10);
-
-      if (!validTypes.has(personTypeKey) || !fullName || !roomId || !Number.isFinite(bedNo) || !roomIds.has(roomId)) {
-        skippedCount += 1;
-        continue;
-      }
-
-      const bedKey = `${roomId}::${bedNo}`;
-      if (occupiedBeds.has(bedKey)) {
-        skippedCount += 1;
-        continue;
-      }
-
-      occupiedBeds.add(bedKey);
-      additions.push({
-        _id: getNextUid(),
-        personType,
-        staffId,
-        name: fullName,
-        section,
-        department,
-        nationality,
-        roomId,
-        bedNo,
-        fasting: fastingRaw === 'yes',
-        checkIn,
-        checkOut,
-        status,
-        building: buildingFrom(roomId),
-        buildingCode: buildingCodeFrom(roomId),
-      });
-    }
-
-    if (additions.length === 0) {
-      window.alert(`Import complete. Imported: 0. Skipped: ${skippedCount}.`);
-      return;
-    }
-
-    await syncRoomCapacities(additions);
-
-    const failedIds = new Set();
-    const savedByTempId = new Map();
-
-    for (const addition of additions) {
-      const saved = await addOccupantRecord(addition);
-      if (saved) {
-        savedByTempId.set(addition._id, saved);
-      } else {
-        failedIds.add(addition._id);
-      }
-    }
-
-    await refreshOccupantsFromBackend();
-
-    const importMessage = `Import complete. Imported: ${savedByTempId.size}. Skipped: ${skippedCount}${failedIds.size ? `. Failed to save: ${failedIds.size}` : ''}.`;
-    window.alert(importMessage);
-
     try {
-      addStayHistory?.({
-        type: 'Edit',
-        name: 'CSV Import',
-        roomId: `${additions.length} records`,
-        details: `Imported ${savedByTempId.size} occupant records${failedIds.size ? `, ${failedIds.size} failed` : ''}`,
-      });
+      const text = await file.text();
+      const parsed = parseCsvText(text);
+      const normalizedExpected = OCCUPANCY_TEMPLATE_HEADERS.map(normalizeHeader);
+      const normalizedHeaders = parsed.headers.map(normalizeHeader);
+      const isExactTemplate = normalizedExpected.every((h, idx) => normalizedHeaders[idx] === h);
+
+      if (!isExactTemplate) {
+        window.alert('Import failed: CSV does not match the occupancy template format. Please use the Template file.');
+        return;
+      }
+
+      const roomIds = new Set(roomsState.map(r => r.id));
+      const validTypes = new Set(['permanent', 'temporary', 'project']);
+      const rows = parsed.rows;
+      const additions = [];
+      let skippedCount = 0;
+
+      for (const cols of rows) {
+        const get = header => cols[OCCUPANCY_TEMPLATE_HEADERS.indexOf(header)] ?? '';
+        const personTypeRaw = get('Person Type').trim();
+        const staffId = get('Staff ID').trim();
+        const fullName = get('Full Name').trim();
+        const section = get('Section').trim();
+        const department = get('Department').trim();
+        const nationality = get('Nationality').trim();
+        const rawRoomId = get('Room ID').trim();
+        const roomId = resolveRoomId(rawRoomId, roomsState);
+        const bedNoStr = get('Bed No').trim();
+        const fastingRaw = get('Fasting').trim().toLowerCase();
+        const checkIn = get('Check-in').trim();
+        const checkOut = get('Check-out').trim();
+        const statusRaw = get('Status').trim();
+        const status = normalizeImportedStatus(statusRaw, checkOut);
+
+        const personTypeKey = personTypeRaw.toLowerCase();
+        const personType = personTypeKey ? personTypeKey[0].toUpperCase() + personTypeKey.slice(1) : '';
+        const bedNo = parseInt(bedNoStr, 10);
+
+        if (!validTypes.has(personTypeKey) || !fullName || !roomId || !Number.isFinite(bedNo) || !roomIds.has(roomId)) {
+          skippedCount += 1;
+          continue;
+        }
+
+        additions.push({
+          _id: getNextUid(),
+          personType,
+          staffId,
+          name: fullName,
+          section,
+          department,
+          nationality,
+          roomId,
+          bedNo,
+          fasting: fastingRaw === 'yes',
+          checkIn,
+          checkOut,
+          status,
+          building: buildingFrom(roomId),
+          buildingCode: buildingCodeFrom(roomId),
+        });
+      }
+
+      if (additions.length === 0) {
+        window.alert(`Import complete. Imported: 0. Skipped: ${skippedCount}.`);
+        return;
+      }
+
+      await syncRoomCapacities(additions);
+      const result = await importOccupantsRecord(additions);
+      await refreshOccupantsFromBackend();
+
+      const importMessage = `Import complete. Imported: ${result.imported}. Skipped: ${skippedCount + result.skipped}.`;
+      window.alert(importMessage);
+
+      try {
+        addStayHistory?.({
+          type: 'Edit',
+          name: 'CSV Import',
+          roomId: `${additions.length} records`,
+          details: `Imported ${result.imported} occupant records${(skippedCount + result.skipped) ? `, ${(skippedCount + result.skipped)} skipped` : ''}`,
+        });
+      } catch (error) {
+        console.error('[Occupancy] Unable to log CSV import history.', error);
+      }
     } catch (error) {
-      console.error('[Occupancy] Unable to log CSV import history.', error);
+      console.error('[Occupancy] Import failed.', error);
+      window.alert(error?.message || 'Import failed while saving occupancy data.');
     }
   };
 

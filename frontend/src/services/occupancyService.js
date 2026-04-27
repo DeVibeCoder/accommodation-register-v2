@@ -137,6 +137,26 @@ export async function addOccupant(occupant) {
   }
 }
 
+export async function importOccupants(occupants = []) {
+  const payload = {
+    occupants: Array.isArray(occupants)
+      ? occupants.map(item => toApiPayload(item))
+      : [],
+  };
+
+  const data = await apiRequest('/api/occupancy/import', {
+    method: 'POST',
+    body: payload,
+  });
+
+  return {
+    imported: Number(data?.imported || 0),
+    updated: Number(data?.updated || 0),
+    inserted: Number(data?.inserted || 0),
+    skipped: Number(data?.skipped || 0),
+  };
+}
+
 export async function updateOccupant(id, updates) {
   const payloadSource = id == null ? updates : { ...updates, id };
   const payload = toApiPayload(payloadSource);
