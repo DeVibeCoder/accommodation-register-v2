@@ -541,7 +541,7 @@ function Occupancy() {
 
   const handleDelete = async occupant => {
     if (!occupant || !canEditAccommodation) return;
-    const deleted = await deleteOccupantRecord(occupant);
+    const deleted = await deleteOccupantRecord({ ...occupant, __action: 'delete' });
     await refreshOccupantsFromBackend();
 
     if (!deleted) {
@@ -560,7 +560,7 @@ function Occupancy() {
 
   const handleCheckout = async occupant => {
     if (!occupant || !canEditAccommodation) return;
-    const deleted = await deleteOccupantRecord(occupant);
+    const deleted = await deleteOccupantRecord({ ...occupant, __action: 'checkout' });
     await refreshOccupantsFromBackend();
 
     if (!deleted) {

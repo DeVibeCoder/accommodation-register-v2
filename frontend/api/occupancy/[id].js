@@ -187,10 +187,16 @@ export default async function handler(req, res) {
       return json(res, 404, { error: 'Occupancy record not found for update.' });
     }
 
+    const nextStatus = payload.__action === 'checkout' ? 'Checked Out' : 'Deleted';
+
     for (const filter of candidates) {
       const deleted = await supabaseRequest(`/rest/v1/occupancy?${filter}`, {
-        method: 'DELETE',
+        method: 'PATCH',
         service: true,
+        body: {
+          status: nextStatus,
+          check_out: payload.__action === 'checkout' ? (payload.checkOut || new Date().toISOString()) : (payload.checkOut || null),
+        },
         prefer: 'return=representation',
       });
 
@@ -204,8 +210,12 @@ export default async function handler(req, res) {
       const legacyFilter = filterFromLegacyRow(legacy);
       if (legacyFilter) {
         const deleted = await supabaseRequest(`/rest/v1/occupancy?${legacyFilter}`, {
-        method: 'DELETE',
+        method: 'PATCH',
         service: true,
+        body: {
+          status: nextStatus,
+          check_out: payload.__action === 'checkout' ? (payload.checkOut || new Date().toISOString()) : (payload.checkOut || null),
+        },
         prefer: 'return=representation',
       });
 

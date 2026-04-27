@@ -8,7 +8,7 @@ export default async function handler(req, res) {
       const user = await requireRole(req, res, []);
       if (!user) return;
 
-      const rows = await supabaseRequest('/rest/v1/occupancy?select=*&order=created_at.desc', {
+      const rows = await supabaseRequest('/rest/v1/occupancy?select=*&status=eq.Active&order=room_id.asc&order=bed_no.asc', {
         service: true,
       });
 
@@ -22,8 +22,9 @@ export default async function handler(req, res) {
       if (!user) return;
 
       await supabaseRequest('/rest/v1/occupancy?room_id=not.is.null', {
-        method: 'DELETE',
+        method: 'PATCH',
         service: true,
+        body: { status: 'Deleted' },
         prefer: 'return=minimal',
       });
 
