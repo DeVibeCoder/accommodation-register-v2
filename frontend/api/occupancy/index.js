@@ -1,4 +1,4 @@
-import { allowMethods, formatOccupantForClient, json, readBody, requireRole, supabaseRequest, toOccupancyRow } from '../_lib/supabase.js';
+import { allowMethods, formatOccupantForClient, json, readBody, requireRole, supabaseRequest, toOccupancyRow, toStayHistoryRow } from '../_lib/supabase.js';
 
 function isActiveStatus(value) {
   return String(value || 'Active').trim().toLowerCase() === 'active';
@@ -112,6 +112,21 @@ async function findActiveConflict(row = {}, excludeId = null) {
   return rows.find(item => String(item?.id || '') !== String(excludeId || '')) || null;
 }
 
+async function writeHistoryIfProvided(payload = {}, user = {}) {
+  const history = payload?.__history;
+  if (!history || typeof history !== 'object') return;
+
+  await supabaseRequest('/rest/v1/stay_history', {
+    method: 'POST',
+    service: true,
+    body: [{
+      ...toStayHistoryRow({ ...history, user: user?.role || null }),
+      created_by: user?.id || null,
+    }],
+    prefer: 'return=minimal',
+  });
+}
+
 async function findActiveConflict(row = {}, excludeId = null) {
   if (!row?.room_id || row?.bed_no == null || !isActiveStatus(row.status)) {
     return null;
@@ -188,6 +203,7 @@ export default async function handler(req, res) {
         });
 
         if (Array.isArray(removed) && removed.length > 0) {
+          await writeHistoryIfProvided(payload, user);
           return json(res, 200, { success: true });
         }
 
@@ -210,6 +226,7 @@ export default async function handler(req, res) {
       });
 
       if (Array.isArray(updated) && updated[0]) {
+        await writeHistoryIfProvided(payload, user);
         return json(res, 200, { occupant: formatOccupantForClient(updated[0]) });
       }
 
@@ -249,6 +266,9 @@ export default async function handler(req, res) {
     }
 
     const occupant = Array.isArray(inserted) && inserted[0] ? formatOccupantForClient(inserted[0]) : null;
+    if (occupant) {
+      await writeHistoryIfProvided(payload, user);
+    }
     return json(res, 200, { occupant });
   } catch (error) {
     return json(res, 500, { error: error.message || 'Unable to process occupancy request.' });

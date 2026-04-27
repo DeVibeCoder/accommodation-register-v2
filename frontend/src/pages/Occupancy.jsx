@@ -490,7 +490,16 @@ function Occupancy() {
       buildingCode: buildingCodeFrom(form.roomId),
     };
 
-    const saved = await addOccupantRecord(normalized);
+    const saved = await addOccupantRecord({
+      ...normalized,
+      __history: {
+        type: 'Check In',
+        name: normalized.name,
+        roomId: normalized.roomId,
+        bedNo: normalized.bedNo,
+        details: `Checked in to ${normalized.roomId} / Bed ${normalized.bedNo}`,
+      },
+    });
     if (!saved) {
       await refreshOccupantsFromBackend();
       window.alert('Unable to add occupant to live data. Please try again.');
@@ -499,13 +508,6 @@ function Occupancy() {
 
     await syncRoomCapacities([saved]);
     await refreshOccupantsFromBackend();
-    addStayHistory?.({
-      type: 'Check In',
-      name: saved.name,
-      roomId: saved.roomId,
-      bedNo: saved.bedNo,
-      details: `Checked in to ${saved.roomId} / Bed ${saved.bedNo}`,
-    });
   };
 
   const handleEdit = async updated => {
@@ -521,7 +523,16 @@ function Occupancy() {
       });
     }
 
-    const saved = await updateOccupantRecord(updated?.id, updated);
+    const saved = await updateOccupantRecord(updated?.id, {
+      ...updated,
+      __history: {
+        type: 'Edit',
+        name: updated.name,
+        roomId: updated.roomId,
+        bedNo: updated.bedNo,
+        details: changedFields.length > 0 ? `Updated ${changedFields.join(', ')}` : 'Occupant details edited',
+      },
+    });
     if (!saved || saved?.success === false) {
       await refreshOccupantsFromBackend();
       window.alert(saved?.error || 'Unable to save occupant changes to live data.');
@@ -529,13 +540,6 @@ function Occupancy() {
     }
 
     await refreshOccupantsFromBackend();
-    addStayHistory?.({
-      type: 'Edit',
-      name: saved.name,
-      roomId: saved.roomId,
-      bedNo: saved.bedNo,
-      details: changedFields.length > 0 ? `Updated ${changedFields.join(', ')}` : 'Occupant details edited',
-    });
   };
 
   const handleDelete = async occupant => {
@@ -544,6 +548,13 @@ function Occupancy() {
       ...occupant,
       __action: 'delete',
       __method: 'DELETE',
+      __history: {
+        type: 'Edit',
+        name: occupant.name,
+        roomId: occupant.roomId,
+        bedNo: occupant.bedNo,
+        details: 'Occupant record deleted',
+      },
     });
     await refreshOccupantsFromBackend();
 
@@ -552,13 +563,6 @@ function Occupancy() {
       return;
     }
 
-    addStayHistory?.({
-      type: 'Edit',
-      name: occupant.name,
-      roomId: occupant.roomId,
-      bedNo: occupant.bedNo,
-      details: 'Occupant record deleted',
-    });
   };
 
   const handleCheckout = async occupant => {
@@ -568,6 +572,13 @@ function Occupancy() {
       __action: 'checkout',
       __method: 'DELETE',
       checkOut: new Date().toISOString(),
+      __history: {
+        type: 'Check Out',
+        name: occupant.name,
+        roomId: occupant.roomId,
+        bedNo: occupant.bedNo,
+        details: `Checked out from ${occupant.roomId} / Bed ${occupant.bedNo}`,
+      },
     });
     await refreshOccupantsFromBackend();
 
@@ -576,13 +587,6 @@ function Occupancy() {
       return;
     }
 
-    addStayHistory?.({
-      type: 'Check Out',
-      name: occupant.name,
-      roomId: occupant.roomId,
-      bedNo: occupant.bedNo,
-      details: `Checked out from ${occupant.roomId} / Bed ${occupant.bedNo}`,
-    });
   };
 
   const handleSwap = async (idA, idB) => {
@@ -621,22 +625,26 @@ function Occupancy() {
     });
 
     let allSaved = swapped.length > 0;
-    for (const occupant of swapped) {
-      const saved = await updateOccupantRecord(occupant.id, occupant);
+    for (let index = 0; index < swapped.length; index += 1) {
+      const occupant = swapped[index];
+      const saved = await updateOccupantRecord(occupant.id, {
+        ...occupant,
+        ...(index === 0 ? {
+          __history: {
+            type: 'Swap',
+            name: `${beforeA?.name || ''} ⇄ ${beforeB?.name || ''}`,
+            roomId: `${beforeA?.roomId || ''} ⇄ ${beforeB?.roomId || ''}`,
+            bedNo: `${beforeA?.bedNo || ''} ⇄ ${beforeB?.bedNo || ''}`,
+            details: 'Swapped occupant room and bed assignments',
+          },
+        } : {}),
+      });
       if (!saved || saved?.success === false) allSaved = false;
     }
 
     await refreshOccupantsFromBackend();
 
-    if (allSaved && beforeA && beforeB) {
-      addStayHistory?.({
-        type: 'Swap',
-        name: `${beforeA.name} ⇄ ${beforeB.name}`,
-        roomId: `${beforeA.roomId} ⇄ ${beforeB.roomId}`,
-        bedNo: `${beforeA.bedNo} ⇄ ${beforeB.bedNo}`,
-        details: 'Swapped occupant room and bed assignments',
-      });
-    } else if (!allSaved) {
+    if (!allSaved) {
       window.alert('Swap failed to save on live data.');
     }
   };
@@ -664,18 +672,19 @@ function Occupancy() {
     await syncRoomCapacities(moved ? [moved] : []);
 
     if (moved) {
-      const saved = await updateOccupantRecord(moved.id, moved);
-      await refreshOccupantsFromBackend();
-
-      if (saved && saved?.success !== false && original) {
-        addStayHistory?.({
+      const saved = await updateOccupantRecord(moved.id, {
+        ...moved,
+        __history: {
           type: 'Move',
           name: moved.name,
           roomId: moved.roomId,
           bedNo: moved.bedNo,
-          details: `Moved from ${original.roomId} / Bed ${original.bedNo} to ${moved.roomId} / Bed ${moved.bedNo}`,
-        });
-      } else if (!saved || saved?.success === false) {
+          details: `Moved from ${original?.roomId || ''} / Bed ${original?.bedNo || ''} to ${moved.roomId} / Bed ${moved.bedNo}`,
+        },
+      });
+      await refreshOccupantsFromBackend();
+
+      if (!saved || saved?.success === false) {
         window.alert(saved?.error || 'Move failed to save on live data.');
       }
       return;

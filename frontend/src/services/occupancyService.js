@@ -107,10 +107,13 @@ export async function fetchOccupants() {
 }
 
 export async function addOccupant(occupant) {
+  const payload = toApiPayload(occupant);
+  if (occupant?.__history) payload.__history = occupant.__history;
+
   try {
     const data = await apiRequest('/api/occupancy', {
       method: 'POST',
-      body: toApiPayload(occupant),
+      body: payload,
     });
 
     const record = data?.occupant ?? data?.data ?? data;
@@ -131,6 +134,9 @@ export async function updateOccupant(id, updates) {
   }
   if (updates?.__method) {
     payload.__method = updates.__method;
+  }
+  if (updates?.__history) {
+    payload.__history = updates.__history;
   }
 
   try {
@@ -160,6 +166,9 @@ export async function deleteOccupant(idOrOccupant) {
     __method: 'DELETE',
     __action: target?.__action === 'checkout' ? 'checkout' : 'delete',
   };
+  if (target?.__history) {
+    payload.__history = target.__history;
+  }
 
   try {
     await apiRequest('/api/occupancy', {
