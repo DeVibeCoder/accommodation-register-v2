@@ -4,10 +4,6 @@ function isActiveStatus(value) {
   return String(value || 'Active').trim().toLowerCase() === 'active';
 }
 
-function isActiveStatus(value) {
-  return String(value || 'Active').trim().toLowerCase() === 'active';
-}
-
 function toInt(value) {
   const parsed = Number.parseInt(String(value ?? '').replace(/[^0-9-]/g, ''), 10);
   return Number.isFinite(parsed) ? parsed : null;
@@ -127,26 +123,6 @@ async function writeHistoryIfProvided(payload = {}, user = {}) {
   });
 }
 
-async function findActiveConflict(row = {}, excludeId = null) {
-  if (!row?.room_id || row?.bed_no == null || !isActiveStatus(row.status)) {
-    return null;
-  }
-
-  const rows = await supabaseRequest(
-    `/rest/v1/occupancy?select=*&status=eq.Active&room_id=eq.${encodeURIComponent(row.room_id)}&bed_no=eq.${encodeURIComponent(row.bed_no)}&limit=10`,
-    { service: true }
-  );
-
-  if (!Array.isArray(rows) || rows.length === 0) {
-    return null;
-  }
-
-  return rows.find(item => {
-    if (!excludeId) return true;
-    return String(item?.id || '') !== String(excludeId);
-  }) || null;
-}
-
 export default async function handler(req, res) {
   if (!allowMethods(req, res, ['GET', 'POST', 'DELETE'])) return;
 
@@ -233,7 +209,11 @@ export default async function handler(req, res) {
       return json(res, 500, { error: 'Occupancy update could not persist changes.' });
     }
 
-    const row = toOccupancyRow(payload);
+    const row = {
+      ...toOccupancyRow(payload),
+      status: 'Active',
+      check_out: null,
+    };
     const conflict = await findActiveConflict(row);
     let inserted = null;
 
