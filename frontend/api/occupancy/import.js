@@ -21,6 +21,17 @@ function toActiveOccupancyRow(item = {}) {
   };
 }
 
+async function insertInBatches(rows = []) {
+  for (const batch of chunk(rows, 100)) {
+    await supabaseRequest('/rest/v1/occupancy', {
+      method: 'POST',
+      service: true,
+      body: batch,
+      prefer: 'return=minimal',
+    });
+  }
+}
+
 export default async function handler(req, res) {
   if (!allowMethods(req, res, ['POST'])) return;
 
@@ -30,6 +41,7 @@ export default async function handler(req, res) {
 
     const payload = await readBody(req);
     const items = Array.isArray(payload?.occupants) ? payload.occupants : [];
+    const replaceExisting = payload?.replace !== false;
 
     if (items.length === 0) {
       return json(res, 400, { error: 'No occupants were provided for import.' });
@@ -43,6 +55,32 @@ export default async function handler(req, res) {
       return json(res, 400, { error: 'No valid occupant rows were provided for import.' });
     }
 
+    const latestByKey = new Map();
+    for (const row of rows) {
+      latestByKey.set(keyFor(row), row);
+    }
+
+    const uniqueRows = [...latestByKey.values()];
+
+    if (replaceExisting) {
+      await supabaseRequest('/rest/v1/occupancy?room_id=not.is.null', {
+        method: 'DELETE',
+        service: true,
+        prefer: 'return=minimal',
+      });
+
+      await insertInBatches(uniqueRows);
+
+      return json(res, 200, {
+        success: true,
+        mode: 'replace',
+        imported: uniqueRows.length,
+        updated: 0,
+        inserted: uniqueRows.length,
+        skipped: items.length - uniqueRows.length,
+      });
+    }
+
     const existingRows = await supabaseRequest(
       '/rest/v1/occupancy?select=id,room_id,bed_no,status&limit=5000',
       { service: true }
@@ -51,23 +89,15 @@ export default async function handler(req, res) {
     const existingByKey = new Map();
     for (const row of (Array.isArray(existingRows) ? existingRows : [])) {
       const key = keyFor(row);
-      const current = existingByKey.get(key);
-      const rowIsActive = String(row?.status || '').trim().toLowerCase() === 'active';
-      const currentIsActive = String(current?.status || '').trim().toLowerCase() === 'active';
-      if (!current || (rowIsActive && !currentIsActive)) {
+      if (!existingByKey.has(key)) {
         existingByKey.set(key, row);
       }
-    }
-
-    const latestByKey = new Map();
-    for (const row of rows) {
-      latestByKey.set(keyFor(row), row);
     }
 
     const rowsToInsert = [];
     const rowsToUpdate = [];
 
-    for (const row of latestByKey.values()) {
+    for (const row of uniqueRows) {
       const existing = existingByKey.get(keyFor(row));
       if (existing?.id) {
         rowsToUpdate.push({ id: existing.id, row });
@@ -80,32 +110,26 @@ export default async function handler(req, res) {
     let insertedCount = 0;
 
     for (const item of rowsToUpdate) {
-      const updated = await supabaseRequest(`/rest/v1/occupancy?id=eq.${encodeURIComponent(item.id)}`, {
+      await supabaseRequest(`/rest/v1/occupancy?id=eq.${encodeURIComponent(item.id)}`, {
         method: 'PATCH',
         service: true,
         body: item.row,
         prefer: 'return=minimal',
       });
 
-      updatedCount += Array.isArray(updated) ? updated.length : 1;
+      updatedCount += 1;
     }
 
-    for (const batch of chunk(rowsToInsert, 100)) {
-      await supabaseRequest('/rest/v1/occupancy', {
-        method: 'POST',
-        service: true,
-        body: batch,
-        prefer: 'return=minimal',
-      });
-      insertedCount += batch.length;
-    }
+    await insertInBatches(rowsToInsert);
+    insertedCount = rowsToInsert.length;
 
     return json(res, 200, {
       success: true,
+      mode: 'merge',
       imported: updatedCount + insertedCount,
       updated: updatedCount,
       inserted: insertedCount,
-      skipped: items.length - latestByKey.size,
+      skipped: items.length - uniqueRows.length,
     });
   } catch (error) {
     return json(res, 500, { error: error.message || 'Unable to import occupancy data.' });

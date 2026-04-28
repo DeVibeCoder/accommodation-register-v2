@@ -840,7 +840,7 @@ function Occupancy() {
       }
 
       await syncRoomCapacities(additions);
-      const result = await importOccupantsRecord(additions);
+      const result = await importOccupantsRecord(additions, { replace: true });
       await refreshOccupantsFromBackend();
 
       const importMessage = `Import complete. Imported: ${result.imported}. Skipped: ${skippedCount + result.skipped}.`;

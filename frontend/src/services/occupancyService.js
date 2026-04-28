@@ -137,11 +137,12 @@ export async function addOccupant(occupant) {
   }
 }
 
-export async function importOccupants(occupants = []) {
+export async function importOccupants(occupants = [], options = {}) {
   const payload = {
     occupants: Array.isArray(occupants)
       ? occupants.map(item => toApiPayload(item))
       : [],
+    replace: options?.replace !== false,
   };
 
   const data = await apiRequest('/api/occupancy/import', {

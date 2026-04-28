@@ -12,31 +12,52 @@ function buildUrl(path) {
 }
 
 export async function apiRequest(path, options = {}) {
-  const headers = {
-    ...(options.body ? { 'Content-Type': 'application/json' } : {}),
-    ...(options.headers || {}),
-  };
+  const method = String(options.method || 'GET').toUpperCase();
+  const maxAttempts = method === 'GET' ? 3 : 1;
 
-  const response = await fetch(buildUrl(path), {
-    credentials: 'include',
-    ...options,
-    headers,
-    body: options.body ? JSON.stringify(options.body) : undefined,
-  });
+  let lastError = null;
 
-  const contentType = response.headers.get('content-type') || '';
-  const payload = contentType.includes('application/json')
-    ? await response.json().catch(() => null)
-    : await response.text().catch(() => '');
+  for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
+    const headers = {
+      ...(options.body ? { 'Content-Type': 'application/json' } : {}),
+      ...(options.headers || {}),
+    };
 
-  if (!response.ok) {
-    const message =
-      (payload && typeof payload === 'object' && (payload.message || payload.error)) ||
-      (typeof payload === 'string' && payload) ||
-      `Request failed with status ${response.status}`;
+    try {
+      const response = await fetch(buildUrl(path), {
+        credentials: 'include',
+        ...options,
+        headers,
+        body: options.body ? JSON.stringify(options.body) : undefined,
+      });
 
-    throw new Error(message);
+      const contentType = response.headers.get('content-type') || '';
+      const payload = contentType.includes('application/json')
+        ? await response.json().catch(() => null)
+        : await response.text().catch(() => '');
+
+      if (!response.ok) {
+        const message =
+          (payload && typeof payload === 'object' && (payload.message || payload.error)) ||
+          (typeof payload === 'string' && payload) ||
+          `Request failed with status ${response.status}`;
+
+        const canRetry = method === 'GET' && response.status >= 500 && attempt < maxAttempts;
+        if (canRetry) {
+          lastError = new Error(message);
+          continue;
+        }
+
+        throw new Error(message);
+      }
+
+      return payload;
+    } catch (error) {
+      lastError = error;
+      const canRetry = method === 'GET' && attempt < maxAttempts;
+      if (!canRetry) break;
+    }
   }
 
-  return payload;
+  throw lastError || new Error('Request failed.');
 }
