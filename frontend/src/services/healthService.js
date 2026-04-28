@@ -2,7 +2,7 @@ import { apiRequest } from './apiClient';
 
 export async function fetchOccupancyHealth() {
   try {
-    return await apiRequest('/api/health/occupancy');
+    return await apiRequest('/api/occupancy?mode=health');
   } catch (error) {
     return {
       ok: false,

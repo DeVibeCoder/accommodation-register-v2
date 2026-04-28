@@ -10,7 +10,7 @@ if (!baseUrl) {
   process.exit(1);
 }
 
-const endpoint = `${baseUrl.replace(/\/$/, '')}/api/health/occupancy`;
+const endpoint = `${baseUrl.replace(/\/$/, '')}/api/occupancy?mode=health`;
 const response = await fetch(endpoint, {
   headers: cookie ? { cookie } : {},
 });

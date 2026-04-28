@@ -52,18 +52,6 @@ function normalizeImportedRoomId(value) {
     .trim();
 }
 
-function normalizeImportedStatus(status, checkOut = '') {
-  const normalized = String(status || '').trim().toLowerCase();
-  if (!normalized) return checkOut ? 'Checked Out' : 'Active';
-  if (normalized === 'active') return 'Active';
-  if (normalized.includes('check') && normalized.includes('out')) return 'Checked Out';
-  return normalized
-    .split(/\s+/)
-    .filter(Boolean)
-    .map(part => part.charAt(0).toUpperCase() + part.slice(1))
-    .join(' ');
-}
-
 function resolveRoomId(rawRoomId, rooms = []) {
   const normalized = normalizeImportedRoomId(rawRoomId);
   if (!normalized) return '';
@@ -443,6 +431,7 @@ function Occupancy() {
   const [deleteTarget,   setDeleteTarget]   = useState(null);
   const [checkoutTarget, setCheckoutTarget] = useState(null);
   const [importNotice, setImportNotice] = useState(null);
+  const [isImporting, setIsImporting] = useState(false);
 
   const filtered = useMemo(()=>{
     return occupants.filter(o=>{
@@ -762,11 +751,14 @@ function Occupancy() {
   };
 
   const handleImportFile = async e => {
+    if (isImporting) return;
+
     const file = e.target.files && e.target.files[0];
     e.target.value = '';
     if (!file) return;
 
     setImportNotice(null);
+    setIsImporting(true);
 
     try {
       const text = await file.text();
@@ -862,6 +854,8 @@ function Occupancy() {
         type: 'error',
         text: error?.message || 'Import failed while saving occupancy data.',
       });
+    } finally {
+      setIsImporting(false);
     }
   };
 
@@ -880,7 +874,7 @@ function Occupancy() {
           {canEditAccommodation ? <button onClick={()=>setAddOpen(true)} style={{ padding:'11px 26px',borderRadius:12,border:'none',background:'#3b82f6',color:'#fff',fontWeight:700,fontSize:15,cursor:'pointer',display:'flex',alignItems:'center',gap:8,boxShadow:'0 2px 8px rgba(59,130,246,.35)' }}>+ Add Occupant</button> : null}
           <div style={{ display:'flex',gap:8 }}>
             <button onClick={handleExport} style={{ padding:'10px 18px',borderRadius:10,border:'1.5px solid #d0d7e2',background:'#fff',color:'#1e315f',fontWeight:700,fontSize:13,cursor:'pointer' }}>Export</button>
-            {canEditAccommodation ? <button onClick={handleImportClick} style={{ padding:'10px 18px',borderRadius:10,border:'1.5px solid #d0d7e2',background:'#fff',color:'#1e315f',fontWeight:700,fontSize:13,cursor:'pointer' }}>Import</button> : null}
+            {canEditAccommodation ? <button disabled={isImporting} onClick={handleImportClick} style={{ padding:'10px 18px',borderRadius:10,border:'1.5px solid #d0d7e2',background:isImporting ? '#f1f5f9' : '#fff',color:'#1e315f',fontWeight:700,fontSize:13,cursor:isImporting ? 'not-allowed' : 'pointer',opacity:isImporting ? 0.7 : 1 }}>{isImporting ? 'Importing...' : 'Import'}</button> : null}
             <button onClick={handleTemplate} style={{ padding:'10px 18px',borderRadius:10,border:'1.5px solid #d0d7e2',background:'#fff',color:'#1e315f',fontWeight:700,fontSize:13,cursor:'pointer' }}>Template</button>
             <input ref={importInputRef} type="file" accept=".csv,text/csv" onChange={handleImportFile} style={{ display:'none' }} />
           </div>
