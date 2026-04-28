@@ -12,6 +12,15 @@ function keyFor(row = {}) {
   return `${row.room_id || ''}::${row.bed_no ?? ''}`;
 }
 
+function toActiveOccupancyRow(item = {}) {
+  const row = toOccupancyRow(item);
+  return {
+    ...row,
+    check_out: null,
+    status: 'Active',
+  };
+}
+
 export default async function handler(req, res) {
   if (!allowMethods(req, res, ['POST'])) return;
 
@@ -27,21 +36,28 @@ export default async function handler(req, res) {
     }
 
     const rows = items
-      .map(item => toOccupancyRow(item))
+      .map(item => toActiveOccupancyRow(item))
       .filter(row => row.room_id && row.bed_no != null);
 
     if (rows.length === 0) {
       return json(res, 400, { error: 'No valid occupant rows were provided for import.' });
     }
 
-    const existingActiveRows = await supabaseRequest(
-      '/rest/v1/occupancy?select=id,room_id,bed_no&status=eq.Active&limit=5000',
+    const existingRows = await supabaseRequest(
+      '/rest/v1/occupancy?select=id,room_id,bed_no,status&limit=5000',
       { service: true }
     );
 
-    const existingByKey = new Map(
-      (Array.isArray(existingActiveRows) ? existingActiveRows : []).map(row => [keyFor(row), row])
-    );
+    const existingByKey = new Map();
+    for (const row of (Array.isArray(existingRows) ? existingRows : [])) {
+      const key = keyFor(row);
+      const current = existingByKey.get(key);
+      const rowIsActive = String(row?.status || '').trim().toLowerCase() === 'active';
+      const currentIsActive = String(current?.status || '').trim().toLowerCase() === 'active';
+      if (!current || (rowIsActive && !currentIsActive)) {
+        existingByKey.set(key, row);
+      }
+    }
 
     const latestByKey = new Map();
     for (const row of rows) {

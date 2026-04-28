@@ -442,6 +442,7 @@ function Occupancy() {
   const [moveTarget,     setMoveTarget]     = useState(null);
   const [deleteTarget,   setDeleteTarget]   = useState(null);
   const [checkoutTarget, setCheckoutTarget] = useState(null);
+  const [importNotice, setImportNotice] = useState(null);
 
   const filtered = useMemo(()=>{
     return occupants.filter(o=>{
@@ -765,6 +766,8 @@ function Occupancy() {
     e.target.value = '';
     if (!file) return;
 
+    setImportNotice(null);
+
     try {
       const text = await file.text();
       const parsed = parseCsvText(text);
@@ -773,7 +776,10 @@ function Occupancy() {
       const isExactTemplate = normalizedExpected.every((h, idx) => normalizedHeaders[idx] === h);
 
       if (!isExactTemplate) {
-        window.alert('Import failed: CSV does not match the occupancy template format. Please use the Template file.');
+        setImportNotice({
+          type: 'error',
+          text: 'Import failed: CSV does not match the occupancy template format. Please use the Template file.',
+        });
         return;
       }
 
@@ -796,9 +802,6 @@ function Occupancy() {
         const bedNoStr = get('Bed No').trim();
         const fastingRaw = get('Fasting').trim().toLowerCase();
         const checkIn = get('Check-in').trim();
-        const checkOut = get('Check-out').trim();
-        const statusRaw = get('Status').trim();
-        const status = normalizeImportedStatus(statusRaw, checkOut);
 
         const personTypeKey = personTypeRaw.toLowerCase();
         const personType = personTypeKey ? personTypeKey[0].toUpperCase() + personTypeKey.slice(1) : '';
@@ -821,15 +824,18 @@ function Occupancy() {
           bedNo,
           fasting: fastingRaw === 'yes',
           checkIn,
-          checkOut,
-          status,
+          checkOut: '',
+          status: 'Active',
           building: buildingFrom(roomId),
           buildingCode: buildingCodeFrom(roomId),
         });
       }
 
       if (additions.length === 0) {
-        window.alert(`Import complete. Imported: 0. Skipped: ${skippedCount}.`);
+        setImportNotice({
+          type: 'success',
+          text: `Import complete. Imported: 0. Skipped: ${skippedCount}.`,
+        });
         return;
       }
 
@@ -838,7 +844,7 @@ function Occupancy() {
       await refreshOccupantsFromBackend();
 
       const importMessage = `Import complete. Imported: ${result.imported}. Skipped: ${skippedCount + result.skipped}.`;
-      window.alert(importMessage);
+      setImportNotice({ type: 'success', text: importMessage });
 
       try {
         addStayHistory?.({
@@ -852,7 +858,10 @@ function Occupancy() {
       }
     } catch (error) {
       console.error('[Occupancy] Import failed.', error);
-      window.alert(error?.message || 'Import failed while saving occupancy data.');
+      setImportNotice({
+        type: 'error',
+        text: error?.message || 'Import failed while saving occupancy data.',
+      });
     }
   };
 
@@ -877,6 +886,39 @@ function Occupancy() {
           </div>
         </div>
       </div>
+
+      {importNotice ? (
+        <div style={{
+          marginBottom: 14,
+          borderRadius: 12,
+          border: importNotice.type === 'error' ? '1px solid #fecaca' : '1px solid #bbf7d0',
+          background: importNotice.type === 'error' ? '#fff1f2' : '#f0fdf4',
+          color: importNotice.type === 'error' ? '#b91c1c' : '#166534',
+          padding: '10px 14px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          gap: 10,
+        }}>
+          <span style={{ fontSize: 13, fontWeight: 700 }}>{importNotice.text}</span>
+          <button
+            onClick={() => setImportNotice(null)}
+            style={{
+              border: 'none',
+              background: 'transparent',
+              color: 'inherit',
+              fontWeight: 800,
+              cursor: 'pointer',
+              fontSize: 16,
+              lineHeight: 1,
+              padding: 0,
+            }}
+            aria-label="Dismiss import notice"
+          >
+            x
+          </button>
+        </div>
+      ) : null}
 
       {/* Filters */}
       <div style={{ display:'flex',flexWrap:'wrap',gap:12,marginBottom:24,alignItems:'flex-end',background:'#fff',borderRadius:16,padding:'16px 20px',boxShadow:'0 1px 4px rgba(30,49,95,.08)',border:'1.5px solid #e8edf5' }}>
