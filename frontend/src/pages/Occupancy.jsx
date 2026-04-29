@@ -862,15 +862,15 @@ function Occupancy() {
   const hasFilters = personTypeFilter!=='All'||buildingFilter!=='All'||idNameSearch||roomSearch;
 
   return (
-    <div style={{ width:'100%',maxWidth:'100%',margin:0,padding:'24px 32px',background:'none',fontFamily:'Inter,Segoe UI,Arial,sans-serif',boxSizing:'border-box',minHeight:'100vh' }}>
+    <div style={{ width:'100%',maxWidth:'100%',margin:0,padding:'clamp(14px, 2.3vw, 24px) clamp(12px, 3vw, 32px)',background:'none',fontFamily:'Inter,Segoe UI,Arial,sans-serif',boxSizing:'border-box',minHeight:'100vh' }}>
 
       {/* Header */}
-      <div style={{ display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:24 }}>
+      <div style={{ display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:20,flexWrap:'wrap',gap:12 }}>
         <div>
           <h1 style={{ fontWeight:800,fontSize:'1.7rem',color:'#1e315f',margin:0,letterSpacing:'-0.5px' }}>Occupancy</h1>
           <p style={{ margin:'4px 0 0',fontSize:13,color:'#94a3b8' }}>{filtered.length} of {occupants.length} active occupants</p>
         </div>
-        <div style={{ display:'flex',gap:10,alignItems:'flex-start' }}>
+        <div style={{ display:'flex',gap:10,alignItems:'flex-start',flexWrap:'wrap' }}>
           {canEditAccommodation ? <button onClick={()=>setAddOpen(true)} style={{ padding:'11px 26px',borderRadius:12,border:'none',background:'#3b82f6',color:'#fff',fontWeight:700,fontSize:15,cursor:'pointer',display:'flex',alignItems:'center',gap:8,boxShadow:'0 2px 8px rgba(59,130,246,.35)' }}>+ Add Occupant</button> : null}
           <div style={{ display:'flex',gap:8 }}>
             <button onClick={handleExport} style={{ padding:'10px 18px',borderRadius:10,border:'1.5px solid #d0d7e2',background:'#fff',color:'#1e315f',fontWeight:700,fontSize:13,cursor:'pointer' }}>Export</button>
@@ -957,7 +957,8 @@ function Occupancy() {
       </div>
 
       {/* Table */}
-      <div style={{ background:'#fff',borderRadius:18,boxShadow:'0 8px 26px rgba(30,49,95,.08)',border:'1px solid #dfe6f1',overflow:'hidden' }}>
+      <div style={{ background:'#fff',borderRadius:18,boxShadow:'0 8px 26px rgba(30,49,95,.08)',border:'1px solid #dfe6f1',overflowX:'auto' }}>
+        <div style={{ minWidth:960 }}>
         <div style={{ display:'grid',gridTemplateColumns:'2.9fr 1.1fr 1.9fr 138px',padding:'0 20px',height:42,alignItems:'center',background:'linear-gradient(180deg, #f8fbff 0%, #f3f7fd 100%)',borderBottom:'1px solid #dfe6f1',gap:10 }}>
           {['Name / Person Type','Room','Section / Department | Nat','Actions'].map(h=>(
             <span key={h} style={{ fontSize:10.5,fontWeight:700,color:'#7f93b3',textTransform:'uppercase',letterSpacing:.6 }}>{h}</span>
@@ -1019,6 +1020,7 @@ function Occupancy() {
             </div>
           );
         })}
+        </div>
       </div>
 
       <AddOccupantModal open={canEditAccommodation && addOpen} onClose={()=>setAddOpen(false)} rooms={roomsState} onAdd={handleAdd} />

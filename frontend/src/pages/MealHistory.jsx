@@ -213,7 +213,7 @@ function MealHistory() {
   };
 
   return (
-    <div className="page-container" style={{ width: '100%', maxWidth: '100%', margin: 0, padding: '24px 32px 36px', background: 'none', fontFamily: 'Inter, Segoe UI, Arial, sans-serif', boxSizing: 'border-box' }}>
+    <div className="page-container" style={{ width: '100%', maxWidth: '100%', margin: 0, padding: 'clamp(14px, 2.2vw, 24px) clamp(12px, 3vw, 32px) 30px', background: 'none', fontFamily: 'Inter, Segoe UI, Arial, sans-serif', boxSizing: 'border-box' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 16, marginBottom: 18, flexWrap: 'wrap' }}>
         <div>
           <h1 style={{ margin: 0, color: '#1e315f', fontWeight: 900, fontSize: '1.8rem' }}>Meal History</h1>

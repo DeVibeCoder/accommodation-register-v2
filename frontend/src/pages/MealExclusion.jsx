@@ -444,10 +444,15 @@ function ExclusionTable({ rows, canEdit, closingId, onClose, onEdit, emptyText }
         <tbody>
           {rows.length === 0
             ? <tr><td colSpan={6} style={{ ...tdStyle, color: '#94a3b8', fontWeight: 600, textAlign: 'center', padding: '24px 14px' }}>{emptyText}</td></tr>
-            : rows.map(item => {
+            : rows.map((item, idx) => {
               const rc = reasonColor(item.reason);
               return (
-                <tr key={item.id} style={{ background: '#fff' }}>
+                <tr
+                  key={item.id}
+                  style={{ background: idx % 2 === 0 ? '#fff' : '#fbfdff', transition: 'background .15s ease' }}
+                  onMouseEnter={e => { e.currentTarget.style.background = '#eef6ff'; }}
+                  onMouseLeave={e => { e.currentTarget.style.background = idx % 2 === 0 ? '#fff' : '#fbfdff'; }}
+                >
                   <td style={tdStyle}>
                     <div style={{ fontWeight: 800, color: '#1f2937', fontSize: 13 }}>{item.name}</div>
                     {item.staffId ? <div style={{ fontSize: 11, color: '#64748b', marginTop: 1 }}>{item.staffId}</div> : null}
@@ -550,23 +555,23 @@ function MealExclusion() {
   };
 
   return (
-    <div style={{ width: '100%', maxWidth: '100%', margin: 0, padding: '24px 32px', background: 'none', fontFamily: 'Inter,Segoe UI,Arial,sans-serif', boxSizing: 'border-box' }}>
+    <div style={{ width: '100%', maxWidth: '100%', margin: 0, padding: 'clamp(14px, 2.2vw, 24px) clamp(12px, 3vw, 32px)', background: 'none', fontFamily: 'Inter,Segoe UI,Arial,sans-serif', boxSizing: 'border-box' }}>
 
       {/* --- Stat cards + buttons --- */}
       <div style={{ display: 'flex', alignItems: 'stretch', gap: 12, marginBottom: 20, flexWrap: 'wrap' }}>
-        <div style={{ background: 'linear-gradient(135deg,#ffe9d6 0%,#ffe2bf 100%)', borderRadius: 12, border: '1px solid rgba(154,52,18,0.12)', padding: '14px 20px', flex: '1 1 140px', boxShadow: '0 4px 12px rgba(154,52,18,0.08)' }}>
+        <div style={{ background: 'linear-gradient(135deg,#ffe9d6 0%,#ffe2bf 100%)', borderRadius: 14, border: '1px solid rgba(154,52,18,0.12)', padding: '14px 20px', flex: '1 1 170px', boxShadow: '0 8px 18px rgba(154,52,18,0.11)' }}>
           <div style={{ fontSize: 11, color: '#9a3412', fontWeight: 800, textTransform: 'uppercase' }}>Active Exclusions</div>
           <div style={{ fontSize: 28, fontWeight: 900, color: '#7c2d12', marginTop: 4 }}>{activeCount}</div>
         </div>
-        <div style={{ background: 'linear-gradient(135deg,#e0ecff 0%,#d9f3ff 100%)', borderRadius: 12, border: '1px solid rgba(30,58,138,0.1)', padding: '14px 20px', flex: '1 1 140px', boxShadow: '0 4px 12px rgba(30,58,138,0.07)' }}>
+        <div style={{ background: 'linear-gradient(135deg,#e0ecff 0%,#d9f3ff 100%)', borderRadius: 14, border: '1px solid rgba(30,58,138,0.1)', padding: '14px 20px', flex: '1 1 170px', boxShadow: '0 8px 18px rgba(30,58,138,0.1)' }}>
           <div style={{ fontSize: 11, color: '#1e3a8a', fontWeight: 800, textTransform: 'uppercase' }}>Upcoming</div>
           <div style={{ fontSize: 28, fontWeight: 900, color: '#1e315f', marginTop: 4 }}>{upcomingCount}</div>
         </div>
-        <div style={{ background: 'linear-gradient(135deg,#f3e8ff 0%,#ede9fe 100%)', borderRadius: 12, border: '1px solid rgba(107,33,168,0.1)', padding: '14px 20px', flex: '1 1 140px', boxShadow: '0 4px 12px rgba(107,33,168,0.07)' }}>
+        <div style={{ background: 'linear-gradient(135deg,#f3e8ff 0%,#ede9fe 100%)', borderRadius: 14, border: '1px solid rgba(107,33,168,0.1)', padding: '14px 20px', flex: '1 1 170px', boxShadow: '0 8px 18px rgba(107,33,168,0.1)' }}>
           <div style={{ fontSize: 11, color: '#6b21a8', fontWeight: 800, textTransform: 'uppercase' }}>Meal Headcount</div>
           <div style={{ fontSize: 28, fontWeight: 900, color: '#581c87', marginTop: 4 }}>{mealHeadcount}</div>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginLeft: 'auto', flexWrap: 'wrap' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginLeft: 'auto', flexWrap: 'wrap', background: '#fff', border: '1px solid #dbe4f0', borderRadius: 14, padding: 8, boxShadow: '0 8px 20px rgba(15,23,42,0.06)' }}>
           {canEditAccommodation ? (
             <>
               <button onClick={openAddModal} style={{ padding: '11px 16px', borderRadius: 10, border: 'none', background: '#2563eb', color: '#fff', fontWeight: 800, fontSize: 13, cursor: 'pointer', whiteSpace: 'nowrap', boxShadow: '0 2px 8px rgba(37,99,235,0.25)' }}>+ Add Exclusion</button>
@@ -585,9 +590,9 @@ function MealExclusion() {
       ) : null}
 
       {/* --- Tabbed exclusion table --- */}
-      <div style={{ background: '#fff', border: '1px solid #dbe4f0', borderRadius: 14, overflow: 'hidden' }}>
+      <div style={{ background: '#fff', border: '1px solid #dbe4f0', borderRadius: 16, overflow: 'hidden', boxShadow: '0 18px 40px rgba(15,23,42,0.06)' }}>
         {/* Tab bar */}
-        <div style={{ display: 'flex', borderBottom: '1px solid #e2e8f0', background: '#f8fafc' }}>
+        <div style={{ display: 'flex', borderBottom: '1px solid #e2e8f0', background: 'linear-gradient(180deg, #f8fafc 0%, #f3f7fd 100%)', overflowX: 'auto' }}>
           {tabBtn('Active Exclusions', 'active', activeCount, '#ea580c')}
           {tabBtn('Upcoming Exclusions', 'upcoming', upcomingCount, '#2563eb')}
         </div>

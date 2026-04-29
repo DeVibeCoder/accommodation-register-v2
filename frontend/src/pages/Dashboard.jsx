@@ -171,7 +171,7 @@ function Dashboard() {
   ];
 
   return (
-    <div style={{ width:'100%', padding:'24px 28px 20px', boxSizing:'border-box', minHeight:'100vh', background:'linear-gradient(180deg, #f4f7fb 0%, #eef3f9 100%)' }}>
+    <div style={{ width:'100%', padding:'clamp(12px, 2vw, 24px) clamp(12px, 2.6vw, 28px) 20px', boxSizing:'border-box', minHeight:'100vh', background:'linear-gradient(180deg, #f4f7fb 0%, #eef3f9 100%)' }}>
       <div style={{
         background:'linear-gradient(125deg, #0f172a 0%, #1e3a8a 45%, #0ea5e9 100%)',
         color:'#fff',
@@ -196,7 +196,7 @@ function Dashboard() {
         ))}
       </div>
 
-      <div style={{ display:'grid', gridTemplateColumns:'2fr 1fr', gap:14, marginBottom:14 }}>
+      <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit, minmax(280px, 1fr))', gap:14, marginBottom:14 }}>
         <div style={{ background:'#fff', border:'1px solid #dfe6f2', borderRadius:16, padding:'20px 22px', boxShadow:'0 6px 16px rgba(15,23,42,.05)' }}>
           <div style={{ fontWeight:800, color:'#1e315f', marginBottom:10 }}>Occupancy Overview</div>
           <div style={{ height:14, background:'#e7edf7', borderRadius:999, overflow:'hidden' }}>
@@ -260,7 +260,7 @@ function Dashboard() {
         </div>
       </div>
 
-      <div style={{ display:'grid', gridTemplateColumns:'repeat(2, minmax(0, 1fr))', gap:14 }}>
+      <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit, minmax(280px, 1fr))', gap:14 }}>
         <DonutCard title="Nationality Breakdown" data={metrics.nationalityBreakdown} subtitle="Occupants" />
         <DonutCard title="Department Breakdown" data={metrics.departmentBreakdown} subtitle="Occupants" />
         <DonutCard title="AC and Non-AC Breakdown" data={metrics.acBreakdown} subtitle="Rooms" />
