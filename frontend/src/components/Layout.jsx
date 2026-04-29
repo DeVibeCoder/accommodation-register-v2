@@ -5,6 +5,7 @@ import { Outlet } from 'react-router-dom';
 import { fetchOccupants as fetchOccupantsFromApi } from '../services/occupancyService';
 import { fetchRooms as fetchRoomsFromApi } from '../services/roomsService';
 import { addStayHistory as addStayHistoryToApi, fetchStayHistory as fetchStayHistoryFromApi } from '../services/stayHistoryService';
+import { fetchMealExclusions as fetchMealExclusionsFromApi } from '../services/mealService';
 
 function isCurrentRoomId(roomId = '') {
   return /^(OB|FB|VTV)-/i.test(String(roomId));
@@ -45,6 +46,7 @@ function Layout({ user, onLogout }) {
 
   const [occupants, setOccupants] = useState([]);
   const [roomBaseState, setRoomsState] = useState([]);
+  const [mealExclusionSummary, setMealExclusionSummary] = useState({ active: [], upcoming: [], mealExcludedCount: 0 });
   const [stayHistory, setStayHistory] = useState(() => {
     try {
       const saved = localStorage.getItem('tic_stay_history');
@@ -80,15 +82,28 @@ function Layout({ user, onLogout }) {
   const roomsState = useMemo(() => attachOccupantsToRooms(roomBaseState, occupants), [roomBaseState, occupants]);
   const sidebarWidth = sidebarCollapsed ? 70 : 220;
 
+  const refreshMealExclusionSummary = async () => {
+    try {
+      const summary = await fetchMealExclusionsFromApi();
+      setMealExclusionSummary(summary);
+      return summary;
+    } catch {
+      const fallback = { active: [], upcoming: [], mealExcludedCount: 0 };
+      setMealExclusionSummary(fallback);
+      return fallback;
+    }
+  };
+
   useEffect(() => {
     let ignore = false;
 
     (async () => {
       try {
-        const [remoteOccupants, remoteRooms, remoteHistory] = await Promise.all([
+        const [remoteOccupants, remoteRooms, remoteHistory, mealSummary] = await Promise.all([
           fetchOccupantsFromApi(),
           fetchRoomsFromApi(),
           fetchStayHistoryFromApi(),
+          fetchMealExclusionsFromApi().catch(() => ({ active: [], upcoming: [], mealExcludedCount: 0 })),
         ]);
 
         if (ignore) return;
@@ -109,6 +124,7 @@ function Layout({ user, onLogout }) {
         uidRef.current = 1000;
         setOccupants(liveOccupants.map(o => ({ ...o, _id: uidRef.current++ })));
         setStayHistory(historyEntries);
+        setMealExclusionSummary(mealSummary);
 
         try {
           localStorage.setItem('tic_stay_history', JSON.stringify(historyEntries));
@@ -116,12 +132,13 @@ function Layout({ user, onLogout }) {
           // ignore cache write issues
         }
 
-        console.info(`[API] Loaded ${liveRooms.length} rooms, ${liveOccupants.length} occupants, and ${historyEntries.length} history entries from backend.`);
+        console.info(`[API] Loaded ${liveRooms.length} rooms, ${liveOccupants.length} occupants, ${historyEntries.length} history entries, and ${mealSummary?.mealExcludedCount || 0} active meal exclusions from backend.`);
       } catch (error) {
         if (!ignore) {
           setRoomsState([]);
           setOccupants([]);
           setStayHistory([]);
+          setMealExclusionSummary({ active: [], upcoming: [], mealExcludedCount: 0 });
         }
         console.error('[API] Failed to load live accommodation data.', error?.message || error);
       }
@@ -196,7 +213,7 @@ function Layout({ user, onLogout }) {
 
         <main style={{ flex: 1, overflowY: 'auto', overflowX: 'hidden' }}>
           <div style={{ width: '100%', maxWidth: '100%', margin: 0, padding: 0 }}>
-            <Outlet context={{ sidebarCollapsed, setSidebarCollapsed, occupants, setOccupants, roomsState, setRoomsState, getNextUid, stayHistory, setStayHistory, addStayHistory, user, isAdmin: (user?.role || 'Viewer') === 'Admin', canEditAccommodation: (user?.role || 'Viewer') !== 'Viewer' }} />
+            <Outlet context={{ sidebarCollapsed, setSidebarCollapsed, occupants, setOccupants, roomsState, setRoomsState, getNextUid, stayHistory, setStayHistory, addStayHistory, mealExclusionSummary, setMealExclusionSummary, refreshMealExclusionSummary, user, isAdmin: (user?.role || 'Viewer') === 'Admin', canEditAccommodation: (user?.role || 'Viewer') !== 'Viewer' }} />
           </div>
         </main>
       </div>

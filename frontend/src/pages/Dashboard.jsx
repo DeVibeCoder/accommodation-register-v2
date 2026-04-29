@@ -110,13 +110,14 @@ function DonutCard({ title, data, subtitle }) {
 }
 
 function Dashboard() {
-  const { occupants, roomsState } = useOutletContext();
+  const { occupants, roomsState, mealExclusionSummary } = useOutletContext();
 
   const metrics = useMemo(() => {
     const totalBeds = roomsState.reduce((sum, room) => sum + room.beds.length, 0);
     const occupied = occupants.length;
     const available = Math.max(totalBeds - occupied, 0);
-    const mealHeadcount = occupants.length;
+    const excludedMeals = Number(mealExclusionSummary?.mealExcludedCount || 0);
+    const mealHeadcount = Math.max(occupied - excludedMeals, 0);
 
     const typeBreakdown = { Permanent: 0, Temporary: 0, Project: 0 };
     occupants.forEach(o => {
@@ -151,6 +152,7 @@ function Dashboard() {
       totalBeds,
       occupied,
       available,
+      excludedMeals,
       mealHeadcount,
       typeBreakdown,
       byBuilding,
@@ -159,7 +161,7 @@ function Dashboard() {
       acBreakdown,
       shareBreakdown,
     };
-  }, [occupants, roomsState]);
+  }, [occupants, roomsState, mealExclusionSummary]);
 
   const cards = [
     { title: 'Total Beds', value: metrics.totalBeds, bg: 'linear-gradient(135deg, #e0ecff 0%, #d9f3ff 100%)', color: '#1e3a8a' },
