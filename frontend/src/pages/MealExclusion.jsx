@@ -99,11 +99,11 @@ function ExclusionModal({ open, onClose, occupants, canEdit, onSaved, editEntry 
 
   const filteredOccupants = useMemo(() => {
     const query = normalizeText(occupantQuery);
-    if (!query) return [];
+    if (query === '' && !showMatches) return [];
     return occupants
-      .filter(item => normalizeText(item.name).includes(query) || normalizeText(item.staffId).includes(query))
-      .slice(0, 8);
-  }, [occupantQuery, occupants]);
+      .filter(item => !query || normalizeText(item.name).includes(query) || normalizeText(item.staffId).includes(query))
+      .slice(0, 12);
+  }, [occupantQuery, occupants, showMatches]);
 
   const reset = () => {
     setSelectedOccupantId('');
@@ -131,8 +131,16 @@ function ExclusionModal({ open, onClose, occupants, canEdit, onSaved, editEntry 
       normalizeText(item.name) === normalizedQuery || normalizeText(item.staffId) === normalizedQuery
     ));
 
-    if (!resolvedOccupant || !reason || !fromDate) {
-      setError('Select a valid occupant, reason, and from date.');
+    if (!resolvedOccupant) {
+      setError('Please select a valid occupant from the list.');
+      return;
+    }
+    if (!reason) {
+      setError('Please select a reason.');
+      return;
+    }
+    if (!fromDate) {
+      setError('Please select a from date.');
       return;
     }
 
@@ -183,7 +191,7 @@ function ExclusionModal({ open, onClose, occupants, canEdit, onSaved, editEntry 
         <form onSubmit={handleSubmit} style={{ padding: '18px 24px 20px' }}>
           {error ? <div style={{ marginBottom: 12, padding: '9px 12px', background: '#fef2f2', border: '1px solid #fecaca', borderRadius: 8, color: '#dc2626', fontSize: 13, fontWeight: 600 }}>{error}</div> : null}
           <div style={{ display: 'grid', gap: 14, background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: 12, padding: 14 }}>
-            <div style={{ display: 'grid', gap: 5, fontWeight: 700, color: '#334155', fontSize: 12, position: 'relative' }}>
+            <div style={{ display: 'grid', gap: 5, fontWeight: 700, color: '#334155', fontSize: 12, position: 'relative', zIndex: 10 }}>
               Occupant (search by Name or Staff ID)
               <input
                 value={occupantQuery}
@@ -193,25 +201,32 @@ function ExclusionModal({ open, onClose, occupants, canEdit, onSaved, editEntry 
                   setShowMatches(true);
                 }}
                 onFocus={() => setShowMatches(true)}
-                onBlur={() => setTimeout(() => setShowMatches(false), 120)}
-                placeholder="Type name or staff ID"
+                onBlur={() => setTimeout(() => setShowMatches(false), 150)}
+                placeholder="Click to see all occupants, or type to search"
                 disabled={!canEdit || saving}
-                required
                 style={modalFieldStyle}
               />
-              {showMatches && filteredOccupants.length > 0 ? (
-                <div style={{ position: 'absolute', left: 0, right: 0, top: '100%', marginTop: 4, background: '#fff', border: '1px solid #cbd5e1', borderRadius: 8, boxShadow: '0 10px 24px rgba(15,23,42,0.14)', zIndex: 20, maxHeight: 220, overflowY: 'auto' }}>
-                  {filteredOccupants.map(item => (
-                    <button
-                      key={item.id || item._id}
-                      type="button"
-                      onMouseDown={() => handlePickOccupant(item)}
-                      style={{ width: '100%', textAlign: 'left', border: 'none', background: '#fff', padding: '9px 10px', cursor: 'pointer', borderBottom: '1px solid #f1f5f9', fontSize: 12, color: '#334155' }}
-                    >
-                      <div style={{ fontWeight: 700, color: '#1f2937' }}>{item.name || 'Unknown'}</div>
-                      <div style={{ color: '#64748b' }}>{item.staffId || 'No Staff ID'} | {item.roomId || '-'} / Bed {item.bedNo ?? '-'}</div>
-                    </button>
-                  ))}
+              {showMatches && (filteredOccupants.length > 0 || occupants.length === 0) ? (
+                <div style={{ position: 'absolute', left: 0, right: 0, top: '100%', marginTop: 2, background: '#fff', border: '2px solid #2563eb', borderRadius: 8, boxShadow: '0 12px 32px rgba(15,23,42,0.18)', zIndex: 30, maxHeight: 280, overflowY: 'auto' }}>
+                  {filteredOccupants.length === 0 && occupants.length === 0 ? (
+                    <div style={{ padding: '12px 10px', color: '#64748b', fontSize: 12, textAlign: 'center' }}>No occupants available</div>
+                  ) : filteredOccupants.length === 0 ? (
+                    <div style={{ padding: '12px 10px', color: '#64748b', fontSize: 12, textAlign: 'center' }}>No matches found</div>
+                  ) : (
+                    filteredOccupants.map(item => (
+                      <button
+                        key={item.id || item._id}
+                        type="button"
+                        onMouseDown={() => handlePickOccupant(item)}
+                        style={{ width: '100%', textAlign: 'left', border: 'none', background: '#fff', padding: '10px 12px', cursor: 'pointer', borderBottom: '1px solid #e2e8f0', fontSize: 12, color: '#334155', transition: 'background 0.15s' }}
+                        onMouseEnter={(e) => e.target.style.background = '#f0f8ff'}
+                        onMouseLeave={(e) => e.target.style.background = '#fff'}
+                      >
+                        <div style={{ fontWeight: 700, color: '#1f2937', fontSize: 13 }}>{item.name || 'Unknown'}</div>
+                        <div style={{ color: '#64748b', fontSize: 11, marginTop: 2 }}>ID: {item.staffId || '-'} | {item.roomId || '-'} / Bed {item.bedNo ?? '-'}</div>
+                      </button>
+                    ))
+                  )}
                 </div>
               ) : null}
             </div>
