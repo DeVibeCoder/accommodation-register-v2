@@ -7,25 +7,62 @@ export default async function handler(req, res) {
     const admin = await requireRole(req, res, ['Admin']);
     if (!admin) return;
 
-    const userId = req.query.id;
+    const rawId = req.query.id;
+    const userId = Array.isArray(rawId) ? rawId[0] : rawId;
     const { email, role } = await readBody(req);
+    const nextRole = ['Viewer', 'Accommodation', 'Admin'].includes(role) ? role : null;
 
-    if (!userId || !role) {
+    if (!userId || !nextRole) {
       return json(res, 400, { error: 'User ID and role are required.' });
     }
 
-    if (!['Viewer', 'Accommodation', 'Admin'].includes(role)) {
-      return json(res, 400, { error: 'Invalid role selected.' });
+    const targetUserId = userId === 'me' ? admin.id : userId;
+    if (!targetUserId) {
+      return json(res, 400, { error: 'Invalid target user.' });
     }
 
-    const updated = await supabaseRequest('/rest/v1/profiles?on_conflict=id', {
-      method: 'POST',
+    // Patch first so role updates work even when profile schema has additional constraints.
+    const patched = await supabaseRequest(`/rest/v1/profiles?id=eq.${encodeURIComponent(targetUserId)}`, {
+      method: 'PATCH',
       service: true,
-      body: [{ id: userId, email: email || null, role, active: true }],
-      prefer: 'resolution=merge-duplicates,return=representation',
+      body: { role: nextRole, active: true },
+      prefer: 'return=representation',
     });
 
-    const user = Array.isArray(updated) && updated[0] ? formatUserForClient(updated[0]) : null;
+    if (Array.isArray(patched) && patched[0]) {
+      return json(res, 200, { user: formatUserForClient(patched[0]) });
+    }
+
+    // If profile row is missing, create it with safe defaults.
+    let resolvedEmail = email || null;
+    if (!resolvedEmail) {
+      try {
+        const authUser = await supabaseRequest(`/auth/v1/admin/users/${encodeURIComponent(targetUserId)}`, {
+          service: true,
+        });
+        resolvedEmail = authUser?.user?.email || authUser?.email || null;
+      } catch {
+        resolvedEmail = null;
+      }
+    }
+
+    const inserted = await supabaseRequest('/rest/v1/profiles', {
+      method: 'POST',
+      service: true,
+      body: [{
+        id: targetUserId,
+        email: resolvedEmail,
+        role: nextRole,
+        active: true,
+      }],
+      prefer: 'return=representation',
+    });
+
+    const user = Array.isArray(inserted) && inserted[0] ? formatUserForClient(inserted[0]) : null;
+    if (!user) {
+      return json(res, 500, { error: 'Role update completed but user record was not returned.' });
+    }
+
     return json(res, 200, { user });
   } catch (error) {
     return json(res, 500, { error: error.message || 'Unable to update role.' });
