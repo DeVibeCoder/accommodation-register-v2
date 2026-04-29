@@ -39,3 +39,18 @@ export async function closeMealExclusion(id) {
 
   return data?.entry || null;
 }
+
+export async function updateMealExclusion(id, payload = {}) {
+  if (!id) return null;
+
+  const data = await apiRequest('/api/occupancy', {
+    method: 'POST',
+    body: {
+      __operation: 'meal-exclusion-update',
+      id,
+      ...payload,
+    },
+  });
+
+  return data?.entry || null;
+}

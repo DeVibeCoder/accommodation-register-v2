@@ -1,6 +1,6 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import { useOutletContext } from 'react-router-dom';
-import { addMealExclusion, closeMealExclusion } from '../services/mealService';
+import { addMealExclusion, closeMealExclusion, fetchMealHistory, updateMealExclusion } from '../services/mealService';
 
 const REASONS = ['Off Site', 'On Leave', 'Vacation', 'Restaurant', 'Resignation/Termination'];
 
@@ -38,30 +38,78 @@ const tdStyle = {
   fontSize: 13,
 };
 
-function ExclusionModal({ open, onClose, occupants, canEdit }) {
+function normalizeText(value) {
+  return String(value || '').trim().toLowerCase();
+}
+
+function ExclusionModal({ open, onClose, occupants, canEdit, onSaved, editEntry = null }) {
+  const isEditing = Boolean(editEntry?.id);
   const [selectedOccupantId, setSelectedOccupantId] = useState('');
+  const [occupantQuery, setOccupantQuery] = useState('');
+  const [showMatches, setShowMatches] = useState(false);
   const [reason, setReason] = useState(REASONS[0]);
   const [fromDate, setFromDate] = useState('');
   const [toDate, setToDate] = useState('');
   const [notes, setNotes] = useState('');
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
-  const {
-    refreshMealExclusionSummary,
-  } = useOutletContext();
+
+  useEffect(() => {
+    if (!open) return;
+    if (!editEntry) {
+      setSelectedOccupantId('');
+      setOccupantQuery('');
+      setReason(REASONS[0]);
+      setFromDate('');
+      setToDate('');
+      setNotes('');
+      setError('');
+      setShowMatches(false);
+      return;
+    }
+
+    const match = occupants.find(item => String(item.id) === String(editEntry.occupantId))
+      || occupants.find(item => normalizeText(item.staffId) === normalizeText(editEntry.staffId))
+      || occupants.find(item => normalizeText(item.name) === normalizeText(editEntry.name));
+
+    setSelectedOccupantId(match ? String(match.id) : '');
+    setOccupantQuery(match ? `${match.name || ''}${match.staffId ? ` (${match.staffId})` : ''}` : `${editEntry.name || ''}${editEntry.staffId ? ` (${editEntry.staffId})` : ''}`.trim());
+    setReason(editEntry.reason || REASONS[0]);
+    setFromDate(String(editEntry.fromDate || '').slice(0, 10));
+    setToDate(String(editEntry.toDate || '').slice(0, 10));
+    setNotes(editEntry.notes || '');
+    setError('');
+    setShowMatches(false);
+  }, [open, editEntry, occupants]);
 
   const selectedOccupant = useMemo(
     () => occupants.find(item => String(item.id) === String(selectedOccupantId)),
     [occupants, selectedOccupantId]
   );
 
+  const filteredOccupants = useMemo(() => {
+    const query = normalizeText(occupantQuery);
+    if (!query) return [];
+    return occupants
+      .filter(item => normalizeText(item.name).includes(query) || normalizeText(item.staffId).includes(query))
+      .slice(0, 8);
+  }, [occupantQuery, occupants]);
+
   const reset = () => {
     setSelectedOccupantId('');
+    setOccupantQuery('');
     setReason(REASONS[0]);
     setFromDate('');
     setToDate('');
     setNotes('');
     setError('');
+    setShowMatches(false);
+  };
+
+  const handlePickOccupant = (item) => {
+    setSelectedOccupantId(String(item.id));
+    setOccupantQuery(`${item.name || ''}${item.staffId ? ` (${item.staffId})` : ''}`.trim());
+    setShowMatches(false);
   };
 
   const handleSubmit = async (e) => {
@@ -74,7 +122,7 @@ function ExclusionModal({ open, onClose, occupants, canEdit }) {
     setSaving(true);
     setError('');
     try {
-      await addMealExclusion({
+      const payload = {
         occupantId: selectedOccupant.id,
         name: selectedOccupant.name,
         staffId: selectedOccupant.staffId,
@@ -84,12 +132,19 @@ function ExclusionModal({ open, onClose, occupants, canEdit }) {
         fromDate,
         toDate: toDate || null,
         notes,
-      });
-      await refreshMealExclusionSummary();
+      };
+
+      if (isEditing) {
+        await updateMealExclusion(editEntry.id, payload);
+      } else {
+        await addMealExclusion(payload);
+      }
+
+      await onSaved(`${isEditing ? 'Exclusion updated.' : 'Meal exclusion added.'}`);
       reset();
       onClose();
     } catch (err) {
-      setError(err?.message || 'Unable to save meal exclusion.');
+      setError(err?.message || `Unable to ${isEditing ? 'update' : 'save'} meal exclusion.`);
     } finally {
       setSaving(false);
     }
@@ -100,26 +155,49 @@ function ExclusionModal({ open, onClose, occupants, canEdit }) {
   if (!open) return null;
   return (
     <div style={{ position: 'fixed', inset: 0, background: 'rgba(15,23,42,0.5)', zIndex: 3000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
-      <div style={{ background: '#fff', borderRadius: 16, width: '100%', maxWidth: 520, boxShadow: '0 20px 60px rgba(0,0,0,0.2)', position: 'relative', fontFamily: 'Inter, Segoe UI, Arial, sans-serif' }}>
+      <div style={{ background: '#fff', borderRadius: 16, width: '100%', maxWidth: 560, boxShadow: '0 20px 60px rgba(0,0,0,0.2)', position: 'relative', fontFamily: 'Inter, Segoe UI, Arial, sans-serif' }}>
         <div style={{ padding: '20px 24px 16px', borderBottom: '1px solid #e2e8f0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div>
-            <div style={{ fontWeight: 800, fontSize: '1.1rem', color: '#1e315f' }}>Add Meal Exclusion</div>
-            <div style={{ fontSize: 12, color: '#64748b', marginTop: 2 }}>Exclude a staff member from meals for a date range</div>
+            <div style={{ fontWeight: 800, fontSize: '1.1rem', color: '#1e315f' }}>{isEditing ? 'Edit Meal Exclusion' : 'Add Meal Exclusion'}</div>
+            <div style={{ fontSize: 12, color: '#64748b', marginTop: 2 }}>{isEditing ? 'Update exclusion details for selected occupant' : 'Exclude a staff member from meals for a date range'}</div>
           </div>
           <button onClick={handleClose} style={{ background: 'none', border: 'none', fontSize: 22, cursor: 'pointer', color: '#64748b', lineHeight: 1 }}>×</button>
         </div>
         <form onSubmit={handleSubmit} style={{ padding: '20px 24px' }}>
           {error ? <div style={{ marginBottom: 12, padding: '9px 12px', background: '#fef2f2', border: '1px solid #fecaca', borderRadius: 8, color: '#dc2626', fontSize: 13, fontWeight: 600 }}>{error}</div> : null}
           <div style={{ display: 'grid', gap: 14 }}>
-            <label style={{ display: 'grid', gap: 5, fontWeight: 700, color: '#334155', fontSize: 12 }}>
-              Occupant
-              <select value={selectedOccupantId} onChange={e => setSelectedOccupantId(e.target.value)} disabled={!canEdit || saving} required style={{ padding: '9px 10px', borderRadius: 8, border: '1px solid #cbd5e1', fontSize: 13, background: '#fff' }}>
-                <option value="">Select Occupant</option>
-                {occupants.map(item => (
-                  <option key={item.id || item._id} value={item.id}>{item.name} {item.staffId ? `(${item.staffId})` : ''} — {item.roomId} / Bed {item.bedNo}</option>
-                ))}
-              </select>
-            </label>
+            <div style={{ display: 'grid', gap: 5, fontWeight: 700, color: '#334155', fontSize: 12, position: 'relative' }}>
+              Occupant (search by Name or Staff ID)
+              <input
+                value={occupantQuery}
+                onChange={e => {
+                  setOccupantQuery(e.target.value);
+                  setSelectedOccupantId('');
+                  setShowMatches(true);
+                }}
+                onFocus={() => setShowMatches(true)}
+                onBlur={() => setTimeout(() => setShowMatches(false), 120)}
+                placeholder="Type name or staff ID"
+                disabled={!canEdit || saving}
+                required
+                style={{ padding: '9px 10px', borderRadius: 8, border: '1px solid #cbd5e1', fontSize: 13 }}
+              />
+              {showMatches && filteredOccupants.length > 0 ? (
+                <div style={{ position: 'absolute', left: 0, right: 0, top: '100%', marginTop: 4, background: '#fff', border: '1px solid #cbd5e1', borderRadius: 8, boxShadow: '0 10px 24px rgba(15,23,42,0.14)', zIndex: 20, maxHeight: 220, overflowY: 'auto' }}>
+                  {filteredOccupants.map(item => (
+                    <button
+                      key={item.id || item._id}
+                      type="button"
+                      onMouseDown={() => handlePickOccupant(item)}
+                      style={{ width: '100%', textAlign: 'left', border: 'none', background: '#fff', padding: '9px 10px', cursor: 'pointer', borderBottom: '1px solid #f1f5f9', fontSize: 12, color: '#334155' }}
+                    >
+                      <div style={{ fontWeight: 700, color: '#1f2937' }}>{item.name || 'Unknown'}</div>
+                      <div style={{ color: '#64748b' }}>{item.staffId || 'No Staff ID'} | {item.roomId || '-'} / Bed {item.bedNo ?? '-'}</div>
+                    </button>
+                  ))}
+                </div>
+              ) : null}
+            </div>
             <label style={{ display: 'grid', gap: 5, fontWeight: 700, color: '#334155', fontSize: 12 }}>
               Reason
               <select value={reason} onChange={e => setReason(e.target.value)} disabled={!canEdit || saving} style={{ padding: '9px 10px', borderRadius: 8, border: '1px solid #cbd5e1', fontSize: 13, background: '#fff' }}>
@@ -144,7 +222,7 @@ function ExclusionModal({ open, onClose, occupants, canEdit }) {
           <div style={{ display: 'flex', gap: 10, marginTop: 20, justifyContent: 'flex-end' }}>
             <button type="button" onClick={handleClose} style={{ padding: '9px 18px', borderRadius: 8, border: '1px solid #cbd5e1', background: '#fff', color: '#334155', fontWeight: 700, cursor: 'pointer', fontSize: 13 }}>Cancel</button>
             <button type="submit" disabled={!canEdit || saving} style={{ padding: '9px 22px', borderRadius: 8, border: 'none', background: saving ? '#93c5fd' : '#2563eb', color: '#fff', fontWeight: 700, cursor: saving ? 'not-allowed' : 'pointer', fontSize: 13 }}>
-              {saving ? 'Saving…' : 'Save Exclusion'}
+              {saving ? 'Saving…' : isEditing ? 'Update Exclusion' : 'Save Exclusion'}
             </button>
           </div>
         </form>
@@ -153,10 +231,62 @@ function ExclusionModal({ open, onClose, occupants, canEdit }) {
   );
 }
 
-function ExclusionTable({ rows, canEdit, closingId, onClose, emptyText }) {
+function ExclusionHistoryModal({ open, onClose }) {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [historyRows, setHistoryRows] = useState([]);
+
+  useEffect(() => {
+    if (!open) return;
+    let active = true;
+
+    const load = async () => {
+      setLoading(true);
+      setError('');
+      try {
+        const rows = await fetchMealHistory();
+        if (active) setHistoryRows(Array.isArray(rows) ? rows : []);
+      } catch (err) {
+        if (active) setError(err?.message || 'Unable to load exclusion history.');
+      } finally {
+        if (active) setLoading(false);
+      }
+    };
+
+    load();
+    return () => {
+      active = false;
+    };
+  }, [open]);
+
+  if (!open) return null;
+  return (
+    <div style={{ position: 'fixed', inset: 0, background: 'rgba(15,23,42,0.5)', zIndex: 3000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
+      <div style={{ background: '#fff', borderRadius: 16, width: '100%', maxWidth: 980, boxShadow: '0 20px 60px rgba(0,0,0,0.2)', maxHeight: '84vh', overflow: 'hidden' }}>
+        <div style={{ padding: '18px 22px', borderBottom: '1px solid #e2e8f0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div>
+            <div style={{ fontWeight: 800, color: '#1e315f', fontSize: '1.05rem' }}>Exclusion History</div>
+            <div style={{ fontSize: 12, color: '#64748b', marginTop: 2 }}>Past exclusions that have reached their to-date</div>
+          </div>
+          <button onClick={onClose} style={{ background: 'none', border: 'none', fontSize: 22, cursor: 'pointer', color: '#64748b', lineHeight: 1 }}>×</button>
+        </div>
+        <div style={{ padding: 16, overflowY: 'auto', maxHeight: 'calc(84vh - 74px)' }}>
+          {error ? <div style={{ marginBottom: 12, padding: '9px 12px', background: '#fef2f2', border: '1px solid #fecaca', borderRadius: 8, color: '#dc2626', fontSize: 13, fontWeight: 600 }}>{error}</div> : null}
+          {loading ? (
+            <div style={{ padding: '10px 0', color: '#64748b', fontWeight: 600 }}>Loading history...</div>
+          ) : (
+            <ExclusionTable rows={historyRows} canEdit={false} closingId="" onClose={() => {}} onEdit={() => {}} emptyText="No past exclusions found." />
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ExclusionTable({ rows, canEdit, closingId, onClose, onEdit, emptyText }) {
   return (
     <div style={{ overflowX: 'auto' }}>
-      <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: 600 }}>
+      <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: 760 }}>
         <thead>
           <tr>
             <th style={thStyle}>Name</th>
@@ -188,9 +318,14 @@ function ExclusionTable({ rows, canEdit, closingId, onClose, emptyText }) {
                 <td style={{ ...tdStyle, color: '#374151' }}>{item.toDate ? asDate(item.toDate) : '—'}</td>
                 <td style={{ ...tdStyle, textAlign: 'right' }}>
                   {canEdit ? (
-                    <button onClick={() => onClose(item.id)} disabled={closingId === item.id} style={{ padding: '5px 14px', borderRadius: 6, border: '1px solid #fca5a5', background: '#fff', color: '#dc2626', fontWeight: 700, cursor: closingId === item.id ? 'not-allowed' : 'pointer', fontSize: 12 }}>
-                      {closingId === item.id ? 'Removing…' : 'Remove'}
-                    </button>
+                    <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 6 }}>
+                      <button onClick={() => onEdit(item)} style={{ padding: '5px 10px', borderRadius: 6, border: '1px solid #93c5fd', background: '#eff6ff', color: '#1d4ed8', fontWeight: 700, cursor: 'pointer', fontSize: 12 }}>
+                        Edit
+                      </button>
+                      <button onClick={() => onClose(item.id)} disabled={closingId === item.id} style={{ padding: '5px 10px', borderRadius: 6, border: '1px solid #fca5a5', background: '#fff', color: '#dc2626', fontWeight: 700, cursor: closingId === item.id ? 'not-allowed' : 'pointer', fontSize: 12 }}>
+                        {closingId === item.id ? 'Removing…' : 'Remove'}
+                      </button>
+                    </div>
                   ) : null}
                 </td>
               </tr>
@@ -211,6 +346,8 @@ function MealExclusion() {
   } = useOutletContext();
 
   const [modalOpen, setModalOpen] = useState(false);
+  const [historyOpen, setHistoryOpen] = useState(false);
+  const [editingEntry, setEditingEntry] = useState(null);
   const [closingId, setClosingId] = useState('');
   const [notice, setNotice] = useState('');
 
@@ -218,7 +355,31 @@ function MealExclusion() {
   const upcoming = Array.isArray(mealExclusionSummary?.upcoming) ? mealExclusionSummary.upcoming : [];
   const activeCount = active.length;
   const upcomingCount = upcoming.length;
-  const excludedCount = Number(mealExclusionSummary?.mealExcludedCount || 0);
+  const mealHeadcount = Math.max(occupants.length - activeCount, 0);
+
+  const departmentByStaffId = useMemo(() => {
+    const map = new Map();
+    for (const occ of occupants) {
+      const key = normalizeText(occ.staffId);
+      if (key && !map.has(key)) map.set(key, occ.department || '—');
+    }
+    return map;
+  }, [occupants]);
+
+  const hydrateRows = useMemo(() => {
+    const enrich = (items) => items.map(item => ({
+      ...item,
+      department: item.department || departmentByStaffId.get(normalizeText(item.staffId)) || '—',
+    }));
+    return {
+      active: enrich(active),
+      upcoming: enrich(upcoming),
+    };
+  }, [active, upcoming, departmentByStaffId]);
+
+  const refreshSummary = async () => {
+    await refreshMealExclusionSummary();
+  };
 
   const handleCloseExclusion = async (id) => {
     if (!canEditAccommodation || !id || closingId) return;
@@ -226,13 +387,28 @@ function MealExclusion() {
     setNotice('');
     try {
       await closeMealExclusion(id);
-      await refreshMealExclusionSummary();
+      await refreshSummary();
       setNotice('Exclusion removed and moved to history.');
     } catch (error) {
       setNotice(error?.message || 'Unable to remove exclusion.');
     } finally {
       setClosingId('');
     }
+  };
+
+  const handleSaved = async (message) => {
+    await refreshSummary();
+    setNotice(message);
+  };
+
+  const openAddModal = () => {
+    setEditingEntry(null);
+    setModalOpen(true);
+  };
+
+  const openEditModal = (item) => {
+    setEditingEntry(item);
+    setModalOpen(true);
   };
 
   return (
@@ -248,16 +424,19 @@ function MealExclusion() {
           <div style={{ fontSize: 28, fontWeight: 900, color: '#1e315f', marginTop: 4 }}>{upcomingCount}</div>
         </div>
         <div style={{ background: '#fff', borderRadius: 12, border: '1px solid #dbe4f0', padding: '14px 20px', flex: '1 1 140px' }}>
-          <div style={{ fontSize: 11, color: '#64748b', fontWeight: 800, textTransform: 'uppercase' }}>Excluded From Meals</div>
-          <div style={{ fontSize: 28, fontWeight: 900, color: '#1e315f', marginTop: 4 }}>{excludedCount}</div>
+          <div style={{ fontSize: 11, color: '#64748b', fontWeight: 800, textTransform: 'uppercase' }}>Meal Headcount</div>
+          <div style={{ fontSize: 28, fontWeight: 900, color: '#1e315f', marginTop: 4 }}>{mealHeadcount}</div>
         </div>
-        {canEditAccommodation ? (
-          <div style={{ display: 'flex', alignItems: 'center', marginLeft: 'auto' }}>
-            <button onClick={() => setModalOpen(true)} style={{ padding: '12px 22px', borderRadius: 10, border: 'none', background: '#2563eb', color: '#fff', fontWeight: 800, fontSize: 14, cursor: 'pointer', whiteSpace: 'nowrap', boxShadow: '0 2px 8px rgba(37,99,235,0.25)' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginLeft: 'auto' }}>
+          {canEditAccommodation ? (
+            <button onClick={openAddModal} style={{ padding: '12px 18px', borderRadius: 10, border: 'none', background: '#2563eb', color: '#fff', fontWeight: 800, fontSize: 13, cursor: 'pointer', whiteSpace: 'nowrap', boxShadow: '0 2px 8px rgba(37,99,235,0.25)' }}>
               + Add Exclusion
             </button>
-          </div>
-        ) : null}
+          ) : null}
+          <button onClick={() => setHistoryOpen(true)} style={{ padding: '12px 18px', borderRadius: 10, border: 'none', background: '#2563eb', color: '#fff', fontWeight: 800, fontSize: 13, cursor: 'pointer', whiteSpace: 'nowrap', boxShadow: '0 2px 8px rgba(37,99,235,0.25)' }}>
+            Exclusion History
+          </button>
+        </div>
       </div>
 
       {notice ? (
@@ -272,19 +451,30 @@ function MealExclusion() {
           <span style={{ fontSize: 16 }}>✅</span>
           <span style={{ fontWeight: 800, color: '#1e315f', fontSize: '1rem' }}>Active Exclusions</span>
         </div>
-        <ExclusionTable rows={active} canEdit={canEditAccommodation} closingId={closingId} onClose={handleCloseExclusion} emptyText="No active meal exclusions." />
+        <ExclusionTable rows={hydrateRows.active} canEdit={canEditAccommodation} closingId={closingId} onClose={handleCloseExclusion} onEdit={openEditModal} emptyText="No active meal exclusions." />
       </div>
 
       {/* Upcoming Exclusions */}
-      <div style={{ background: '#fff', border: '1px solid #dbe4f0', borderRadius: 14, overflow: 'hidden' }}>
+      <div style={{ background: '#fff', border: '1px solid #dbe4f0', borderRadius: 14, overflow: 'hidden', marginTop: 60 }}>
         <div style={{ padding: '14px 18px', borderBottom: '1px solid #f1f5f9', display: 'flex', alignItems: 'center', gap: 8 }}>
           <span style={{ fontSize: 16 }}>⏳</span>
           <span style={{ fontWeight: 800, color: '#1e315f', fontSize: '1rem' }}>Upcoming Exclusions</span>
         </div>
-        <ExclusionTable rows={upcoming} canEdit={canEditAccommodation} closingId={closingId} onClose={handleCloseExclusion} emptyText="No upcoming meal exclusions." />
+        <ExclusionTable rows={hydrateRows.upcoming} canEdit={canEditAccommodation} closingId={closingId} onClose={handleCloseExclusion} onEdit={openEditModal} emptyText="No upcoming meal exclusions." />
       </div>
 
-      <ExclusionModal open={modalOpen} onClose={() => setModalOpen(false)} occupants={occupants} canEdit={canEditAccommodation} />
+      <ExclusionModal
+        open={modalOpen}
+        onClose={() => {
+          setModalOpen(false);
+          setEditingEntry(null);
+        }}
+        occupants={occupants}
+        canEdit={canEditAccommodation}
+        onSaved={handleSaved}
+        editEntry={editingEntry}
+      />
+      <ExclusionHistoryModal open={historyOpen} onClose={() => setHistoryOpen(false)} />
     </div>
   );
 }

@@ -397,6 +397,46 @@ export default async function handler(req, res) {
       return json(res, 200, { entry: record });
     }
 
+    if (payload?.__operation === 'meal-exclusion-update') {
+      const targetId = payload.id;
+      const reason = normalizeMealReason(payload.reason);
+      const fromDate = String(payload.fromDate || '').slice(0, 10);
+      const toDate = payload.toDate ? String(payload.toDate).slice(0, 10) : null;
+
+      if (!targetId) {
+        return json(res, 400, { error: 'Exclusion ID is required.' });
+      }
+      if (!reason || !MEAL_REASONS.has(reason) || !fromDate) {
+        return json(res, 400, { error: 'Reason and from date are required for meal exclusion.' });
+      }
+
+      const updated = await supabaseRequest(`/rest/v1/meal_exclusions?id=eq.${encodeURIComponent(targetId)}`, {
+        method: 'PATCH',
+        service: true,
+        body: {
+          occupant_id: payload.occupantId || null,
+          occupant_name: payload.name || null,
+          staff_id: payload.staffId || null,
+          room_id: payload.roomId || null,
+          bed_no: payload.bedNo ?? null,
+          reason,
+          from_date: fromDate,
+          to_date: toDate,
+          notes: payload.notes || null,
+          auto_checked_out_at: null,
+        },
+        prefer: 'return=representation',
+      });
+
+      const today = todayIsoDate();
+      if (reason === 'Resignation/Termination' && fromDate <= today) {
+        await runMealExclusionAutomations(user);
+      }
+
+      const record = Array.isArray(updated) && updated[0] ? formatMealExclusionForClient(updated[0], today) : null;
+      return json(res, 200, { entry: record });
+    }
+
     if (payload?.__operation === 'mutate') {
       const target = await resolveTargetFilter(payload);
       if (!target.filter) {
