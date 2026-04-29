@@ -9,9 +9,22 @@ export async function fetchMealExclusions() {
   };
 }
 
-export async function fetchMealHistory() {
-  const data = await apiRequest('/api/occupancy?mode=meal-history');
+export async function fetchMealExclusionHistory() {
+  const data = await apiRequest('/api/occupancy?mode=meal-exclusion-history');
   return Array.isArray(data?.history) ? data.history : [];
+}
+
+export async function fetchMealHistory(filters = {}) {
+  const params = new URLSearchParams({ mode: 'meal-history' });
+  if (filters?.fromDate) params.set('fromDate', filters.fromDate);
+  if (filters?.toDate) params.set('toDate', filters.toDate);
+
+  const data = await apiRequest(`/api/occupancy?${params.toString()}`);
+  return {
+    history: Array.isArray(data?.history) ? data.history : [],
+    departments: Array.isArray(data?.departments) ? data.departments : [],
+    warning: data?.warning || '',
+  };
 }
 
 export async function addMealExclusion(payload = {}) {

@@ -1,6 +1,6 @@
 ﻿import React, { useMemo, useState, useEffect, useRef } from 'react';
 import { useOutletContext } from 'react-router-dom';
-import { addMealExclusion, closeMealExclusion, fetchMealHistory, updateMealExclusion, batchAddMealExclusions } from '../services/mealService';
+import { addMealExclusion, closeMealExclusion, fetchMealExclusionHistory, updateMealExclusion, batchAddMealExclusions } from '../services/mealService';
 
 const REASONS = ['Off Site', 'Vacation', 'Restaurant', 'Exit'];
 const CSV_TEMPLATE_HEADER = 'name,staff_id,reason,from_date,to_date,notes';
@@ -396,7 +396,7 @@ function ExclusionHistoryModal({ open, onClose }) {
     if (!open) return;
     let active = true;
     setLoading(true); setError('');
-    fetchMealHistory()
+    fetchMealExclusionHistory()
       .then(rows => { if (active) setHistoryRows(Array.isArray(rows) ? rows : []); })
       .catch(err => {
         if (!active) return;

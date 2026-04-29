@@ -9,6 +9,17 @@ function keyFor(row = {}) {
 }
 
 const MEAL_REASONS = new Set(['Off Site', 'Vacation', 'Restaurant', 'Exit']);
+const MEAL_DEPARTMENT_ORDER = ['LOG', 'MR', 'QM', 'SW', 'TIC', 'VT', 'VMT', 'OTH'];
+const MEAL_DEPARTMENT_LABELS = {
+  LOG: 'Logistics',
+  MR: 'Marine',
+  QM: 'Quality Management',
+  SW: 'Steel Workshop',
+  TIC: 'Thilafushi Industrial Complex',
+  VT: 'Villa Transport',
+  VMT: 'Vehicle Maintenance',
+  OTH: 'Other',
+};
 
 function todayIsoDate() {
   return new Date().toISOString().slice(0, 10);
@@ -130,6 +141,152 @@ function splitMealExclusions(rows = []) {
   }
 
   return { active, upcoming, history };
+}
+
+function emptyMealDepartmentCounts() {
+  return MEAL_DEPARTMENT_ORDER.reduce((acc, code) => {
+    acc[code] = 0;
+    return acc;
+  }, {});
+}
+
+function normalizeMealDepartmentCounts(source = {}) {
+  const counts = emptyMealDepartmentCounts();
+  for (const code of MEAL_DEPARTMENT_ORDER) {
+    const value = Number(source?.[code] || 0);
+    counts[code] = Number.isFinite(value) ? Math.max(0, Math.floor(value)) : 0;
+  }
+  return counts;
+}
+
+function mealDepartmentList() {
+  return MEAL_DEPARTMENT_ORDER.map(code => ({ code, name: MEAL_DEPARTMENT_LABELS[code] || code }));
+}
+
+function classifyMealDepartment(department = '') {
+  const value = String(department || '').trim().toLowerCase();
+  if (!value) return 'OTH';
+  if (value.includes('log')) return 'LOG';
+  if (value === 'mr' || value.includes('marine')) return 'MR';
+  if (value === 'qm' || value.includes('quality')) return 'QM';
+  if (value === 'sw' || value.includes('steel')) return 'SW';
+  if (value.includes('thilafushi industrial complex') || value === 'tic') return 'TIC';
+  if (value === 'vt' || value.includes('transport')) return 'VT';
+  if (value === 'vmt' || value.includes('maintenance')) return 'VMT';
+  return 'OTH';
+}
+
+function toIsoDateOrEmpty(value) {
+  const dateText = String(value || '').slice(0, 10);
+  return /^\d{4}-\d{2}-\d{2}$/.test(dateText) ? dateText : '';
+}
+
+function formatMealHistoryRow(row = {}) {
+  const counts = normalizeMealDepartmentCounts(row.department_counts || row.departmentCounts || {});
+  const total = Number(row.total_meals ?? row.totalMeals ?? 0);
+  return {
+    date: toIsoDateOrEmpty(row.snapshot_date || row.date),
+    total: Number.isFinite(total) ? Math.max(0, Math.floor(total)) : 0,
+    counts,
+    createdAt: row.created_at || null,
+    updatedAt: row.updated_at || null,
+  };
+}
+
+function mealExclusionKey(roomId = '', bedNo = null) {
+  return `${String(roomId || '').trim()}::${String(bedNo ?? '').trim()}`;
+}
+
+function buildActiveMealExclusionIndex(rows = [], date = todayIsoDate()) {
+  const byOccupantId = new Set();
+  const byStaffId = new Set();
+  const byRoomBed = new Set();
+
+  for (const row of rows) {
+    if (classifyMealExclusion(row, date) !== 'active') continue;
+    if (row.occupant_id) byOccupantId.add(String(row.occupant_id));
+    if (row.staff_id) byStaffId.add(String(row.staff_id).trim().toLowerCase());
+    if (row.room_id && row.bed_no != null) byRoomBed.add(mealExclusionKey(row.room_id, row.bed_no));
+  }
+
+  return { byOccupantId, byStaffId, byRoomBed };
+}
+
+function isExcludedFromMeals(occupant = {}, exclusionIndex = {}) {
+  if (!occupant) return false;
+  const id = occupant.id ? String(occupant.id) : '';
+  const staffId = String(occupant.staff_id || '').trim().toLowerCase();
+  const roomBed = mealExclusionKey(occupant.room_id, occupant.bed_no);
+
+  return Boolean(
+    (id && exclusionIndex.byOccupantId?.has(id))
+    || (staffId && exclusionIndex.byStaffId?.has(staffId))
+    || (occupant.room_id && occupant.bed_no != null && exclusionIndex.byRoomBed?.has(roomBed))
+  );
+}
+
+async function computeMealSnapshotForDate(date = todayIsoDate()) {
+  const [occupancyRows, exclusionRows] = await Promise.all([
+    supabaseRequest('/rest/v1/occupancy?select=id,staff_id,department,room_id,bed_no,status&status=eq.Active&limit=5000', {
+      service: true,
+    }),
+    fetchMealExclusionRows(),
+  ]);
+
+  const occupants = Array.isArray(occupancyRows) ? occupancyRows : [];
+  const exclusionIndex = buildActiveMealExclusionIndex(exclusionRows, date);
+  const counts = emptyMealDepartmentCounts();
+
+  for (const row of occupants) {
+    if (isExcludedFromMeals(row, exclusionIndex)) continue;
+    const code = classifyMealDepartment(row.department);
+    counts[code] += 1;
+  }
+
+  const total = MEAL_DEPARTMENT_ORDER.reduce((sum, code) => sum + (counts[code] || 0), 0);
+  return {
+    date,
+    total,
+    counts,
+    sourceUpdatedAt: new Date().toISOString(),
+  };
+}
+
+async function upsertMealSnapshot(snapshot = {}) {
+  if (!snapshot?.date) return null;
+
+  const inserted = await supabaseRequest('/rest/v1/meal_history_daily', {
+    method: 'POST',
+    service: true,
+    body: [{
+      snapshot_date: snapshot.date,
+      total_meals: snapshot.total || 0,
+      department_counts: normalizeMealDepartmentCounts(snapshot.counts),
+      source_updated_at: snapshot.sourceUpdatedAt || new Date().toISOString(),
+    }],
+    prefer: 'resolution=merge-duplicates,return=representation',
+  });
+
+  return Array.isArray(inserted) ? inserted[0] : inserted;
+}
+
+async function fetchMealSnapshots(filters = {}) {
+  const queryParts = [
+    'select=snapshot_date,total_meals,department_counts,created_at,updated_at',
+    'order=snapshot_date.desc',
+    'limit=3650',
+  ];
+
+  const fromDate = toIsoDateOrEmpty(filters.fromDate);
+  const toDate = toIsoDateOrEmpty(filters.toDate);
+  if (fromDate) queryParts.push(`snapshot_date=gte.${encodeURIComponent(fromDate)}`);
+  if (toDate) queryParts.push(`snapshot_date=lte.${encodeURIComponent(toDate)}`);
+
+  const rows = await supabaseRequest(`/rest/v1/meal_history_daily?${queryParts.join('&')}`, {
+    service: true,
+  });
+
+  return Array.isArray(rows) ? rows.map(formatMealHistoryRow).filter(item => item.date) : [];
 }
 
 function toInt(value) {
@@ -260,13 +417,13 @@ export default async function handler(req, res) {
       if (!user) return;
 
       const mode = String(req.query?.mode || '').trim().toLowerCase();
-      if (mode === 'meal-exclusions' || mode === 'meal-history') {
+      if (mode === 'meal-exclusions' || mode === 'meal-exclusion-history') {
         await runMealExclusionAutomations(user);
         const rows = await fetchMealExclusionRows();
         const grouped = splitMealExclusions(rows);
         res.setHeader('Cache-Control', 'no-store');
 
-        if (mode === 'meal-history') {
+        if (mode === 'meal-exclusion-history') {
           return json(res, 200, { history: grouped.history });
         }
 
@@ -274,6 +431,39 @@ export default async function handler(req, res) {
           active: grouped.active,
           upcoming: grouped.upcoming,
           mealExcludedCount: grouped.active.length,
+        });
+      }
+
+      if (mode === 'meal-history') {
+        await runMealExclusionAutomations(user);
+        const fromDate = toIsoDateOrEmpty(req.query?.fromDate || req.query?.from || '');
+        const toDate = toIsoDateOrEmpty(req.query?.toDate || req.query?.to || '');
+
+        const today = todayIsoDate();
+        const liveSnapshot = await computeMealSnapshotForDate(today);
+
+        let history = [];
+        let persistenceWarning = '';
+
+        try {
+          await upsertMealSnapshot(liveSnapshot);
+          history = await fetchMealSnapshots({ fromDate, toDate });
+        } catch (error) {
+          persistenceWarning = error?.message || 'Meal history table not available.';
+          const includeLive = (!fromDate || today >= fromDate) && (!toDate || today <= toDate);
+          history = includeLive ? [liveSnapshot] : [];
+        }
+
+        if (!history.some(item => item.date === liveSnapshot.date)) {
+          history = [liveSnapshot, ...history].sort((a, b) => String(b.date).localeCompare(String(a.date)));
+        }
+
+        res.setHeader('Cache-Control', 'no-store');
+        return json(res, 200, {
+          history,
+          departments: mealDepartmentList(),
+          generatedAt: new Date().toISOString(),
+          warning: persistenceWarning || null,
         });
       }
 
