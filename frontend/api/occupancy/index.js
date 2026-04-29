@@ -95,7 +95,7 @@ async function runMealExclusionAutomations(user = {}) {
               name: removed[0].full_name || item.occupant_name || 'Unknown',
               roomId: removed[0].room_id || item.room_id || '',
               bedNo: removed[0].bed_no ?? item.bed_no ?? null,
-              details: 'Auto checkout completed from Meal Exclusion (Exit).'
+              details: 'Auto checkout completed from Meal Exclusion (Exit).',
               user: user?.role || null,
             }),
             created_by: user?.id || null,
