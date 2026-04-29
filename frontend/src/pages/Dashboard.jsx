@@ -68,7 +68,7 @@ function DonutCard({ title, data, subtitle }) {
         <h3 style={{ margin:0, fontSize:15, color:'#1f2a44', fontWeight:800 }}>{title}</h3>
         <span style={{ fontSize:11, color:'#64748b' }}>{subtitle}</span>
       </div>
-      <div style={{ display:'grid', gridTemplateColumns:'150px 1fr', gap:10, alignItems:'center' }}>
+      <div style={{ display:'grid', gridTemplateColumns:'minmax(128px, 140px) minmax(0, 1fr)', gap:10, alignItems:'center' }}>
         <div style={{ display:'flex', alignItems:'center', justifyContent:'center' }}>
           <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
             <circle cx={size / 2} cy={size / 2} r={radius} fill="none" stroke="#e8eef8" strokeWidth={stroke} />
@@ -91,11 +91,11 @@ function DonutCard({ title, data, subtitle }) {
             <text x="50%" y="60%" textAnchor="middle" dominantBaseline="middle" style={{ fill:'#64748b', fontSize:10, fontWeight:700, letterSpacing:'.4px' }}>TOTAL</text>
           </svg>
         </div>
-        <div style={{ display:'flex', flexDirection:'column', gap:6, maxHeight:170, overflowY:'auto', paddingRight:4 }}>
+        <div style={{ display:'flex', flexDirection:'column', gap:6, maxHeight:170, overflowY:'auto', overflowX:'hidden', minWidth:0, paddingRight:4 }}>
           {data.map((row, idx) => {
             const pct = total ? Math.round((row.value / total) * 100) : 0;
             return (
-              <div key={`${title}-${row.label}-${idx}`} style={{ display:'grid', gridTemplateColumns:'12px 1fr auto auto', alignItems:'center', gap:8, fontSize:12 }}>
+              <div key={`${title}-${row.label}-${idx}`} style={{ display:'grid', gridTemplateColumns:'12px minmax(0, 1fr) auto auto', alignItems:'center', gap:8, fontSize:12 }}>
                 <span style={{ width:10, height:10, borderRadius:99, background:CHART_COLORS[idx % CHART_COLORS.length], display:'inline-block' }} />
                 <span style={{ color:'#334155', fontWeight:600, whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis' }}>{row.label}</span>
                 <span style={{ color:'#1f2a44', fontWeight:800 }}>{row.value}</span>
@@ -171,7 +171,7 @@ function Dashboard() {
   ];
 
   return (
-    <div style={{ width:'100%', padding:'clamp(12px, 2vw, 24px) clamp(12px, 2.6vw, 28px) 20px', boxSizing:'border-box', minHeight:'100vh', background:'linear-gradient(180deg, #f4f7fb 0%, #eef3f9 100%)' }}>
+    <div style={{ width:'100%', padding:'clamp(12px, 2vw, 24px) clamp(12px, 2.6vw, 28px) 20px', boxSizing:'border-box', minHeight:'100vh', background:'linear-gradient(180deg, #f4f7fb 0%, #eef3f9 100%)', overflowX:'hidden' }}>
       <div style={{
         background:'linear-gradient(125deg, #0f172a 0%, #1e3a8a 45%, #0ea5e9 100%)',
         color:'#fff',
@@ -260,7 +260,7 @@ function Dashboard() {
         </div>
       </div>
 
-      <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit, minmax(280px, 1fr))', gap:14 }}>
+      <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit, minmax(250px, 1fr))', gap:14 }}>
         <DonutCard title="Nationality Breakdown" data={metrics.nationalityBreakdown} subtitle="Occupants" />
         <DonutCard title="Department Breakdown" data={metrics.departmentBreakdown} subtitle="Occupants" />
         <DonutCard title="AC and Non-AC Breakdown" data={metrics.acBreakdown} subtitle="Rooms" />

@@ -429,8 +429,16 @@ function ExclusionHistoryModal({ open, onClose }) {
 // --- Exclusion Table --------------------------------------------------------
 function ExclusionTable({ rows, canEdit, closingId, onClose, onEdit, emptyText }) {
   return (
-    <div style={{ overflowX: 'auto' }}>
-      <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: 760 }}>
+    <div style={{ overflowX: 'auto', minHeight: 420 }}>
+      <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: 760, tableLayout: 'fixed' }}>
+        <colgroup>
+          <col style={{ width: '28%' }} />
+          <col style={{ width: '24%' }} />
+          <col style={{ width: '12%' }} />
+          <col style={{ width: '12%' }} />
+          <col style={{ width: '12%' }} />
+          <col style={{ width: '12%' }} />
+        </colgroup>
         <thead>
           <tr>
             <th style={thStyle}>Name</th>
@@ -454,10 +462,10 @@ function ExclusionTable({ rows, canEdit, closingId, onClose, onEdit, emptyText }
                   onMouseLeave={e => { e.currentTarget.style.background = idx % 2 === 0 ? '#fff' : '#fbfdff'; }}
                 >
                   <td style={tdStyle}>
-                    <div style={{ fontWeight: 800, color: '#1f2937', fontSize: 13 }}>{item.name}</div>
+                    <div style={{ fontWeight: 800, color: '#1f2937', fontSize: 13, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{item.name}</div>
                     {item.staffId ? <div style={{ fontSize: 11, color: '#64748b', marginTop: 1 }}>{item.staffId}</div> : null}
                   </td>
-                  <td style={{ ...tdStyle, color: '#374151', fontWeight: 600, textTransform: 'uppercase', fontSize: 12 }}>{item.department || '-'}</td>
+                  <td style={{ ...tdStyle, color: '#374151', fontWeight: 600, textTransform: 'uppercase', fontSize: 12, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{item.department || '-'}</td>
                   <td style={tdStyle}>
                     <span style={{ display: 'inline-block', padding: '3px 10px', borderRadius: 999, background: rc.bg, color: rc.text, fontWeight: 700, fontSize: 11, border: `1px solid ${rc.text}30` }}>{item.reason}</span>
                   </td>
@@ -597,14 +605,16 @@ function MealExclusion() {
           {tabBtn('Upcoming Exclusions', 'upcoming', upcomingCount, '#2563eb')}
         </div>
         {/* Tab content */}
-        <ExclusionTable
-          rows={activeTab === 'active' ? hydrateRows.active : hydrateRows.upcoming}
-          canEdit={canEditAccommodation}
-          closingId={closingId}
-          onClose={handleCloseExclusion}
-          onEdit={openEditModal}
-          emptyText={activeTab === 'active' ? 'No active meal exclusions.' : 'No upcoming meal exclusions.'}
-        />
+        <div style={{ minHeight: 420 }}>
+          <ExclusionTable
+            rows={activeTab === 'active' ? hydrateRows.active : hydrateRows.upcoming}
+            canEdit={canEditAccommodation}
+            closingId={closingId}
+            onClose={handleCloseExclusion}
+            onEdit={openEditModal}
+            emptyText={activeTab === 'active' ? 'No active meal exclusions.' : 'No upcoming meal exclusions.'}
+          />
+        </div>
       </div>
 
       <ExclusionModal open={modalOpen} onClose={() => { setModalOpen(false); setEditingEntry(null); }} occupants={occupants} canEdit={canEditAccommodation} onSaved={handleSaved} editEntry={editingEntry} />
