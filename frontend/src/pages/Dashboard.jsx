@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useOutletContext } from 'react-router-dom';
 
 const BUILDINGS = [
@@ -8,6 +8,18 @@ const BUILDINGS = [
 ];
 
 const CHART_COLORS = ['#2563eb', '#0ea5e9', '#14b8a6', '#22c55e', '#eab308', '#f97316', '#ef4444', '#8b5cf6', '#ec4899', '#64748b'];
+
+function useViewportWidth() {
+  const [width, setWidth] = useState(() => window.innerWidth);
+
+  useEffect(() => {
+    const onResize = () => setWidth(window.innerWidth);
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  }, []);
+
+  return width;
+}
 
 function percent(val, total) {
   if (!total) return 0;
@@ -111,6 +123,7 @@ function DonutCard({ title, data, subtitle }) {
 
 function Dashboard() {
   const { occupants, roomsState, mealExclusionSummary } = useOutletContext();
+  const viewportWidth = useViewportWidth();
 
   const metrics = useMemo(() => {
     const totalBeds = roomsState.reduce((sum, room) => sum + room.beds.length, 0);
@@ -169,6 +182,12 @@ function Dashboard() {
     { title: 'Available Beds', value: metrics.available, bg: 'linear-gradient(135deg, #dcfce7 0%, #d1fae5 100%)', color: '#166534' },
     { title: 'Meal Headcount', value: metrics.mealHeadcount, bg: 'linear-gradient(135deg, #f3e8ff 0%, #ede9fe 100%)', color: '#6b21a8' },
   ];
+
+  const chartGridColumns = viewportWidth >= 1700
+    ? 'repeat(4, minmax(0, 1fr))'
+    : viewportWidth >= 1100
+      ? 'repeat(2, minmax(0, 1fr))'
+      : '1fr';
 
   return (
     <div style={{ width:'100%', padding:'clamp(12px, 2vw, 24px) clamp(12px, 2.6vw, 28px) 20px', boxSizing:'border-box', minHeight:'100vh', background:'linear-gradient(180deg, #f4f7fb 0%, #eef3f9 100%)', overflowX:'hidden' }}>
@@ -260,7 +279,7 @@ function Dashboard() {
         </div>
       </div>
 
-      <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit, minmax(250px, 1fr))', gap:14 }}>
+      <div style={{ display:'grid', gridTemplateColumns: chartGridColumns, gap:14 }}>
         <DonutCard title="Nationality Breakdown" data={metrics.nationalityBreakdown} subtitle="Occupants" />
         <DonutCard title="Department Breakdown" data={metrics.departmentBreakdown} subtitle="Occupants" />
         <DonutCard title="AC and Non-AC Breakdown" data={metrics.acBreakdown} subtitle="Rooms" />
