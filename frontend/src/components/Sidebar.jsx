@@ -122,7 +122,7 @@ function Sidebar({ collapsed = false, setCollapsed, onLogout, user }) {
         borderBottom: '1px solid #223366',
         marginBottom: 8,
       }}>
-        <span style={{ fontWeight: 900, fontSize: 22, letterSpacing: 1, color: '#e3eafc', opacity: 0.95 }}>{collapsed ? '🛏️' : 'TIC'}</span>
+        <span style={{ fontWeight: 900, fontSize: 22, letterSpacing: 1, color: '#e3eafc', opacity: 0.95 }}>{collapsed ? 'T' : 'TIC'}</span>
       </div>
 
       {/* Navigation Sections */}

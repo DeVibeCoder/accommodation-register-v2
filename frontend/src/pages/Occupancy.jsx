@@ -140,7 +140,7 @@ function parseCsvText(text) {
   return { headers, rows };
 }
 
-/* ── Swap Modal ── */
+/* -- Swap Modal -- */
 function SwapModal({ open, onClose, occupant, allOccupants, onSwap }) {
   const [search, setSearch] = useState('');
   const [targetId, setTargetId] = useState(null);
@@ -168,10 +168,10 @@ function SwapModal({ open, onClose, occupant, allOccupants, onSwap }) {
   return (
     <div onClick={onClose} style={{ position:'fixed',inset:0,zIndex:3000,background:'rgba(20,30,60,.55)',display:'flex',alignItems:'center',justifyContent:'center' }}>
       <div onClick={e=>e.stopPropagation()} style={{ background:'#fff',borderRadius:18,padding:'28px 32px',maxWidth:560,width:'95%',boxShadow:'0 8px 40px rgba(30,50,120,.18)',position:'relative',display:'flex',flexDirection:'column',maxHeight:'88vh' }}>
-        <button onClick={onClose} style={{ position:'absolute',top:14,right:18,fontSize:22,border:'none',background:'none',cursor:'pointer',color:'#64748b' }}>×</button>
+        <button onClick={onClose} style={{ position:'absolute',top:14,right:18,fontSize:22,border:'none',background:'none',cursor:'pointer',color:'#64748b' }}>X</button>
         <h2 style={{ fontWeight:800,fontSize:'1.1rem',marginBottom:4,color:'#1e315f' }}>Swap Occupant</h2>
         <p style={{ fontSize:12,color:'#64748b',marginBottom:14 }}>
-          Swapping <strong>{occupant.name}</strong> — {occupant.roomId} / Bed {occupant.bedNo}
+          Swapping <strong>{occupant.name}</strong> - {occupant.roomId} / Bed {occupant.bedNo}
         </p>
 
         {/* Search */}
@@ -180,7 +180,7 @@ function SwapModal({ open, onClose, occupant, allOccupants, onSwap }) {
           <input
             ref={searchRef}
             type="text"
-            placeholder="Search by name, ID, room, section…"
+            placeholder="Search by name, ID, room, section..."
             value={search}
             onChange={e => { setSearch(e.target.value); setTargetId(null); }}
             style={{ width:'100%',boxSizing:'border-box',paddingLeft:32,paddingRight:10,paddingTop:9,paddingBottom:9,borderRadius:10,border:'1.5px solid #d0d7e2',fontSize:13,background:'#f8fafc' }}
@@ -212,8 +212,8 @@ function SwapModal({ open, onClose, occupant, allOccupants, onSwap }) {
                   <div style={{ fontWeight:700,fontSize:13,color:'#1e293b' }}>{o.name}</div>
                   <div style={{ fontSize:11,color:'#64748b',marginTop:2 }}>
                     {o.roomId} / Bed {o.bedNo}
-                    {o.section ? <span style={{ marginLeft:8,color:'#94a3b8' }}>· {o.section}</span> : null}
-                    {o.staffId ? <span style={{ marginLeft:8,color:'#94a3b8' }}>· ID {o.staffId}</span> : null}
+                    {o.section ? <span style={{ marginLeft:8,color:'#94a3b8' }}>| {o.section}</span> : null}
+                    {o.staffId ? <span style={{ marginLeft:8,color:'#94a3b8' }}>| ID {o.staffId}</span> : null}
                   </div>
                 </div>
                 {isSelected && (
@@ -227,7 +227,7 @@ function SwapModal({ open, onClose, occupant, allOccupants, onSwap }) {
         {/* Selected preview */}
         {selected && (
           <div style={{ background:'#eff6ff',border:'1.5px solid #bfdbfe',borderRadius:10,padding:'8px 14px',marginBottom:14,fontSize:12,color:'#1e40af' }}>
-            Swapping with: <strong>{selected.name}</strong> — {selected.roomId} / Bed {selected.bedNo}
+            Swapping with: <strong>{selected.name}</strong> - {selected.roomId} / Bed {selected.bedNo}
           </div>
         )}
 
@@ -246,7 +246,7 @@ function SwapModal({ open, onClose, occupant, allOccupants, onSwap }) {
   );
 }
 
-/* ── Move Modal ── */
+/* -- Move Modal -- */
 function MoveModal({ open, onClose, occupant, allRooms, onMove }) {
   const [targetRoom, setTargetRoom] = useState('');
   const [targetBed, setTargetBed] = useState('');
@@ -258,13 +258,13 @@ function MoveModal({ open, onClose, occupant, allRooms, onMove }) {
   return (
     <div onClick={onClose} style={{ position:'fixed',inset:0,zIndex:3000,background:'rgba(20,30,60,.55)',display:'flex',alignItems:'center',justifyContent:'center' }}>
       <div onClick={e=>e.stopPropagation()} style={{ background:'#fff',borderRadius:18,padding:'32px 40px',maxWidth:520,width:'95%',boxShadow:'0 8px 40px rgba(30,50,120,.18)',position:'relative' }}>
-        <button onClick={onClose} style={{ position:'absolute',top:16,right:20,fontSize:22,border:'none',background:'none',cursor:'pointer',color:'#64748b' }}>×</button>
+        <button onClick={onClose} style={{ position:'absolute',top:16,right:20,fontSize:22,border:'none',background:'none',cursor:'pointer',color:'#64748b' }}>X</button>
         <h2 style={{ fontWeight:800,fontSize:'1.15rem',marginBottom:8,color:'#1e315f' }}>Move Occupant</h2>
         <p style={{ fontSize:13,color:'#64748b',marginBottom:20 }}>Moving <strong>{occupant.name}</strong> from {occupant.roomId} / Bed {occupant.bedNo}</p>
         <div style={{ display:'grid',gridTemplateColumns:'1fr 1fr',gap:16,marginBottom:24 }}>
           <label style={{ display:'flex',flexDirection:'column',fontWeight:600,fontSize:14,color:'#334155',gap:6 }}>Room
             <select value={targetRoom} onChange={e=>{setTargetRoom(e.target.value);setTargetBed('');}} style={{ padding:'9px 12px',borderRadius:10,border:'1.5px solid #d0d7e2',fontSize:14 }}>
-              <option value="">Select room…</option>
+              <option value="">Select room...</option>
               {orderedRooms.filter(r=>r.id!==occupant.roomId && r.beds.some(b=>!b.occupied)).map(r=>(
                 <option key={r.id} value={r.id}>{r.id}</option>
               ))}
@@ -272,7 +272,7 @@ function MoveModal({ open, onClose, occupant, allRooms, onMove }) {
           </label>
           <label style={{ display:'flex',flexDirection:'column',fontWeight:600,fontSize:14,color:'#334155',gap:6 }}>Bed
             <select value={targetBed} onChange={e=>setTargetBed(e.target.value)} style={{ padding:'9px 12px',borderRadius:10,border:'1.5px solid #d0d7e2',fontSize:14 }}>
-              <option value="">Select bed…</option>
+              <option value="">Select bed...</option>
               {availBeds.map(b=><option key={b.bedId} value={b.bedId}>{b.bedId}</option>)}
             </select>
           </label>
@@ -286,7 +286,7 @@ function MoveModal({ open, onClose, occupant, allRooms, onMove }) {
   );
 }
 
-/* ── Edit Modal ── */
+/* -- Edit Modal -- */
 function EditOccupantModal({ open, onClose, occupant, onSave }) {
   const [form, setForm] = useState(null);
   React.useEffect(()=>{ if (occupant) setForm({ ...occupant }); }, [occupant]);
@@ -298,7 +298,7 @@ function EditOccupantModal({ open, onClose, occupant, onSave }) {
   return (
     <div onClick={onClose} style={{ position:'fixed',inset:0,zIndex:3000,background:'rgba(20,30,60,.55)',display:'flex',alignItems:'center',justifyContent:'center' }}>
       <div onClick={e=>e.stopPropagation()} style={{ background:'#fff',borderRadius:18,padding:'40px',maxWidth:700,width:'95%',boxShadow:'0 8px 40px rgba(30,50,120,.18)',position:'relative' }}>
-        <button onClick={onClose} style={{ position:'absolute',top:16,right:20,fontSize:24,border:'none',background:'none',cursor:'pointer',color:'#94a3b8' }}>×</button>
+        <button onClick={onClose} style={{ position:'absolute',top:16,right:20,fontSize:24,border:'none',background:'none',cursor:'pointer',color:'#94a3b8' }}>X</button>
         <h2 style={{ fontWeight:800,fontSize:'1.3rem',marginBottom:32,color:'#1e315f',letterSpacing:'-0.3px' }}>Edit Occupant</h2>
         <div style={{ display:'grid',gridTemplateColumns:'1fr 1fr',gap:'18px 24px',marginBottom:32 }}>
           <label style={lbl2}>Person Type<select name="personType" value={form.personType} onChange={handle} style={inp2}><option value="Permanent">Permanent</option><option value="Temporary">Temporary</option><option value="Project">Project</option></select></label>
@@ -318,7 +318,7 @@ function EditOccupantModal({ open, onClose, occupant, onSave }) {
   );
 }
 
-/* ── Confirm Modal ── */
+/* -- Confirm Modal -- */
 function ConfirmModal({ open, onClose, onConfirm, title, message, confirmLabel='Confirm', confirmColor='#ef4444' }) {
   if (!open) return null;
   return (
@@ -335,7 +335,7 @@ function ConfirmModal({ open, onClose, onConfirm, title, message, confirmLabel='
   );
 }
 
-/* ── Action button ── */
+/* -- Action button -- */
 function ActionBtn({ title, children, onClick, color='#64748b', hoverColor='#1e293b', bgGradient=null }) {
   const [hov, setHov] = useState(false);
   return (
@@ -635,9 +635,9 @@ function Occupancy() {
         ...(index === 0 ? {
           __history: {
             type: 'Swap',
-            name: `${beforeA?.name || ''} ⇄ ${beforeB?.name || ''}`,
-            roomId: `${beforeA?.roomId || ''} ⇄ ${beforeB?.roomId || ''}`,
-            bedNo: `${beforeA?.bedNo || ''} ⇄ ${beforeB?.bedNo || ''}`,
+            name: `${beforeA?.name || ''} <-> ${beforeB?.name || ''}`,
+            roomId: `${beforeA?.roomId || ''} <-> ${beforeB?.roomId || ''}`,
+            bedNo: `${beforeA?.bedNo || ''} <-> ${beforeB?.bedNo || ''}`,
             details: 'Swapped occupant room and bed assignments',
           },
         } : {}),
@@ -936,7 +936,7 @@ function Occupancy() {
           <span style={{ fontSize:11,fontWeight:700,color:'#94a3b8',textTransform:'uppercase',letterSpacing:.5 }}>Search ID / Name</span>
           <div style={{ position:'relative' }}>
             <svg style={{ position:'absolute',left:10,top:'50%',transform:'translateY(-50%)',color:'#94a3b8',pointerEvents:'none' }} width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-            <input type="text" placeholder="Staff ID or name…" value={idNameSearch} onChange={e=>setIdNameSearch(e.target.value)}
+            <input type="text" placeholder="Staff ID or name..." value={idNameSearch} onChange={e=>setIdNameSearch(e.target.value)}
               style={{ paddingLeft:30,paddingRight:10,paddingTop:8,paddingBottom:8,borderRadius:10,border:'1.5px solid #d0d7e2',fontSize:13,width:'100%',background:'#f8fafc',boxSizing:'border-box' }} />
           </div>
         </div>
@@ -1001,7 +1001,7 @@ function Occupancy() {
               </div>
 
               <div style={{ display:'flex',flexDirection:'column',gap:4,minWidth:0,justifyContent:'center' }}>
-                <div style={{ fontSize:12,color:'#1e293b',fontWeight:700,lineHeight:1.2,whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis' }}>{o.section||'—'}</div>
+                <div style={{ fontSize:12,color:'#1e293b',fontWeight:700,lineHeight:1.2,whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis' }}>{o.section||'-'}</div>
                 <div style={{ fontSize:11,color:'#94a3b8',fontWeight:600,letterSpacing:.2,whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis' }}>{deptCode} | {natCode}</div>
               </div>
 

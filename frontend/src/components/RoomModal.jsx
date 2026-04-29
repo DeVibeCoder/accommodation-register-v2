@@ -99,7 +99,7 @@ function RoomModal({ open, onClose, room }) {
             <div style={{ fontWeight: 900, fontSize: '1.45rem', color: '#1e315f', letterSpacing: 0.2 }}>{room.id}</div>
             <div style={{ fontSize: 12.5, color: '#6b7a94', marginTop: 4 }}>{room.building} | FLOOR {room.floor}</div>
           </div>
-          <button style={closeBtnStyle} onClick={onClose} aria-label="Close">×</button>
+          <button style={closeBtnStyle} onClick={onClose} aria-label="Close">X</button>
         </div>
 
         <div style={{ padding: '16px 20px 10px', background: '#fff', flex: 1, minHeight: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>

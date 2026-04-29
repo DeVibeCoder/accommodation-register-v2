@@ -87,7 +87,7 @@ function AddOccupantModal({ open, onClose, rooms, onAdd }) {
   return (
     <div style={overlayStyle} onClick={onClose}>
       <div className="modal" style={{...modalStyle, background:'#fff', borderRadius:18, padding:'40px', maxWidth:680, width:'95%', boxShadow:'0 8px 40px rgba(30,50,120,.18)', position:'relative'}} onClick={e => e.stopPropagation()}>
-        <button style={{...closeBtnStyle, top:16, right:20, fontSize:24, color:'#94a3b8'}} onClick={onClose} aria-label="Close">×</button>
+        <button style={{...closeBtnStyle, top:16, right:20, fontSize:24, color:'#94a3b8'}} onClick={onClose} aria-label="Close">X</button>
         <h2 style={{ fontWeight:800, fontSize:'1.3rem', marginBottom:32, color:'#1e315f', letterSpacing:'-0.3px' }}>Add Occupant</h2>
         <form onSubmit={handleSubmit}>
           <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'18px 24px', marginBottom:32 }}>

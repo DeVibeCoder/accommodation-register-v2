@@ -37,7 +37,7 @@ function CSVImportModal({ open, onClose, onImport }) {
   return (
     <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', background: 'rgba(30,40,60,0.55)', zIndex: 4000, display: 'flex', alignItems: 'center', justifyContent: 'center' }} onClick={onClose}>
       <div className="modal" style={{ width: 540, maxWidth: '96vw', minHeight: 320 }} onClick={e => e.stopPropagation()}>
-        <button onClick={onClose} aria-label="Close" style={{ position: 'absolute', top: 18, right: 22, fontSize: 22, fontWeight: 700, color: '#1e315f', background: 'none', border: 'none', cursor: 'pointer', zIndex: 10 }}>×</button>
+        <button onClick={onClose} aria-label="Close" style={{ position: 'absolute', top: 18, right: 22, fontSize: 22, fontWeight: 700, color: '#1e315f', background: 'none', border: 'none', cursor: 'pointer', zIndex: 10 }}>X</button>
         <h2 style={{ fontWeight: 800, fontSize: '1.2rem', marginBottom: 10 }}>Import Occupancy CSV</h2>
         <div style={{ fontSize: 15, color: '#7a869a', marginBottom: 18 }}>Drag and drop your CSV file below, or click to select. Preview the first few rows before importing.</div>
         <div
