@@ -15,7 +15,7 @@ function reasonColor(reason) {
 
 function asDate(value) {
   const dateText = String(value || '').slice(0, 10);
-  if (!dateText) return '-';
+  if (!dateText || !/^\d{4}-\d{2}-\d{2}$/.test(dateText)) return '-';
   const [y, m, d] = dateText.split('-');
   return `${m}/${d}/${y}`;
 }
@@ -36,7 +36,7 @@ function normalizeText(value) {
   return String(value || '').trim().toLowerCase();
 }
 
-// â”€â”€â”€ Add / Edit Modal â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// --- Add / Edit Modal -------------------------------------------------------
 function ExclusionModal({ open, onClose, occupants, canEdit, onSaved, editEntry = null }) {
   const isEditing = Boolean(editEntry?.id);
   const [selectedOccupantId, setSelectedOccupantId] = useState('');
@@ -117,7 +117,7 @@ function ExclusionModal({ open, onClose, occupants, canEdit, onSaved, editEntry 
             <div style={{ fontWeight: 800, fontSize: '1.1rem', color: '#1e315f' }}>{isEditing ? 'Edit Meal Exclusion' : 'Add Meal Exclusion'}</div>
             <div style={{ fontSize: 12, color: '#64748b', marginTop: 2 }}>{isEditing ? 'Update exclusion details for selected occupant' : 'Exclude a staff member from meals for a date range'}</div>
           </div>
-          <button onClick={handleClose} style={{ background: 'none', border: 'none', fontSize: 22, cursor: 'pointer', color: '#64748b', lineHeight: 1 }}>Ã—</button>
+          <button onClick={handleClose} style={{ background: 'none', border: 'none', fontSize: 22, cursor: 'pointer', color: '#64748b', lineHeight: 1 }}>X</button>
         </div>
         <form onSubmit={handleSubmit} style={{ padding: '18px 24px 20px' }}>
           {error ? <div style={{ marginBottom: 12, padding: '9px 12px', background: '#fef2f2', border: '1px solid #fecaca', borderRadius: 8, color: '#dc2626', fontSize: 13, fontWeight: 600 }}>{error}</div> : null}
@@ -164,7 +164,7 @@ function ExclusionModal({ open, onClose, occupants, canEdit, onSaved, editEntry 
           <div style={{ display: 'flex', gap: 10, marginTop: 20, justifyContent: 'flex-end' }}>
             <button type="button" onClick={handleClose} style={{ padding: '9px 18px', borderRadius: 8, border: '1px solid #cbd5e1', background: '#fff', color: '#334155', fontWeight: 700, cursor: 'pointer', fontSize: 13 }}>Cancel</button>
             <button type="submit" disabled={!canEdit || saving} style={{ padding: '9px 22px', borderRadius: 8, border: 'none', background: saving ? '#93c5fd' : '#2563eb', color: '#fff', fontWeight: 700, cursor: saving ? 'not-allowed' : 'pointer', fontSize: 13 }}>
-              {saving ? 'Savingâ€¦' : isEditing ? 'Update Exclusion' : 'Save Exclusion'}
+              {saving ? 'Saving...' : isEditing ? 'Update Exclusion' : 'Save Exclusion'}
             </button>
           </div>
         </form>
@@ -173,7 +173,7 @@ function ExclusionModal({ open, onClose, occupants, canEdit, onSaved, editEntry 
   );
 }
 
-// â”€â”€â”€ CSV Import Modal â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// --- CSV Import Modal -------------------------------------------------------
 function parseCsvLine(line) {
   const cells = [];
   let cur = '', inQuote = false;
@@ -295,16 +295,16 @@ function ImportModal({ open, onClose, occupants, onImported }) {
         <div style={{ padding: '18px 22px', borderBottom: '1px solid #e2e8f0', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'linear-gradient(130deg,#f0fdf4 0%,#f8fbff 100%)', borderRadius: '16px 16px 0 0' }}>
           <div>
             <div style={{ fontWeight: 800, color: '#1e315f', fontSize: '1.05rem' }}>Bulk Import Meal Exclusions</div>
-            <div style={{ fontSize: 12, color: '#64748b', marginTop: 2 }}>Upload a CSV to add multiple exclusions at once â€” existing data is never overwritten</div>
+            <div style={{ fontSize: 12, color: '#64748b', marginTop: 2 }}>Upload a CSV to add multiple exclusions at once - existing data is never overwritten</div>
           </div>
-          <button onClick={handleClose} style={{ background: 'none', border: 'none', fontSize: 22, cursor: 'pointer', color: '#64748b', lineHeight: 1 }}>Ã—</button>
+          <button onClick={handleClose} style={{ background: 'none', border: 'none', fontSize: 22, cursor: 'pointer', color: '#64748b', lineHeight: 1 }}>X</button>
         </div>
 
         <div style={{ padding: '16px 22px', overflowY: 'auto', flex: 1 }}>
           {/* Template + upload row */}
           <div style={{ display: 'flex', gap: 10, marginBottom: 14, alignItems: 'center', flexWrap: 'wrap' }}>
             <button onClick={downloadTemplate} style={{ padding: '8px 14px', borderRadius: 8, border: '1px solid #16a34a', background: '#f0fdf4', color: '#15803d', fontWeight: 700, fontSize: 12, cursor: 'pointer' }}>
-              â¬‡ Download Template
+              Download Template
             </button>
             <span style={{ color: '#94a3b8', fontSize: 12 }}>then fill it in and upload below</span>
           </div>
@@ -346,16 +346,16 @@ function ImportModal({ open, onClose, occupants, onImported }) {
                     {parsed.map(row => (
                       <tr key={row.rowNum} style={{ background: row.valid ? '#fff' : '#fff5f5' }}>
                         <td style={{ ...tdStyle, padding: '8px 10px', color: '#64748b', fontSize: 11 }}>{row.rowNum}</td>
-                        <td style={{ ...tdStyle, padding: '8px 10px', fontWeight: 600, fontSize: 12 }}>{row.name || 'â€”'}</td>
-                        <td style={{ ...tdStyle, padding: '8px 10px', fontSize: 12 }}>{row.staffId || 'â€”'}</td>
+                        <td style={{ ...tdStyle, padding: '8px 10px', fontWeight: 600, fontSize: 12 }}>{row.name || '-'}</td>
+                        <td style={{ ...tdStyle, padding: '8px 10px', fontSize: 12 }}>{row.staffId || '-'}</td>
                         <td style={{ ...tdStyle, padding: '8px 10px', fontSize: 12 }}>
-                          {row.reason ? <span style={{ display: 'inline-block', padding: '2px 8px', borderRadius: 999, background: reasonColor(row.reason.charAt(0).toUpperCase() + row.reason.slice(1)).bg, color: reasonColor(row.reason.charAt(0).toUpperCase() + row.reason.slice(1)).text, fontWeight: 700, fontSize: 10 }}>{row.reason}</span> : 'â€”'}
+                          {row.reason ? <span style={{ display: 'inline-block', padding: '2px 8px', borderRadius: 999, background: reasonColor(row.reason.charAt(0).toUpperCase() + row.reason.slice(1)).bg, color: reasonColor(row.reason.charAt(0).toUpperCase() + row.reason.slice(1)).text, fontWeight: 700, fontSize: 10 }}>{row.reason}</span> : '-'}
                         </td>
-                        <td style={{ ...tdStyle, padding: '8px 10px', fontSize: 12 }}>{row.fromDate || 'â€”'}</td>
-                        <td style={{ ...tdStyle, padding: '8px 10px', fontSize: 12 }}>{row.toDate || 'â€”'}</td>
-                        <td style={{ ...tdStyle, padding: '8px 10px', fontSize: 11, color: '#64748b', maxWidth: 120, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{row.notes || 'â€”'}</td>
+                        <td style={{ ...tdStyle, padding: '8px 10px', fontSize: 12 }}>{row.fromDate || '-'}</td>
+                        <td style={{ ...tdStyle, padding: '8px 10px', fontSize: 12 }}>{row.toDate || '-'}</td>
+                        <td style={{ ...tdStyle, padding: '8px 10px', fontSize: 11, color: '#64748b', maxWidth: 120, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{row.notes || '-'}</td>
                         <td style={{ ...tdStyle, padding: '8px 10px', fontSize: 11 }}>
-                          {row.matchedOccupant ? <span style={{ color: '#166534', fontWeight: 600 }}>âœ“ {row.matchedOccupant}</span> : <span style={{ color: '#92400e' }}>Unmatched</span>}
+                          {row.matchedOccupant ? <span style={{ color: '#166534', fontWeight: 600 }}>OK {row.matchedOccupant}</span> : <span style={{ color: '#92400e' }}>Unmatched</span>}
                         </td>
                         <td style={{ ...tdStyle, padding: '8px 10px' }}>
                           {row.valid
@@ -377,7 +377,7 @@ function ImportModal({ open, onClose, occupants, onImported }) {
           </button>
           {parsed && !result ? (
             <button onClick={handleImport} disabled={importing || validCount === 0} style={{ padding: '9px 22px', borderRadius: 8, border: 'none', background: importing || validCount === 0 ? '#93c5fd' : '#2563eb', color: '#fff', fontWeight: 700, cursor: importing || validCount === 0 ? 'not-allowed' : 'pointer', fontSize: 13 }}>
-              {importing ? 'Importingâ€¦' : `Import ${validCount} Exclusion${validCount !== 1 ? 's' : ''}`}
+              {importing ? 'Importing...' : `Import ${validCount} Exclusion${validCount !== 1 ? 's' : ''}`}
             </button>
           ) : null}
         </div>
@@ -386,7 +386,7 @@ function ImportModal({ open, onClose, occupants, onImported }) {
   );
 }
 
-// â”€â”€â”€ History Modal â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// --- History Modal ----------------------------------------------------------
 function ExclusionHistoryModal({ open, onClose }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -416,7 +416,7 @@ function ExclusionHistoryModal({ open, onClose }) {
             <div style={{ fontWeight: 800, color: '#1e315f', fontSize: '1.05rem' }}>Exclusion History</div>
             <div style={{ fontSize: 12, color: '#64748b', marginTop: 2 }}>Past exclusions that have reached their to-date</div>
           </div>
-          <button onClick={onClose} style={{ background: 'none', border: 'none', fontSize: 22, cursor: 'pointer', color: '#64748b', lineHeight: 1 }}>Ã—</button>
+          <button onClick={onClose} style={{ background: 'none', border: 'none', fontSize: 22, cursor: 'pointer', color: '#64748b', lineHeight: 1 }}>X</button>
         </div>
         <div style={{ padding: 16, overflowY: 'auto', flex: 1 }}>
           {error ? <div style={{ marginBottom: 12, padding: '9px 12px', background: '#fef2f2', border: '1px solid #fecaca', borderRadius: 8, color: '#dc2626', fontSize: 13, fontWeight: 600 }}>{error}</div> : null}
@@ -428,7 +428,7 @@ function ExclusionHistoryModal({ open, onClose }) {
   );
 }
 
-// â”€â”€â”€ Exclusion Table â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// --- Exclusion Table --------------------------------------------------------
 function ExclusionTable({ rows, canEdit, closingId, onClose, onEdit, emptyText }) {
   return (
     <div style={{ overflowX: 'auto' }}>
@@ -454,18 +454,18 @@ function ExclusionTable({ rows, canEdit, closingId, onClose, onEdit, emptyText }
                     <div style={{ fontWeight: 800, color: '#1f2937', fontSize: 13 }}>{item.name}</div>
                     {item.staffId ? <div style={{ fontSize: 11, color: '#64748b', marginTop: 1 }}>{item.staffId}</div> : null}
                   </td>
-                  <td style={{ ...tdStyle, color: '#374151', fontWeight: 600, textTransform: 'uppercase', fontSize: 12 }}>{item.department || 'â€”'}</td>
+                  <td style={{ ...tdStyle, color: '#374151', fontWeight: 600, textTransform: 'uppercase', fontSize: 12 }}>{item.department || '-'}</td>
                   <td style={tdStyle}>
                     <span style={{ display: 'inline-block', padding: '3px 10px', borderRadius: 999, background: rc.bg, color: rc.text, fontWeight: 700, fontSize: 11, border: `1px solid ${rc.text}30` }}>{item.reason}</span>
                   </td>
                   <td style={{ ...tdStyle, color: '#374151' }}>{asDate(item.fromDate)}</td>
-                  <td style={{ ...tdStyle, color: '#374151' }}>{item.toDate ? asDate(item.toDate) : 'â€”'}</td>
+                  <td style={{ ...tdStyle, color: '#374151' }}>{item.toDate ? asDate(item.toDate) : '-'}</td>
                   <td style={{ ...tdStyle, textAlign: 'right' }}>
                     {canEdit ? (
                       <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 6 }}>
                         <button onClick={() => onEdit(item)} style={{ padding: '5px 10px', borderRadius: 6, border: '1px solid #93c5fd', background: '#eff6ff', color: '#1d4ed8', fontWeight: 700, cursor: 'pointer', fontSize: 12 }}>Edit</button>
                         <button onClick={() => onClose(item.id)} disabled={closingId === item.id} style={{ padding: '5px 10px', borderRadius: 6, border: '1px solid #fca5a5', background: '#fff', color: '#dc2626', fontWeight: 700, cursor: closingId === item.id ? 'not-allowed' : 'pointer', fontSize: 12 }}>
-                          {closingId === item.id ? 'Removingâ€¦' : 'Remove'}
+                          {closingId === item.id ? 'Removing...' : 'Remove'}
                         </button>
                       </div>
                     ) : null}
@@ -479,7 +479,7 @@ function ExclusionTable({ rows, canEdit, closingId, onClose, onEdit, emptyText }
   );
 }
 
-// â”€â”€â”€ Main Page â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// --- Main Page --------------------------------------------------------------
 function MealExclusion() {
   const {
     occupants = [],
@@ -506,13 +506,13 @@ function MealExclusion() {
     const map = new Map();
     for (const occ of occupants) {
       const key = normalizeText(occ.staffId);
-      if (key && !map.has(key)) map.set(key, occ.department || 'â€”');
+      if (key && !map.has(key)) map.set(key, occ.department || '-');
     }
     return map;
   }, [occupants]);
 
   const hydrateRows = useMemo(() => {
-    const enrich = items => items.map(item => ({ ...item, department: item.department || departmentByStaffId.get(normalizeText(item.staffId)) || 'â€”' }));
+    const enrich = items => items.map(item => ({ ...item, department: item.department || departmentByStaffId.get(normalizeText(item.staffId)) || '-' }));
     return { active: enrich(active), upcoming: enrich(upcoming) };
   }, [active, upcoming, departmentByStaffId]);
 
@@ -554,7 +554,7 @@ function MealExclusion() {
   return (
     <div style={{ width: '100%', maxWidth: '100%', margin: 0, padding: '24px 32px', background: 'none', fontFamily: 'Inter,Segoe UI,Arial,sans-serif', boxSizing: 'border-box' }}>
 
-      {/* â”€â”€ Stat cards + buttons â”€â”€ */}
+      {/* --- Stat cards + buttons --- */}
       <div style={{ display: 'flex', alignItems: 'stretch', gap: 12, marginBottom: 20, flexWrap: 'wrap' }}>
         <div style={{ background: 'linear-gradient(135deg,#ffe9d6 0%,#ffe2bf 100%)', borderRadius: 12, border: '1px solid rgba(154,52,18,0.12)', padding: '14px 20px', flex: '1 1 140px', boxShadow: '0 4px 12px rgba(154,52,18,0.08)' }}>
           <div style={{ fontSize: 11, color: '#9a3412', fontWeight: 800, textTransform: 'uppercase' }}>Active Exclusions</div>
@@ -572,7 +572,7 @@ function MealExclusion() {
           {canEditAccommodation ? (
             <>
               <button onClick={openAddModal} style={{ padding: '11px 16px', borderRadius: 10, border: 'none', background: '#2563eb', color: '#fff', fontWeight: 800, fontSize: 13, cursor: 'pointer', whiteSpace: 'nowrap', boxShadow: '0 2px 8px rgba(37,99,235,0.25)' }}>+ Add Exclusion</button>
-              <button onClick={() => setImportOpen(true)} style={{ padding: '11px 16px', borderRadius: 10, border: 'none', background: '#16a34a', color: '#fff', fontWeight: 800, fontSize: 13, cursor: 'pointer', whiteSpace: 'nowrap', boxShadow: '0 2px 8px rgba(22,163,74,0.25)' }}>â¬† Import CSV</button>
+              <button onClick={() => setImportOpen(true)} style={{ padding: '11px 16px', borderRadius: 10, border: 'none', background: '#16a34a', color: '#fff', fontWeight: 800, fontSize: 13, cursor: 'pointer', whiteSpace: 'nowrap', boxShadow: '0 2px 8px rgba(22,163,74,0.25)' }}>Import CSV</button>
             </>
           ) : null}
           <button onClick={() => setHistoryOpen(true)} style={{ padding: '11px 16px', borderRadius: 10, border: '1px solid #93c5fd', background: '#eff6ff', color: '#1d4ed8', fontWeight: 800, fontSize: 13, cursor: 'pointer', whiteSpace: 'nowrap' }}>Exclusion History</button>
@@ -582,11 +582,11 @@ function MealExclusion() {
       {notice ? (
         <div style={{ marginBottom: 14, padding: '10px 14px', border: '1px solid #bfdbfe', borderRadius: 10, background: '#eff6ff', color: '#1d4ed8', fontWeight: 700, fontSize: 13, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <span>{notice}</span>
-          <button onClick={() => setNotice('')} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#93c5fd', fontSize: 18, lineHeight: 1 }}>Ã—</button>
+          <button onClick={() => setNotice('')} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#93c5fd', fontSize: 18, lineHeight: 1 }}>X</button>
         </div>
       ) : null}
 
-      {/* â”€â”€ Tabbed exclusion table â”€â”€ */}
+      {/* --- Tabbed exclusion table --- */}
       <div style={{ background: '#fff', border: '1px solid #dbe4f0', borderRadius: 14, overflow: 'hidden' }}>
         {/* Tab bar */}
         <div style={{ display: 'flex', borderBottom: '1px solid #e2e8f0', background: '#f8fafc' }}>
