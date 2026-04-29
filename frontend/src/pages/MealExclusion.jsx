@@ -38,6 +38,17 @@ const tdStyle = {
   fontSize: 13,
 };
 
+const modalFieldStyle = {
+  height: 40,
+  padding: '9px 10px',
+  borderRadius: 8,
+  border: '1px solid #cbd5e1',
+  fontSize: 13,
+  boxSizing: 'border-box',
+  width: '100%',
+  background: '#ffffff',
+};
+
 function normalizeText(value) {
   return String(value || '').trim().toLowerCase();
 }
@@ -115,19 +126,26 @@ function ExclusionModal({ open, onClose, occupants, canEdit, onSaved, editEntry 
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!canEdit || saving) return;
-    if (!selectedOccupant || !reason || !fromDate) {
-      setError('Select occupant, reason, and from date.');
+
+    const normalizedQuery = normalizeText(occupantQuery);
+    const resolvedOccupant = selectedOccupant || occupants.find(item => (
+      normalizeText(item.name) === normalizedQuery || normalizeText(item.staffId) === normalizedQuery
+    ));
+
+    if (!resolvedOccupant || !reason || !fromDate) {
+      setError('Select a valid occupant, reason, and from date.');
       return;
     }
+
     setSaving(true);
     setError('');
     try {
       const payload = {
-        occupantId: selectedOccupant.id,
-        name: selectedOccupant.name,
-        staffId: selectedOccupant.staffId,
-        roomId: selectedOccupant.roomId,
-        bedNo: selectedOccupant.bedNo,
+        occupantId: resolvedOccupant.id,
+        name: resolvedOccupant.name,
+        staffId: resolvedOccupant.staffId,
+        roomId: resolvedOccupant.roomId,
+        bedNo: resolvedOccupant.bedNo,
         reason,
         fromDate,
         toDate: toDate || null,
@@ -155,17 +173,17 @@ function ExclusionModal({ open, onClose, occupants, canEdit, onSaved, editEntry 
   if (!open) return null;
   return (
     <div style={{ position: 'fixed', inset: 0, background: 'rgba(15,23,42,0.5)', zIndex: 3000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
-      <div style={{ background: '#fff', borderRadius: 16, width: '100%', maxWidth: 560, boxShadow: '0 20px 60px rgba(0,0,0,0.2)', position: 'relative', fontFamily: 'Inter, Segoe UI, Arial, sans-serif' }}>
-        <div style={{ padding: '20px 24px 16px', borderBottom: '1px solid #e2e8f0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <div style={{ background: 'linear-gradient(180deg, #ffffff 0%, #f8fbff 100%)', borderRadius: 16, width: '100%', maxWidth: 560, boxShadow: '0 20px 60px rgba(0,0,0,0.2)', position: 'relative', fontFamily: 'Inter, Segoe UI, Arial, sans-serif', border: '1px solid #dbeafe' }}>
+        <div style={{ padding: '18px 24px 15px', borderBottom: '1px solid #dbeafe', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'linear-gradient(130deg, #eff6ff 0%, #f8fbff 100%)', borderTopLeftRadius: 16, borderTopRightRadius: 16 }}>
           <div>
             <div style={{ fontWeight: 800, fontSize: '1.1rem', color: '#1e315f' }}>{isEditing ? 'Edit Meal Exclusion' : 'Add Meal Exclusion'}</div>
             <div style={{ fontSize: 12, color: '#64748b', marginTop: 2 }}>{isEditing ? 'Update exclusion details for selected occupant' : 'Exclude a staff member from meals for a date range'}</div>
           </div>
           <button onClick={handleClose} style={{ background: 'none', border: 'none', fontSize: 22, cursor: 'pointer', color: '#64748b', lineHeight: 1 }}>×</button>
         </div>
-        <form onSubmit={handleSubmit} style={{ padding: '20px 24px' }}>
+        <form onSubmit={handleSubmit} style={{ padding: '18px 24px 20px' }}>
           {error ? <div style={{ marginBottom: 12, padding: '9px 12px', background: '#fef2f2', border: '1px solid #fecaca', borderRadius: 8, color: '#dc2626', fontSize: 13, fontWeight: 600 }}>{error}</div> : null}
-          <div style={{ display: 'grid', gap: 14 }}>
+          <div style={{ display: 'grid', gap: 14, background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: 12, padding: 14 }}>
             <div style={{ display: 'grid', gap: 5, fontWeight: 700, color: '#334155', fontSize: 12, position: 'relative' }}>
               Occupant (search by Name or Staff ID)
               <input
@@ -180,7 +198,7 @@ function ExclusionModal({ open, onClose, occupants, canEdit, onSaved, editEntry 
                 placeholder="Type name or staff ID"
                 disabled={!canEdit || saving}
                 required
-                style={{ padding: '9px 10px', borderRadius: 8, border: '1px solid #cbd5e1', fontSize: 13 }}
+                style={modalFieldStyle}
               />
               {showMatches && filteredOccupants.length > 0 ? (
                 <div style={{ position: 'absolute', left: 0, right: 0, top: '100%', marginTop: 4, background: '#fff', border: '1px solid #cbd5e1', borderRadius: 8, boxShadow: '0 10px 24px rgba(15,23,42,0.14)', zIndex: 20, maxHeight: 220, overflowY: 'auto' }}>
@@ -200,23 +218,25 @@ function ExclusionModal({ open, onClose, occupants, canEdit, onSaved, editEntry 
             </div>
             <label style={{ display: 'grid', gap: 5, fontWeight: 700, color: '#334155', fontSize: 12 }}>
               Reason
-              <select value={reason} onChange={e => setReason(e.target.value)} disabled={!canEdit || saving} style={{ padding: '9px 10px', borderRadius: 8, border: '1px solid #cbd5e1', fontSize: 13, background: '#fff' }}>
+              <select value={reason} onChange={e => setReason(e.target.value)} disabled={!canEdit || saving} style={modalFieldStyle}>
                 {REASONS.map(item => <option key={item} value={item}>{item}</option>)}
               </select>
             </label>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, alignItems: 'end' }}>
               <label style={{ display: 'grid', gap: 5, fontWeight: 700, color: '#334155', fontSize: 12 }}>
-                From Date
-                <input type="date" value={fromDate} onChange={e => setFromDate(e.target.value)} disabled={!canEdit || saving} required style={{ padding: '9px 10px', borderRadius: 8, border: '1px solid #cbd5e1', fontSize: 13 }} />
+                <span>From Date</span>
+                <span style={{ fontWeight: 500, color: '#94a3b8', minHeight: 16, fontSize: 11 }}>required</span>
+                <input type="date" value={fromDate} onChange={e => setFromDate(e.target.value)} disabled={!canEdit || saving} required style={modalFieldStyle} />
               </label>
               <label style={{ display: 'grid', gap: 5, fontWeight: 700, color: '#334155', fontSize: 12 }}>
-                To Date <span style={{ fontWeight: 400, color: '#94a3b8' }}>(optional)</span>
-                <input type="date" value={toDate} onChange={e => setToDate(e.target.value)} disabled={!canEdit || saving} style={{ padding: '9px 10px', borderRadius: 8, border: '1px solid #cbd5e1', fontSize: 13 }} />
+                <span>To Date</span>
+                <span style={{ fontWeight: 500, color: '#94a3b8', minHeight: 16, fontSize: 11 }}>optional</span>
+                <input type="date" value={toDate} onChange={e => setToDate(e.target.value)} disabled={!canEdit || saving} style={modalFieldStyle} />
               </label>
             </div>
             <label style={{ display: 'grid', gap: 5, fontWeight: 700, color: '#334155', fontSize: 12 }}>
               Notes <span style={{ fontWeight: 400, color: '#94a3b8' }}>(optional)</span>
-              <input value={notes} onChange={e => setNotes(e.target.value)} disabled={!canEdit || saving} placeholder="Any additional notes..." style={{ padding: '9px 10px', borderRadius: 8, border: '1px solid #cbd5e1', fontSize: 13 }} />
+              <input value={notes} onChange={e => setNotes(e.target.value)} disabled={!canEdit || saving} placeholder="Any additional notes..." style={modalFieldStyle} />
             </label>
           </div>
           <div style={{ display: 'flex', gap: 10, marginTop: 20, justifyContent: 'flex-end' }}>
@@ -247,7 +267,11 @@ function ExclusionHistoryModal({ open, onClose }) {
         const rows = await fetchMealHistory();
         if (active) setHistoryRows(Array.isArray(rows) ? rows : []);
       } catch (err) {
-        if (active) setError(err?.message || 'Unable to load exclusion history.');
+        const message = err?.message || 'Unable to load exclusion history.';
+        const friendlyMessage = message.includes("public.meal_exclusions")
+          ? 'Meal exclusions table is not available yet. Please run the meal_exclusions SQL setup in Supabase.'
+          : message;
+        if (active) setError(friendlyMessage);
       } finally {
         if (active) setLoading(false);
       }
