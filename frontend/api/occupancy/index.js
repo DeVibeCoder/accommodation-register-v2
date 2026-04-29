@@ -9,17 +9,6 @@ function keyFor(row = {}) {
 }
 
 const MEAL_REASONS = new Set(['Off Site', 'Vacation', 'Restaurant', 'Exit']);
-const MEAL_DEPARTMENT_ORDER = ['LOG', 'MR', 'QM', 'SW', 'TIC', 'VT', 'VMT', 'OTH'];
-const MEAL_DEPARTMENT_LABELS = {
-  LOG: 'Logistics',
-  MR: 'Marine',
-  QM: 'Quality Management',
-  SW: 'Steel Workshop',
-  TIC: 'Thilafushi Industrial Complex',
-  VT: 'Villa Transport',
-  VMT: 'Vehicle Maintenance',
-  OTH: 'Other',
-};
 
 function todayIsoDate() {
   return new Date().toISOString().slice(0, 10);
@@ -143,37 +132,13 @@ function splitMealExclusions(rows = []) {
   return { active, upcoming, history };
 }
 
-function emptyMealDepartmentCounts() {
-  return MEAL_DEPARTMENT_ORDER.reduce((acc, code) => {
-    acc[code] = 0;
-    return acc;
-  }, {});
-}
-
-function normalizeMealDepartmentCounts(source = {}) {
-  const counts = emptyMealDepartmentCounts();
-  for (const code of MEAL_DEPARTMENT_ORDER) {
-    const value = Number(source?.[code] || 0);
-    counts[code] = Number.isFinite(value) ? Math.max(0, Math.floor(value)) : 0;
+function normalizeDeptCounts(source = {}) {
+  const counts = {};
+  for (const [k, v] of Object.entries(source)) {
+    const n = Number(v);
+    counts[String(k)] = Number.isFinite(n) ? Math.max(0, Math.floor(n)) : 0;
   }
   return counts;
-}
-
-function mealDepartmentList() {
-  return MEAL_DEPARTMENT_ORDER.map(code => ({ code, name: MEAL_DEPARTMENT_LABELS[code] || code }));
-}
-
-function classifyMealDepartment(department = '') {
-  const value = String(department || '').trim().toLowerCase();
-  if (!value) return 'OTH';
-  if (value.includes('log')) return 'LOG';
-  if (value === 'mr' || value.includes('marine')) return 'MR';
-  if (value === 'qm' || value.includes('quality')) return 'QM';
-  if (value === 'sw' || value.includes('steel')) return 'SW';
-  if (value.includes('thilafushi industrial complex') || value === 'tic') return 'TIC';
-  if (value === 'vt' || value.includes('transport')) return 'VT';
-  if (value === 'vmt' || value.includes('maintenance')) return 'VMT';
-  return 'OTH';
 }
 
 function toIsoDateOrEmpty(value) {
@@ -182,8 +147,8 @@ function toIsoDateOrEmpty(value) {
 }
 
 function formatMealHistoryRow(row = {}) {
-  const counts = normalizeMealDepartmentCounts(row.department_counts || row.departmentCounts || {});
-  const total = Number(row.total_meals ?? row.totalMeals ?? 0);
+  const counts = normalizeDeptCounts(row.department_counts || row.departmentCounts || {});
+  const total = Number(row.total_meals ?? row.totalMeals ?? row.total ?? 0);
   return {
     date: toIsoDateOrEmpty(row.snapshot_date || row.date),
     total: Number.isFinite(total) ? Math.max(0, Math.floor(total)) : 0,
@@ -235,15 +200,15 @@ async function computeMealSnapshotForDate(date = todayIsoDate()) {
 
   const occupants = Array.isArray(occupancyRows) ? occupancyRows : [];
   const exclusionIndex = buildActiveMealExclusionIndex(exclusionRows, date);
-  const counts = emptyMealDepartmentCounts();
+  const counts = {};
 
   for (const row of occupants) {
     if (isExcludedFromMeals(row, exclusionIndex)) continue;
-    const code = classifyMealDepartment(row.department);
-    counts[code] += 1;
+    const dept = String(row.department || '').trim() || 'Other';
+    counts[dept] = (counts[dept] || 0) + 1;
   }
 
-  const total = MEAL_DEPARTMENT_ORDER.reduce((sum, code) => sum + (counts[code] || 0), 0);
+  const total = Object.values(counts).reduce((sum, n) => sum + n, 0);
   return {
     date,
     total,
@@ -261,7 +226,7 @@ async function upsertMealSnapshot(snapshot = {}) {
     body: [{
       snapshot_date: snapshot.date,
       total_meals: snapshot.total || 0,
-      department_counts: normalizeMealDepartmentCounts(snapshot.counts),
+      department_counts: normalizeDeptCounts(snapshot.counts || {}),
       source_updated_at: snapshot.sourceUpdatedAt || new Date().toISOString(),
     }],
     prefer: 'resolution=merge-duplicates,return=representation',
@@ -458,10 +423,16 @@ export default async function handler(req, res) {
           history = [liveSnapshot, ...history].sort((a, b) => String(b.date).localeCompare(String(a.date)));
         }
 
+        const allDepts = new Set();
+        for (const item of history) {
+          for (const k of Object.keys(item.counts || {})) allDepts.add(k);
+        }
+        const departments = [...allDepts].sort((a, b) => a.localeCompare(b));
+
         res.setHeader('Cache-Control', 'no-store');
         return json(res, 200, {
           history,
-          departments: mealDepartmentList(),
+          departments,
           generatedAt: new Date().toISOString(),
           warning: persistenceWarning || null,
         });

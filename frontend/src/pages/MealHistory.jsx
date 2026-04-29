@@ -1,16 +1,14 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { fetchMealHistory } from '../services/mealService';
 
-const DEFAULT_DEPARTMENTS = [
-  { code: 'LOG', name: 'Logistics' },
-  { code: 'MR', name: 'Marine' },
-  { code: 'QM', name: 'Quality Management' },
-  { code: 'SW', name: 'Steel Workshop' },
-  { code: 'TIC', name: 'Thilafushi Industrial Complex' },
-  { code: 'VT', name: 'Villa Transport' },
-  { code: 'VMT', name: 'Vehicle Maintenance' },
-  { code: 'OTH', name: 'Other' },
-];
+function shortCode(value) {
+  if (!value) return '-';
+  const cleaned = String(value).toUpperCase().replace(/[^A-Z0-9\s]/g, ' ').replace(/\s+/g, ' ').trim();
+  if (!cleaned) return '-';
+  const parts = cleaned.split(' ').filter(Boolean);
+  if (parts.length === 1) return parts[0].slice(0, 4);
+  return parts.slice(0, 4).map(p => p[0]).join('');
+}
 
 function toIsoDate(value) {
   const text = String(value || '').slice(0, 10);
@@ -24,11 +22,11 @@ function formatDateForUi(isoDate = '') {
   return `${month}/${day}/${year}`;
 }
 
-function normalizeCounts(source = {}, departments = DEFAULT_DEPARTMENTS) {
+function normalizeCounts(source = {}, departments = []) {
   const counts = {};
-  for (const item of departments) {
-    const value = Number(source?.[item.code] || 0);
-    counts[item.code] = Number.isFinite(value) ? Math.max(0, Math.floor(value)) : 0;
+  for (const dept of departments) {
+    const value = Number(source?.[dept] ?? 0);
+    counts[dept] = Number.isFinite(value) ? Math.max(0, Math.floor(value)) : 0;
   }
   return counts;
 }
@@ -54,32 +52,41 @@ function escapeCsv(value) {
 function MealDayDetailModal({ row, departments, onClose }) {
   if (!row) return null;
 
+  const sorted = [...departments].sort((a, b) => (row.counts?.[b] || 0) - (row.counts?.[a] || 0));
+
   return (
     <div style={{ position: 'fixed', inset: 0, background: 'rgba(15,23,42,0.55)', zIndex: 3500, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }} onClick={onClose}>
-      <div style={{ width: '100%', maxWidth: 440, background: '#fff', borderRadius: 14, border: '1px solid #dbe4f0', boxShadow: '0 18px 50px rgba(15,23,42,0.22)' }} onClick={e => e.stopPropagation()}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '14px 16px', borderBottom: '1px solid #e2e8f0' }}>
+      <div style={{ width: '100%', maxWidth: 480, background: '#fff', borderRadius: 16, border: '1px solid #dbe4f0', boxShadow: '0 20px 60px rgba(15,23,42,0.25)', maxHeight: '85vh', display: 'flex', flexDirection: 'column' }} onClick={e => e.stopPropagation()}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px 20px', borderBottom: '2px solid #e2e8f0', background: '#f8fafc', borderRadius: '16px 16px 0 0' }}>
           <div>
-            <div style={{ fontWeight: 900, color: '#1e315f', fontSize: '1.02rem' }}>Meal Details</div>
-            <div style={{ fontSize: 12, color: '#64748b', marginTop: 2 }}>{formatDateForUi(row.date)}</div>
+            <div style={{ fontWeight: 900, color: '#1e315f', fontSize: '1.1rem', letterSpacing: '-0.3px' }}>Department Breakdown</div>
+            <div style={{ fontSize: 12, color: '#64748b', marginTop: 3, fontWeight: 600 }}>{formatDateForUi(row.date)}</div>
           </div>
-          <button onClick={onClose} style={{ border: 'none', background: 'none', color: '#64748b', cursor: 'pointer', fontWeight: 800, fontSize: 16 }}>X</button>
+          <button onClick={onClose} style={{ border: '1px solid #dbe4f0', background: '#fff', color: '#64748b', cursor: 'pointer', fontWeight: 800, fontSize: 14, borderRadius: 8, width: 30, height: 30, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>&#x2715;</button>
         </div>
 
-        <div style={{ padding: 14, display: 'grid', gap: 8 }}>
-          {departments.map(item => (
-            <div key={item.code} style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: 10, alignItems: 'center', border: '1px solid #eef2f7', borderRadius: 8, padding: '9px 10px', background: '#fbfdff' }}>
-              <div>
-                <div style={{ fontWeight: 700, color: '#1f2937', fontSize: 13 }}>{item.name}</div>
-                <div style={{ color: '#94a3b8', fontSize: 11 }}>{item.code}</div>
+        <div style={{ padding: '12px 16px', overflowY: 'auto', flex: 1 }}>
+          {sorted.map(dept => {
+            const count = row.counts?.[dept] || 0;
+            const pct = row.total > 0 ? Math.round((count / row.total) * 100) : 0;
+            return (
+              <div key={dept} style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: 8, alignItems: 'center', borderBottom: '1px solid #f1f5f9', padding: '10px 6px' }}>
+                <div style={{ minWidth: 0 }}>
+                  <div style={{ fontWeight: 700, color: '#1e293b', fontSize: 13.5, lineHeight: 1.3 }}>{dept}</div>
+                  <div style={{ marginTop: 4, height: 4, borderRadius: 4, background: '#e2e8f0', overflow: 'hidden' }}>
+                    <div style={{ height: '100%', width: `${pct}%`, background: count > 0 ? '#1d4ed8' : '#cbd5e1', borderRadius: 4, transition: 'width .3s' }} />
+                  </div>
+                </div>
+                <div style={{ fontWeight: 900, color: count > 0 ? '#1d4ed8' : '#94a3b8', fontSize: 18, minWidth: 40, textAlign: 'right' }}>{count}</div>
               </div>
-              <div style={{ fontWeight: 900, color: '#1d4ed8', fontSize: 17 }}>{row.counts?.[item.code] || 0}</div>
-            </div>
-          ))}
+            );
+          })}
+          {departments.length === 0 && <div style={{ color: '#94a3b8', padding: 12, textAlign: 'center', fontSize: 13 }}>No department data available.</div>}
         </div>
 
-        <div style={{ borderTop: '1px solid #e2e8f0', padding: '12px 16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#f8fafc', borderRadius: '0 0 14px 14px' }}>
+        <div style={{ borderTop: '2px solid #e2e8f0', padding: '14px 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#f8fafc', borderRadius: '0 0 16px 16px' }}>
           <div style={{ color: '#475569', fontSize: 13, fontWeight: 700 }}>Total Meals</div>
-          <div style={{ color: '#0f172a', fontWeight: 900, fontSize: 18 }}>{row.total || 0}</div>
+          <div style={{ color: '#0f172a', fontWeight: 900, fontSize: 22 }}>{row.total || 0}</div>
         </div>
       </div>
     </div>
@@ -88,7 +95,7 @@ function MealDayDetailModal({ row, departments, onClose }) {
 
 function MealHistory() {
   const [history, setHistory] = useState([]);
-  const [departments, setDepartments] = useState(DEFAULT_DEPARTMENTS);
+  const [departments, setDepartments] = useState([]);
   const [selectedMonth, setSelectedMonth] = useState(new Date().toISOString().slice(0, 7));
   const [fromDate, setFromDate] = useState('');
   const [toDate, setToDate] = useState('');
@@ -101,9 +108,9 @@ function MealHistory() {
     setNotice('');
     try {
       const payload = await fetchMealHistory();
-      const deptList = Array.isArray(payload?.departments) && payload.departments.length > 0
-        ? payload.departments
-        : DEFAULT_DEPARTMENTS;
+      const rawDepts = Array.isArray(payload?.departments) ? payload.departments : [];
+      // departments is now array of actual department name strings
+      const deptList = rawDepts.filter(d => typeof d === 'string' && d.trim());
 
       setDepartments(deptList);
       setHistory(
@@ -160,13 +167,13 @@ function MealHistory() {
   const handleExport = () => {
     if (filteredRows.length === 0) return;
 
-    const header = ['Date', ...departments.map(item => item.code), 'Total'];
+    const header = ['Date', ...departments, 'Total'];
     const lines = [header.map(escapeCsv).join(',')];
 
     for (const row of filteredRows) {
       const values = [
         formatDateForUi(row.date),
-        ...departments.map(item => row.counts?.[item.code] || 0),
+        ...departments.map(dept => row.counts?.[dept] || 0),
         row.total || 0,
       ];
       lines.push(values.map(escapeCsv).join(','));
@@ -217,12 +224,12 @@ function MealHistory() {
 
         {filteredRows.length > 0 ? (
           <div style={{ overflowX: 'auto' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: 860 }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: 600 }}>
               <thead>
                 <tr>
                   <th style={{ textAlign: 'left', padding: '12px 14px', fontSize: 12, color: '#475569', textTransform: 'uppercase', letterSpacing: '.06em', borderBottom: '1px solid #dbe4f0', background: '#f8fafc' }}>Date</th>
-                  {departments.map(item => (
-                    <th key={item.code} style={{ textAlign: 'center', padding: '12px 10px', fontSize: 12, color: '#475569', textTransform: 'uppercase', letterSpacing: '.06em', borderBottom: '1px solid #dbe4f0', background: '#f8fafc' }}>{item.code}</th>
+                  {departments.map(dept => (
+                    <th key={dept} title={dept} style={{ textAlign: 'center', padding: '12px 10px', fontSize: 12, color: '#475569', textTransform: 'uppercase', letterSpacing: '.06em', borderBottom: '1px solid #dbe4f0', background: '#f8fafc', whiteSpace: 'nowrap' }}>{shortCode(dept)}</th>
                   ))}
                   <th style={{ textAlign: 'center', padding: '12px 12px', fontSize: 12, color: '#475569', textTransform: 'uppercase', letterSpacing: '.06em', borderBottom: '1px solid #dbe4f0', background: '#f8fafc' }}>Total</th>
                 </tr>
@@ -231,8 +238,8 @@ function MealHistory() {
                 {filteredRows.map(row => (
                   <tr key={row.date} style={{ cursor: 'pointer', borderBottom: '1px solid #edf2f7', background: '#fff' }} onClick={() => setSelectedRow(row)}>
                     <td style={{ padding: '11px 14px', color: '#1f2937', fontWeight: 700 }}>{formatDateForUi(row.date)}</td>
-                    {departments.map(item => (
-                      <td key={`${row.date}-${item.code}`} style={{ textAlign: 'center', padding: '11px 10px', color: '#1e3a8a', fontWeight: 700 }}>{row.counts?.[item.code] || 0}</td>
+                    {departments.map(dept => (
+                      <td key={`${row.date}-${dept}`} style={{ textAlign: 'center', padding: '11px 10px', color: '#1e3a8a', fontWeight: 700 }}>{row.counts?.[dept] || 0}</td>
                     ))}
                     <td style={{ textAlign: 'center', padding: '11px 12px', color: '#0f172a', fontWeight: 900 }}>{row.total || 0}</td>
                   </tr>
