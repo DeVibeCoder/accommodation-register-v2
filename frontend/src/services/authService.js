@@ -139,15 +139,22 @@ export async function updateProfileRole(userId, email, role) {
     let data;
 
     try {
-      data = await apiRequest(`/api/users/${encodeURIComponent(targetId)}/role`, {
-        method: 'PUT',
-        body: { email, role: nextRole },
+      data = await apiRequest('/api/users', {
+        method: 'POST',
+        body: { userId: targetId, email, role: nextRole },
       });
     } catch {
-      data = await apiRequest(`/api/users/${encodeURIComponent(targetId)}/role`, {
-        method: 'POST',
-        body: { email, role: nextRole },
-      });
+      try {
+        data = await apiRequest(`/api/users/${encodeURIComponent(targetId)}/role`, {
+          method: 'POST',
+          body: { email, role: nextRole },
+        });
+      } catch {
+        data = await apiRequest(`/api/users/${encodeURIComponent(targetId)}/role`, {
+          method: 'PUT',
+          body: { email, role: nextRole },
+        });
+      }
     }
 
     const user = normalizeUser(data?.user, email);
