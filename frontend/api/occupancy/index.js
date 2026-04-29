@@ -437,6 +437,51 @@ export default async function handler(req, res) {
       return json(res, 200, { entry: record });
     }
 
+    if (payload?.__operation === 'meal-exclusion-batch-add') {
+      const entries = Array.isArray(payload.entries) ? payload.entries : [];
+      if (entries.length === 0) return json(res, 400, { error: 'No entries provided.' });
+
+      const today = todayIsoDate();
+      const rows = [];
+      const errors = [];
+
+      for (const entry of entries) {
+        const reason = normalizeMealReason(entry.reason);
+        const fromDate = String(entry.fromDate || '').slice(0, 10);
+        const toDate = entry.toDate ? String(entry.toDate).slice(0, 10) : null;
+        if (!reason || !MEAL_REASONS.has(reason) || !fromDate) {
+          errors.push({ name: entry.name || entry.staffId || '?', error: 'Invalid reason or missing from date' });
+          continue;
+        }
+        rows.push({
+          occupant_id: entry.occupantId || null,
+          occupant_name: entry.name || null,
+          staff_id: entry.staffId || null,
+          room_id: entry.roomId || null,
+          bed_no: entry.bedNo ?? null,
+          reason,
+          from_date: fromDate,
+          to_date: toDate,
+          notes: entry.notes || null,
+          created_by: user?.id || null,
+          auto_checked_out_at: null,
+        });
+      }
+
+      let insertedCount = 0;
+      if (rows.length > 0) {
+        const inserted = await supabaseRequest('/rest/v1/meal_exclusions', {
+          method: 'POST',
+          service: true,
+          body: rows,
+          prefer: 'return=representation',
+        });
+        insertedCount = Array.isArray(inserted) ? inserted.length : 0;
+      }
+
+      return json(res, 200, { inserted: insertedCount, errors, total: entries.length });
+    }
+
     if (payload?.__operation === 'mutate') {
       const target = await resolveTargetFilter(payload);
       if (!target.filter) {

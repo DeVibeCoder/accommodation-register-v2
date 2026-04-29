@@ -54,3 +54,14 @@ export async function updateMealExclusion(id, payload = {}) {
 
   return data?.entry || null;
 }
+
+export async function batchAddMealExclusions(entries = []) {
+  const data = await apiRequest('/api/occupancy', {
+    method: 'POST',
+    body: {
+      __operation: 'meal-exclusion-batch-add',
+      entries,
+    },
+  });
+  return data || { inserted: 0, errors: [], total: 0 };
+}
