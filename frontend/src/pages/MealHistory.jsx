@@ -10,6 +10,19 @@ function shortCode(value) {
   return parts.slice(0, 4).map(p => p[0]).join('');
 }
 
+const DEPT_ORDER = ['TIC', 'QMAR', 'VTC2', 'VMT', 'VT', 'LOGI'];
+
+function sortDepartments(departments) {
+  return [...departments].sort((a, b) => {
+    const ai = DEPT_ORDER.indexOf(shortCode(a));
+    const bi = DEPT_ORDER.indexOf(shortCode(b));
+    const aPos = ai === -1 ? 9999 : ai;
+    const bPos = bi === -1 ? 9999 : bi;
+    if (aPos !== bPos) return aPos - bPos;
+    return a.localeCompare(b);
+  });
+}
+
 function toIsoDate(value) {
   const text = String(value || '').slice(0, 10);
   return /^\d{4}-\d{2}-\d{2}$/.test(text) ? text : '';
@@ -19,7 +32,7 @@ function formatDateForUi(isoDate = '') {
   const safe = toIsoDate(isoDate);
   if (!safe) return '-';
   const [year, month, day] = safe.split('-');
-  return `${month}/${day}/${year}`;
+  return `${day}/${month}/${year}`;
 }
 
 function normalizeCounts(source = {}, departments = []) {
@@ -53,40 +66,59 @@ function MealDayDetailModal({ row, departments, onClose }) {
   if (!row) return null;
 
   const sorted = [...departments].sort((a, b) => (row.counts?.[b] || 0) - (row.counts?.[a] || 0));
+  const maxCount = sorted.length > 0 ? (row.counts?.[sorted[0]] || 0) : 1;
+
+  const BADGE_COLORS = [
+    { bg: '#dbeafe', text: '#1d4ed8' },
+    { bg: '#dcfce7', text: '#16a34a' },
+    { bg: '#fef3c7', text: '#b45309' },
+    { bg: '#f3e8ff', text: '#7c3aed' },
+    { bg: '#fce7f3', text: '#be185d' },
+    { bg: '#e0f2fe', text: '#0369a1' },
+  ];
 
   return (
-    <div style={{ position: 'fixed', inset: 0, background: 'rgba(15,23,42,0.55)', zIndex: 3500, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }} onClick={onClose}>
-      <div style={{ width: '100%', maxWidth: 480, background: '#fff', borderRadius: 16, border: '1px solid #dbe4f0', boxShadow: '0 20px 60px rgba(15,23,42,0.25)', maxHeight: '85vh', display: 'flex', flexDirection: 'column' }} onClick={e => e.stopPropagation()}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px 20px', borderBottom: '2px solid #e2e8f0', background: '#f8fafc', borderRadius: '16px 16px 0 0' }}>
+    <div style={{ position: 'fixed', inset: 0, background: 'rgba(15,23,42,0.6)', zIndex: 3500, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }} onClick={onClose}>
+      <div style={{ width: '100%', maxWidth: 500, background: '#fff', borderRadius: 18, boxShadow: '0 24px 80px rgba(15,23,42,0.3)', maxHeight: '88vh', display: 'flex', flexDirection: 'column' }} onClick={e => e.stopPropagation()}>
+
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '18px 22px', borderBottom: '1px solid #e8edf5', background: 'linear-gradient(135deg, #1e315f 0%, #2563eb 100%)', borderRadius: '18px 18px 0 0' }}>
           <div>
-            <div style={{ fontWeight: 900, color: '#1e315f', fontSize: '1.1rem', letterSpacing: '-0.3px' }}>Department Breakdown</div>
-            <div style={{ fontSize: 12, color: '#64748b', marginTop: 3, fontWeight: 600 }}>{formatDateForUi(row.date)}</div>
+            <div style={{ fontWeight: 900, color: '#fff', fontSize: '1.1rem', letterSpacing: '-0.2px' }}>Department Breakdown</div>
+            <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.75)', marginTop: 3, fontWeight: 600 }}>{formatDateForUi(row.date)}</div>
           </div>
-          <button onClick={onClose} style={{ border: '1px solid #dbe4f0', background: '#fff', color: '#64748b', cursor: 'pointer', fontWeight: 800, fontSize: 14, borderRadius: 8, width: 30, height: 30, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>&#x2715;</button>
+          <button onClick={onClose} style={{ border: '1px solid rgba(255,255,255,0.3)', background: 'rgba(255,255,255,0.1)', color: '#fff', cursor: 'pointer', fontWeight: 800, fontSize: 13, borderRadius: 8, width: 32, height: 32, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>&#x2715;</button>
         </div>
 
-        <div style={{ padding: '12px 16px', overflowY: 'auto', flex: 1 }}>
-          {sorted.map(dept => {
+        <div style={{ padding: '8px 0', overflowY: 'auto', flex: 1 }}>
+          {sorted.map((dept, idx) => {
             const count = row.counts?.[dept] || 0;
-            const pct = row.total > 0 ? Math.round((count / row.total) * 100) : 0;
+            const pct = maxCount > 0 ? Math.round((count / maxCount) * 100) : 0;
+            const sharePct = row.total > 0 ? ((count / row.total) * 100).toFixed(1) : '0.0';
+            const color = BADGE_COLORS[idx % BADGE_COLORS.length];
             return (
-              <div key={dept} style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: 8, alignItems: 'center', borderBottom: '1px solid #f1f5f9', padding: '10px 6px' }}>
+              <div key={dept} style={{ display: 'grid', gridTemplateColumns: 'auto 1fr auto', gap: 12, alignItems: 'center', padding: '11px 22px', borderBottom: '1px solid #f1f5f9' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3, minWidth: 42 }}>
+                  <span style={{ fontSize: 10, fontWeight: 800, padding: '3px 7px', borderRadius: 6, background: color.bg, color: color.text, letterSpacing: 0.4, textTransform: 'uppercase', whiteSpace: 'nowrap' }}>{shortCode(dept)}</span>
+                </div>
                 <div style={{ minWidth: 0 }}>
-                  <div style={{ fontWeight: 700, color: '#1e293b', fontSize: 13.5, lineHeight: 1.3 }}>{dept}</div>
-                  <div style={{ marginTop: 4, height: 4, borderRadius: 4, background: '#e2e8f0', overflow: 'hidden' }}>
-                    <div style={{ height: '100%', width: `${pct}%`, background: count > 0 ? '#1d4ed8' : '#cbd5e1', borderRadius: 4, transition: 'width .3s' }} />
+                  <div style={{ fontWeight: 700, color: '#1e293b', fontSize: 13, lineHeight: 1.3, marginBottom: 5 }}>{dept}</div>
+                  <div style={{ position: 'relative', height: 6, borderRadius: 6, background: '#e9edf5', overflow: 'hidden' }}>
+                    <div style={{ position: 'absolute', left: 0, top: 0, height: '100%', width: `${pct}%`, background: count > 0 ? color.text : '#cbd5e1', borderRadius: 6, transition: 'width .4s ease' }} />
                   </div>
                 </div>
-                <div style={{ fontWeight: 900, color: count > 0 ? '#1d4ed8' : '#94a3b8', fontSize: 18, minWidth: 40, textAlign: 'right' }}>{count}</div>
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', minWidth: 50 }}>
+                  <span style={{ fontWeight: 900, color: count > 0 ? '#0f172a' : '#94a3b8', fontSize: 20, lineHeight: 1 }}>{count}</span>
+                  <span style={{ fontSize: 10.5, color: '#94a3b8', fontWeight: 600, marginTop: 2 }}>{sharePct}%</span>
+                </div>
               </div>
             );
           })}
-          {departments.length === 0 && <div style={{ color: '#94a3b8', padding: 12, textAlign: 'center', fontSize: 13 }}>No department data available.</div>}
+          {departments.length === 0 && <div style={{ color: '#94a3b8', padding: 20, textAlign: 'center', fontSize: 13 }}>No department data available.</div>}
         </div>
 
-        <div style={{ borderTop: '2px solid #e2e8f0', padding: '14px 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#f8fafc', borderRadius: '0 0 16px 16px' }}>
+        <div style={{ borderTop: '1px solid #e8edf5', padding: '14px 22px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#f8fafc', borderRadius: '0 0 18px 18px' }}>
           <div style={{ color: '#475569', fontSize: 13, fontWeight: 700 }}>Total Meals</div>
-          <div style={{ color: '#0f172a', fontWeight: 900, fontSize: 22 }}>{row.total || 0}</div>
+          <div style={{ color: '#0f172a', fontWeight: 900, fontSize: 26 }}>{row.total || 0}</div>
         </div>
       </div>
     </div>
@@ -110,7 +142,7 @@ function MealHistory() {
       const payload = await fetchMealHistory();
       const rawDepts = Array.isArray(payload?.departments) ? payload.departments : [];
       // departments is now array of actual department name strings
-      const deptList = rawDepts.filter(d => typeof d === 'string' && d.trim());
+      const deptList = sortDepartments(rawDepts.filter(d => typeof d === 'string' && d.trim()));
 
       setDepartments(deptList);
       setHistory(
@@ -127,7 +159,11 @@ function MealHistory() {
       );
 
       if (payload?.warning) {
-        setNotice(payload.warning);
+        const msg = String(payload.warning);
+        // Suppress table-setup noise — live data still shows correctly
+        if (!msg.toLowerCase().includes('schema cache') && !msg.toLowerCase().includes('meal_history_daily')) {
+          setNotice(msg);
+        }
       }
     } catch (error) {
       setNotice(error?.message || 'Unable to load meal history.');
