@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { fetchMealHistory } from '../services/mealService';
+import { formatDisplayDate, toIsoDate } from '../utils/date';
 
 function shortCode(value) {
   if (!value) return '-';
@@ -23,16 +24,8 @@ function sortDepartments(departments) {
   });
 }
 
-function toIsoDate(value) {
-  const text = String(value || '').slice(0, 10);
-  return /^\d{4}-\d{2}-\d{2}$/.test(text) ? text : '';
-}
-
 function formatDateForUi(isoDate = '') {
-  const safe = toIsoDate(isoDate);
-  if (!safe) return '-';
-  const [year, month, day] = safe.split('-');
-  return `${day}/${month}/${year}`;
+  return formatDisplayDate(isoDate);
 }
 
 function normalizeCounts(source = {}, departments = []) {
@@ -78,7 +71,7 @@ function MealDayDetailModal({ row, departments, onClose }) {
   ];
 
   return (
-    <div style={{ position: 'fixed', inset: 0, background: 'rgba(15,23,42,0.6)', zIndex: 3500, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }} onClick={onClose}>
+    <div style={{ position: 'fixed', inset: 0, background: 'rgba(15,23,42,0.6)', backdropFilter: 'blur(4px)', zIndex: 3500, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }} onClick={onClose}>
       <div style={{ width: '100%', maxWidth: 500, background: '#fff', borderRadius: 18, boxShadow: '0 24px 80px rgba(15,23,42,0.3)', maxHeight: '88vh', display: 'flex', flexDirection: 'column' }} onClick={e => e.stopPropagation()}>
 
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '18px 22px', borderBottom: '1px solid #e8edf5', background: 'linear-gradient(135deg, #1e315f 0%, #2563eb 100%)', borderRadius: '18px 18px 0 0' }}>
@@ -220,13 +213,13 @@ function MealHistory() {
   };
 
   return (
-    <div className="page-container" style={{ width: '100%', maxWidth: '100%', margin: 0, padding: '24px 32px', background: 'none', fontFamily: 'Inter, Segoe UI, Arial, sans-serif', boxSizing: 'border-box' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12, marginBottom: 14 }}>
+    <div className="page-container" style={{ width: '100%', maxWidth: '100%', margin: 0, padding: '24px 32px 36px', background: 'none', fontFamily: 'Inter, Segoe UI, Arial, sans-serif', boxSizing: 'border-box' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 16, marginBottom: 18, flexWrap: 'wrap' }}>
         <div>
           <h1 style={{ margin: 0, color: '#1e315f', fontWeight: 900, fontSize: '1.8rem' }}>Meal History</h1>
           <p style={{ margin: '6px 0 0', color: '#64748b', fontWeight: 600 }}>Daily meal headcount snapshots by department with export.</p>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', padding: 10, borderRadius: 16, background: 'linear-gradient(180deg, #ffffff 0%, #f8fbff 100%)', border: '1px solid #dbe4f0', boxShadow: '0 10px 28px rgba(15,23,42,0.06)' }}>
           <select value={selectedMonth} onChange={e => setSelectedMonth(e.target.value)} style={{ height: 36, minWidth: 150, border: '1px solid #cbd5e1', borderRadius: 8, padding: '0 10px', fontWeight: 600, color: '#334155' }}>
             {monthOptions.map(month => <option key={month} value={month}>{month}</option>)}
           </select>
@@ -238,23 +231,23 @@ function MealHistory() {
       </div>
 
       {notice ? (
-        <div style={{ marginBottom: 12, borderRadius: 10, border: '1px solid #fcd34d', background: '#fffbeb', color: '#92400e', padding: '10px 12px', fontWeight: 700 }}>
+        <div style={{ marginBottom: 14, borderRadius: 12, border: '1px solid #fcd34d', background: 'linear-gradient(180deg, #fffbeb 0%, #fff7d6 100%)', color: '#92400e', padding: '12px 14px', fontWeight: 700, boxShadow: '0 8px 20px rgba(146,64,14,0.08)' }}>
           {notice}
         </div>
       ) : null}
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 12 }}>
-        <div style={{ border: '1px solid #d8e2f2', borderRadius: 10, background: '#f8fbff', padding: '10px 12px' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 12, marginBottom: 16 }}>
+        <div style={{ border: '1px solid #d8e2f2', borderRadius: 14, background: 'linear-gradient(135deg, #ffffff 0%, #eef6ff 100%)', padding: '14px 16px', boxShadow: '0 12px 30px rgba(30,49,95,0.06)' }}>
           <div style={{ color: '#5b7090', fontSize: 11, fontWeight: 800, textTransform: 'uppercase' }}>Total Meals (Filtered)</div>
-          <div style={{ marginTop: 5, fontWeight: 900, color: '#0f172a', fontSize: 30 }}>{totalMeals}</div>
+          <div style={{ marginTop: 6, fontWeight: 900, color: '#0f172a', fontSize: 32 }}>{totalMeals}</div>
         </div>
-        <div style={{ border: '1px solid #d8e2f2', borderRadius: 10, background: '#f8fbff', padding: '10px 12px' }}>
+        <div style={{ border: '1px solid #d8e2f2', borderRadius: 14, background: 'linear-gradient(135deg, #ffffff 0%, #eef6ff 100%)', padding: '14px 16px', boxShadow: '0 12px 30px rgba(30,49,95,0.06)' }}>
           <div style={{ color: '#5b7090', fontSize: 11, fontWeight: 800, textTransform: 'uppercase' }}>Average Per Day</div>
-          <div style={{ marginTop: 5, fontWeight: 900, color: '#0f172a', fontSize: 30 }}>{averageMeals.toFixed(1)}</div>
+          <div style={{ marginTop: 6, fontWeight: 900, color: '#0f172a', fontSize: 32 }}>{averageMeals.toFixed(1)}</div>
         </div>
       </div>
 
-      <div style={{ background: '#fff', border: '1px solid #dbe4f0', borderRadius: 14, overflow: 'hidden' }}>
+      <div style={{ background: '#fff', border: '1px solid #dbe4f0', borderRadius: 18, overflow: 'hidden', boxShadow: '0 18px 40px rgba(15,23,42,0.06)' }}>
         {loading && history.length === 0 ? <div style={{ color: '#64748b', fontWeight: 700, padding: 16 }}>Loading history...</div> : null}
         {!loading && filteredRows.length === 0 ? <div style={{ color: '#64748b', fontWeight: 700, padding: 16 }}>No meal history records for the selected filters.</div> : null}
 
@@ -263,21 +256,21 @@ function MealHistory() {
             <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: 600 }}>
               <thead>
                 <tr>
-                  <th style={{ textAlign: 'left', padding: '12px 14px', fontSize: 12, color: '#475569', textTransform: 'uppercase', letterSpacing: '.06em', borderBottom: '1px solid #dbe4f0', background: '#f8fafc' }}>Date</th>
+                  <th style={{ textAlign: 'left', padding: '14px 16px', fontSize: 12, color: '#475569', textTransform: 'uppercase', letterSpacing: '.06em', borderBottom: '1px solid #dbe4f0', background: '#f8fafc' }}>Date</th>
                   {departments.map(dept => (
-                    <th key={dept} title={dept} style={{ textAlign: 'center', padding: '12px 10px', fontSize: 12, color: '#475569', textTransform: 'uppercase', letterSpacing: '.06em', borderBottom: '1px solid #dbe4f0', background: '#f8fafc', whiteSpace: 'nowrap' }}>{shortCode(dept)}</th>
+                    <th key={dept} title={dept} style={{ textAlign: 'center', padding: '14px 10px', fontSize: 12, color: '#475569', textTransform: 'uppercase', letterSpacing: '.06em', borderBottom: '1px solid #dbe4f0', background: '#f8fafc', whiteSpace: 'nowrap' }}>{shortCode(dept)}</th>
                   ))}
-                  <th style={{ textAlign: 'center', padding: '12px 12px', fontSize: 12, color: '#475569', textTransform: 'uppercase', letterSpacing: '.06em', borderBottom: '1px solid #dbe4f0', background: '#f8fafc' }}>Total</th>
+                  <th style={{ textAlign: 'center', padding: '14px 12px', fontSize: 12, color: '#475569', textTransform: 'uppercase', letterSpacing: '.06em', borderBottom: '1px solid #dbe4f0', background: '#f8fafc' }}>Total</th>
                 </tr>
               </thead>
               <tbody>
-                {filteredRows.map(row => (
-                  <tr key={row.date} style={{ cursor: 'pointer', borderBottom: '1px solid #edf2f7', background: '#fff' }} onClick={() => setSelectedRow(row)}>
-                    <td style={{ padding: '11px 14px', color: '#1f2937', fontWeight: 700 }}>{formatDateForUi(row.date)}</td>
+                {filteredRows.map((row, index) => (
+                  <tr key={row.date} style={{ cursor: 'pointer', borderBottom: '1px solid #edf2f7', background: index % 2 === 0 ? '#fff' : '#fbfdff', transition: 'background .15s ease' }} onClick={() => setSelectedRow(row)} onMouseEnter={e => { e.currentTarget.style.background = '#eef6ff'; }} onMouseLeave={e => { e.currentTarget.style.background = index % 2 === 0 ? '#fff' : '#fbfdff'; }}>
+                    <td style={{ padding: '13px 16px', color: '#1f2937', fontWeight: 700 }}>{formatDateForUi(row.date)}</td>
                     {departments.map(dept => (
-                      <td key={`${row.date}-${dept}`} style={{ textAlign: 'center', padding: '11px 10px', color: '#1e3a8a', fontWeight: 700 }}>{row.counts?.[dept] || 0}</td>
+                      <td key={`${row.date}-${dept}`} style={{ textAlign: 'center', padding: '13px 10px', color: '#1e3a8a', fontWeight: 700 }}>{row.counts?.[dept] || 0}</td>
                     ))}
-                    <td style={{ textAlign: 'center', padding: '11px 12px', color: '#0f172a', fontWeight: 900 }}>{row.total || 0}</td>
+                    <td style={{ textAlign: 'center', padding: '13px 12px', color: '#0f172a', fontWeight: 900 }}>{row.total || 0}</td>
                   </tr>
                 ))}
               </tbody>

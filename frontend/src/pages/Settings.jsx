@@ -4,6 +4,7 @@ import { deleteManagedUser, fetchUsersForRoleManagement, sendPasswordResetForUse
 import { clearAllOccupancyData } from '../services/occupancyService';
 import { fetchOccupancyHealth } from '../services/healthService';
 import { createRoom } from '../services/roomsService';
+import { formatDisplayDateTime } from '../utils/date';
 
 const roleDescriptions = [
   { role: 'Viewer', desc: 'Read-only access across the accommodation module.' },
@@ -29,11 +30,7 @@ function compareRoomIds(a, b) {
 
 function formatDate(value) {
   if (!value) return 'Never';
-  try {
-    return new Date(value).toLocaleString();
-  } catch {
-    return value;
-  }
+  return formatDisplayDateTime(value, 'Never');
 }
 
 function ConfirmationDialog({ config, busy, onCancel, onConfirm }) {

@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { useOutletContext } from 'react-router-dom';
+import { formatDisplayDateTime } from '../utils/date';
 
 const FILTERS = ['All', 'Check Out', 'Check In', 'Swap', 'Move', 'Edits'];
 
@@ -12,12 +13,7 @@ const ACTION_STYLES = {
 };
 
 function formatTime(value) {
-  if (!value) return '-';
-  try {
-    return new Date(value).toLocaleString();
-  } catch {
-    return value;
-  }
+  return formatDisplayDateTime(value);
 }
 
 function StayHistory() {

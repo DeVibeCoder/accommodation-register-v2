@@ -1,6 +1,7 @@
 ﻿import React, { useMemo, useState, useEffect, useRef } from 'react';
 import { useOutletContext } from 'react-router-dom';
 import { addMealExclusion, closeMealExclusion, fetchMealExclusionHistory, updateMealExclusion, batchAddMealExclusions } from '../services/mealService';
+import { formatDisplayDate } from '../utils/date';
 
 const REASONS = ['Off Site', 'Vacation', 'Restaurant', 'Exit'];
 const CSV_TEMPLATE_HEADER = 'name,staff_id,reason,from_date,to_date,notes';
@@ -14,10 +15,7 @@ function reasonColor(reason) {
 }
 
 function asDate(value) {
-  const dateText = String(value || '').slice(0, 10);
-  if (!dateText || !/^\d{4}-\d{2}-\d{2}$/.test(dateText)) return '-';
-  const [y, m, d] = dateText.split('-');
-  return `${m}/${d}/${y}`;
+  return formatDisplayDate(value);
 }
 
 const thStyle = {
