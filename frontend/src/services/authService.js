@@ -168,7 +168,7 @@ export async function updateProfileRole(userId, email, role) {
 
 export async function fetchUsersForRoleManagement() {
   try {
-    const data = await apiRequest('/api/users');
+    const data = await apiRequest(`/api/users?ts=${Date.now()}`);
     return Array.isArray(data?.users) ? data.users : [];
   } catch (error) {
     throw new Error(error?.message || 'Unable to load users.');

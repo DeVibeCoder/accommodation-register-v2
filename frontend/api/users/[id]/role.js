@@ -30,6 +30,7 @@ export default async function handler(req, res) {
     });
 
     if (Array.isArray(patched) && patched[0]) {
+      res.setHeader('Cache-Control', 'no-store');
       return json(res, 200, { user: formatUserForClient(patched[0]) });
     }
 
@@ -63,6 +64,7 @@ export default async function handler(req, res) {
       return json(res, 500, { error: 'Role update completed but user record was not returned.' });
     }
 
+    res.setHeader('Cache-Control', 'no-store');
     return json(res, 200, { user });
   } catch (error) {
     return json(res, 500, { error: error.message || 'Unable to update role.' });

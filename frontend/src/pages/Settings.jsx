@@ -76,6 +76,32 @@ function ConfirmationDialog({ config, busy, onCancel, onConfirm }) {
   );
 }
 
+function ResultDialog({ open, title, message, onClose }) {
+  if (!open) return null;
+
+  return (
+    <div style={{ position: 'fixed', inset: 0, background: 'rgba(15, 23, 42, 0.45)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1001, padding: 16 }}>
+      <div style={{ width: '100%', maxWidth: 420, background: '#fff', borderRadius: 18, boxShadow: '0 24px 60px rgba(15,23,42,.22)', border: '1px solid #dbe4f0', overflow: 'hidden' }}>
+        <div style={{ padding: '18px 20px', background: 'linear-gradient(135deg, #1e3a8a 0%, #0ea5e9 100%)', color: '#fff' }}>
+          <div style={{ fontSize: 20, fontWeight: 900 }}>{title}</div>
+        </div>
+        <div style={{ padding: '18px 20px 20px' }}>
+          <p style={{ margin: 0, color: '#475569', fontSize: 15, lineHeight: 1.6, fontWeight: 600 }}>{message}</p>
+          <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 18 }}>
+            <button
+              type="button"
+              onClick={onClose}
+              style={{ padding: '10px 14px', borderRadius: 10, border: 'none', background: '#2563eb', color: '#fff', fontWeight: 800, cursor: 'pointer' }}
+            >
+              OK
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function Settings({ user, setUser }) {
   const { roomsState = [], setRoomsState, setOccupants, setStayHistory } = useOutletContext();
   const [roomForm, setRoomForm] = useState(defaultRoomForm);
@@ -89,6 +115,7 @@ function Settings({ user, setUser }) {
   const [userActionState, setUserActionState] = useState({ id: '', type: '' });
   const [confirmConfig, setConfirmConfig] = useState({ open: false });
   const [confirmBusy, setConfirmBusy] = useState(false);
+  const [resultDialog, setResultDialog] = useState({ open: false, title: '', message: '' });
   const [notice, setNotice] = useState('');
   const [healthLoading, setHealthLoading] = useState(false);
   const [healthSummary, setHealthSummary] = useState(null);
@@ -183,9 +210,19 @@ function Settings({ user, setUser }) {
 
           if (user?.id === targetUser.id) setUser(result.user);
           setNotice(`Updated ${targetUser.email} to ${nextRole}.`);
+          setResultDialog({
+            open: true,
+            title: 'Role Updated',
+            message: `${targetUser.email} is now ${nextRole}.`,
+          });
         } else {
           setPendingRoles(prev => ({ ...prev, [targetUser.id]: nextRole }));
           setNotice(`The role for ${targetUser.email} did not save. Please try again.`);
+          setResultDialog({
+            open: true,
+            title: 'Role Update Failed',
+            message: `The role for ${targetUser.email} is still ${targetUser.role}. Please try again.`,
+          });
         }
       } catch (error) {
         setManagedUsers(prev => prev.map(item => item.id === targetUser.id ? { ...item, role: nextRole } : item));
@@ -197,10 +234,20 @@ function Settings({ user, setUser }) {
 
         if (user?.id === targetUser.id) setUser(result.user);
         setNotice(error?.message || `Updated ${targetUser.email}, but the list could not be refreshed.`);
+        setResultDialog({
+          open: true,
+          title: 'Role Updated',
+          message: `${targetUser.email} was updated to ${nextRole}, but live list refresh failed.`,
+        });
       }
     } else {
       setPendingRoles(prev => ({ ...prev, [targetUser.id]: nextRole }));
       setNotice(result.error || 'Role update failed.');
+      setResultDialog({
+        open: true,
+        title: 'Role Update Failed',
+        message: result.error || `Unable to update ${targetUser.email}.`,
+      });
     }
 
     setSavingRoleUserId('');
@@ -713,6 +760,13 @@ function Settings({ user, setUser }) {
         busy={confirmBusy}
         onCancel={closeConfirmDialog}
         onConfirm={handleConfirmAction}
+      />
+
+      <ResultDialog
+        open={resultDialog.open}
+        title={resultDialog.title}
+        message={resultDialog.message}
+        onClose={() => setResultDialog({ open: false, title: '', message: '' })}
       />
     </div>
   );

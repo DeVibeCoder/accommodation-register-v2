@@ -31,6 +31,7 @@ export default async function handler(req, res) {
       .map(authUser => normalizeManagedUser(authUser, profileMap.get(authUser.id) || {}))
       .sort((a, b) => String(a.email || '').localeCompare(String(b.email || '')));
 
+    res.setHeader('Cache-Control', 'no-store');
     return json(res, 200, { users });
   } catch (error) {
     return json(res, 500, { error: error.message || 'Unable to load users.' });
