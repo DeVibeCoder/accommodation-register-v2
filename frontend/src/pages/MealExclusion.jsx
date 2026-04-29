@@ -4,6 +4,18 @@ import { addMealExclusion, closeMealExclusion } from '../services/mealService';
 
 const REASONS = ['Off Site', 'Vacation', 'Restaurant', 'Resignation/Termination'];
 
+function reasonColor(reason) {
+  if (reason === 'Resignation/Termination') return { bg: '#fee2e2', text: '#991b1b' };
+  if (reason === 'Vacation') return { bg: '#e0e7ff', text: '#3730a3' };
+  if (reason === 'Restaurant') return { bg: '#fef3c7', text: '#92400e' };
+  return { bg: '#dcfce7', text: '#166534' };
+}
+
+function asDate(value) {
+  const dateText = String(value || '').slice(0, 10);
+  return dateText || '-';
+}
+
 function MealExclusion() {
   const {
     occupants = [],
@@ -28,6 +40,9 @@ function MealExclusion() {
 
   const active = Array.isArray(mealExclusionSummary?.active) ? mealExclusionSummary.active : [];
   const upcoming = Array.isArray(mealExclusionSummary?.upcoming) ? mealExclusionSummary.upcoming : [];
+  const activeCount = active.length;
+  const upcomingCount = upcoming.length;
+  const excludedCount = Number(mealExclusionSummary?.mealExcludedCount || 0);
 
   const resetForm = () => {
     setSelectedOccupantId('');
@@ -87,11 +102,26 @@ function MealExclusion() {
 
   return (
     <div className="page-container" style={{ width: '100%', maxWidth: '100%', margin: 0, padding: '24px 32px', background: 'none', fontFamily: 'Inter, Segoe UI, Arial, sans-serif', boxSizing: 'border-box' }}>
-      <div style={{ marginBottom: 16 }}>
-        <h1 style={{ margin: 0, color: '#1e315f', fontWeight: 900, fontSize: '1.8rem' }}>Meal Exclusion</h1>
-        <p style={{ margin: '6px 0 0', color: '#64748b', fontWeight: 600 }}>
-          Active exclusions: {active.length} | Upcoming exclusions: {upcoming.length} | Meal exclusions in effect: {mealExclusionSummary?.mealExcludedCount || 0}
+      <div style={{ background: 'linear-gradient(120deg, #0f172a 0%, #1e3a8a 55%, #0ea5e9 100%)', borderRadius: 16, padding: '20px 22px', color: '#fff', marginBottom: 14 }}>
+        <h1 style={{ margin: 0, fontWeight: 900, fontSize: '1.9rem' }}>Meal Exclusion</h1>
+        <p style={{ margin: '8px 0 0', opacity: 0.92, fontWeight: 600 }}>
+          Manage excluded staff while preserving occupancy bed allocation rules.
         </p>
+      </div>
+
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(170px, 1fr))', gap: 10, marginBottom: 14 }}>
+        <div style={{ background: '#fff', borderRadius: 12, border: '1px solid #dbe4f0', padding: '12px 14px' }}>
+          <div style={{ fontSize: 11, color: '#64748b', fontWeight: 800, textTransform: 'uppercase' }}>Active Exclusions</div>
+          <div style={{ fontSize: 26, fontWeight: 900, color: '#1e315f', marginTop: 4 }}>{activeCount}</div>
+        </div>
+        <div style={{ background: '#fff', borderRadius: 12, border: '1px solid #dbe4f0', padding: '12px 14px' }}>
+          <div style={{ fontSize: 11, color: '#64748b', fontWeight: 800, textTransform: 'uppercase' }}>Upcoming</div>
+          <div style={{ fontSize: 26, fontWeight: 900, color: '#1e315f', marginTop: 4 }}>{upcomingCount}</div>
+        </div>
+        <div style={{ background: '#fff', borderRadius: 12, border: '1px solid #dbe4f0', padding: '12px 14px' }}>
+          <div style={{ fontSize: 11, color: '#64748b', fontWeight: 800, textTransform: 'uppercase' }}>Excluded From Meals</div>
+          <div style={{ fontSize: 26, fontWeight: 900, color: '#1e315f', marginTop: 4 }}>{excludedCount}</div>
+        </div>
       </div>
 
       {notice ? (
@@ -101,8 +131,19 @@ function MealExclusion() {
       ) : null}
 
       <div style={{ background: '#fff', border: '1px solid #dbe4f0', borderRadius: 14, padding: 16, marginBottom: 16 }}>
-        <h2 style={{ margin: 0, marginBottom: 12, color: '#1e315f', fontWeight: 800, fontSize: '1.1rem' }}>Add Exclusion</h2>
-        <form onSubmit={handleCreate} style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(190px, 1fr))', gap: 10, alignItems: 'end' }}>
+        <h2 style={{ margin: 0, marginBottom: 10, color: '#1e315f', fontWeight: 800, fontSize: '1.1rem' }}>Add Exclusion</h2>
+        <div style={{ marginBottom: 12, display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+          {REASONS.map(item => {
+            const color = reasonColor(item);
+            return (
+              <span key={item} style={{ fontSize: 11, fontWeight: 800, padding: '4px 8px', borderRadius: 999, background: color.bg, color: color.text }}>
+                {item}
+              </span>
+            );
+          })}
+        </div>
+
+        <form onSubmit={handleCreate} style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 10, alignItems: 'end' }}>
           <label style={{ display: 'grid', gap: 6, fontWeight: 700, color: '#334155', fontSize: 12 }}>
             Occupant
             <select value={selectedOccupantId} onChange={e => setSelectedOccupantId(e.target.value)} disabled={!canEditAccommodation || saving} style={{ padding: '9px 10px', borderRadius: 8, border: '1px solid #cbd5e1' }}>
@@ -148,8 +189,11 @@ function MealExclusion() {
             {active.map(item => (
               <div key={item.id} style={{ border: '1px solid #e2e8f0', borderRadius: 10, padding: 10, display: 'flex', justifyContent: 'space-between', gap: 10, alignItems: 'center' }}>
                 <div style={{ minWidth: 0 }}>
-                  <div style={{ fontWeight: 800, color: '#1f2937' }}>{item.name} ({item.reason})</div>
-                  <div style={{ color: '#64748b', fontSize: 12 }}>{item.roomId} / Bed {item.bedNo} | From {String(item.fromDate || '').slice(0, 10)}{item.toDate ? ` to ${String(item.toDate).slice(0, 10)}` : ''}</div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                    <div style={{ fontWeight: 800, color: '#1f2937' }}>{item.name}</div>
+                    <span style={{ fontSize: 11, fontWeight: 800, padding: '3px 8px', borderRadius: 999, background: reasonColor(item.reason).bg, color: reasonColor(item.reason).text }}>{item.reason}</span>
+                  </div>
+                  <div style={{ color: '#64748b', fontSize: 12 }}>{item.roomId} / Bed {item.bedNo} | From {asDate(item.fromDate)}{item.toDate ? ` to ${asDate(item.toDate)}` : ''}</div>
                 </div>
                 {canEditAccommodation ? (
                   <button onClick={() => handleCloseExclusion(item.id)} disabled={closingId === item.id} style={{ padding: '7px 10px', borderRadius: 8, border: 'none', background: '#0f766e', color: '#fff', fontWeight: 800, cursor: closingId === item.id ? 'not-allowed' : 'pointer' }}>
@@ -168,8 +212,11 @@ function MealExclusion() {
           <div style={{ display: 'grid', gap: 8 }}>
             {upcoming.map(item => (
               <div key={item.id} style={{ border: '1px solid #e2e8f0', borderRadius: 10, padding: 10 }}>
-                <div style={{ fontWeight: 800, color: '#1f2937' }}>{item.name} ({item.reason})</div>
-                <div style={{ color: '#64748b', fontSize: 12 }}>{item.roomId} / Bed {item.bedNo} | Effective from {String(item.fromDate || '').slice(0, 10)}</div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                  <div style={{ fontWeight: 800, color: '#1f2937' }}>{item.name}</div>
+                  <span style={{ fontSize: 11, fontWeight: 800, padding: '3px 8px', borderRadius: 999, background: reasonColor(item.reason).bg, color: reasonColor(item.reason).text }}>{item.reason}</span>
+                </div>
+                <div style={{ color: '#64748b', fontSize: 12 }}>{item.roomId} / Bed {item.bedNo} | Effective from {asDate(item.fromDate)}</div>
               </div>
             ))}
           </div>
