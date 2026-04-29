@@ -8,7 +8,7 @@ function keyFor(row = {}) {
   return `${row.room_id || ''}::${row.bed_no ?? ''}`;
 }
 
-const MEAL_REASONS = new Set(['Off Site', 'Vacation', 'Restaurant', 'Resignation/Termination']);
+const MEAL_REASONS = new Set(['Off Site', 'Vacation', 'Restaurant', 'Exit']);
 
 function todayIsoDate() {
   return new Date().toISOString().slice(0, 10);
@@ -19,7 +19,7 @@ function normalizeMealReason(value = '') {
   if (input === 'off site' || input === 'offsite') return 'Off Site';
   if (input === 'vacation' || input === 'leave') return 'Vacation';
   if (input === 'restaurant') return 'Restaurant';
-  if (input === 'resignation' || input === 'termination' || input === 'resignation/termination') return 'Resignation/Termination';
+  if (input === 'exit' || input === 'resignation' || input === 'termination' || input === 'resignation/termination') return 'Exit';
   return '';
 }
 
@@ -30,7 +30,7 @@ function classifyMealExclusion(row = {}, today = todayIsoDate()) {
   const autoCheckedOut = Boolean(row?.auto_checked_out_at);
 
   if (!fromDate || !reason) return 'invalid';
-  if (reason === 'Resignation/Termination' && autoCheckedOut) return 'completed';
+  if (reason === 'Exit' && autoCheckedOut) return 'completed';
   if (toDate && toDate < today) return 'completed';
   if (fromDate > today) return 'upcoming';
   return 'active';
@@ -66,7 +66,7 @@ async function runMealExclusionAutomations(user = {}) {
   const today = todayIsoDate();
 
   const dueResignations = await supabaseRequest(
-    `/rest/v1/meal_exclusions?select=*&reason=eq.${encodeURIComponent('Resignation/Termination')}&auto_checked_out_at=is.null&from_date=lte.${encodeURIComponent(today)}&limit=500`,
+    `/rest/v1/meal_exclusions?select=*&reason=eq.${encodeURIComponent('Exit')}&auto_checked_out_at=is.null&from_date=lte.${encodeURIComponent(today)}&limit=500`,
     { service: true }
   );
 
@@ -95,7 +95,7 @@ async function runMealExclusionAutomations(user = {}) {
               name: removed[0].full_name || item.occupant_name || 'Unknown',
               roomId: removed[0].room_id || item.room_id || '',
               bedNo: removed[0].bed_no ?? item.bed_no ?? null,
-              details: 'Auto checkout completed from Meal Exclusion (Resignation/Termination).',
+              details: 'Auto checkout completed from Meal Exclusion (Exit).'
               user: user?.role || null,
             }),
             created_by: user?.id || null,
@@ -370,7 +370,7 @@ export default async function handler(req, res) {
         prefer: 'return=representation',
       });
 
-      if (reason === 'Resignation/Termination' && fromDate <= today) {
+      if (reason === 'Exit' && fromDate <= today) {
         await runMealExclusionAutomations(user);
       }
 
@@ -429,7 +429,7 @@ export default async function handler(req, res) {
       });
 
       const today = todayIsoDate();
-      if (reason === 'Resignation/Termination' && fromDate <= today) {
+      if (reason === 'Exit' && fromDate <= today) {
         await runMealExclusionAutomations(user);
       }
 

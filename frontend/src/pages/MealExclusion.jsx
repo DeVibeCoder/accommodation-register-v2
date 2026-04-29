@@ -2,13 +2,12 @@ import React, { useMemo, useState, useEffect } from 'react';
 import { useOutletContext } from 'react-router-dom';
 import { addMealExclusion, closeMealExclusion, fetchMealHistory, updateMealExclusion } from '../services/mealService';
 
-const REASONS = ['Off Site', 'On Leave', 'Vacation', 'Restaurant', 'Resignation/Termination'];
+const REASONS = ['Off Site', 'Vacation', 'Restaurant', 'Exit'];
 
 function reasonColor(reason) {
-  if (reason === 'Resignation/Termination') return { bg: '#fee2e2', text: '#991b1b' };
+  if (reason === 'Exit') return { bg: '#fee2e2', text: '#991b1b' };
   if (reason === 'Vacation') return { bg: '#e0e7ff', text: '#3730a3' };
   if (reason === 'Restaurant') return { bg: '#fef3c7', text: '#92400e' };
-  if (reason === 'On Leave') return { bg: '#fef9c3', text: '#854d0e' };
   return { bg: '#dcfce7', text: '#166534' };
 }
 
