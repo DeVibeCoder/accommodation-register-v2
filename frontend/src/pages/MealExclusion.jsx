@@ -1,6 +1,6 @@
 ﻿import React, { useMemo, useState, useEffect, useRef } from 'react';
 import { useOutletContext } from 'react-router-dom';
-import { addMealExclusion, closeMealExclusion, fetchMealExclusionHistory, updateMealExclusion, batchAddMealExclusions } from '../services/mealService';
+import { addMealExclusion, closeMealExclusion, fetchMealExclusionHistory, updateMealExclusion, batchAddMealExclusions, dedupeMealExclusions } from '../services/mealService';
 import { formatDisplayDate } from '../utils/date';
 
 const REASONS = ['Off Site', 'Vacation', 'Restaurant', 'Exit'];
@@ -282,6 +282,7 @@ function parseMealExclusionCsv(text, occupants) {
     const errors = [];
     if (!reason) errors.push('missing reason');
     else if (!VALID_REASONS.has(reason.toLowerCase())) errors.push(`invalid reason "${reason}"`);
+    if (!name && !staffId) errors.push('name or staff_id is required');
     if (!fromDateRaw) errors.push('missing from_date');
     else if (!fromDate) errors.push('from_date must be DD-MM-YYYY');
     if (toDateRaw && !toDate) errors.push('to_date must be DD-MM-YYYY');
@@ -584,6 +585,7 @@ function MealExclusion() {
   const [importOpen, setImportOpen] = useState(false);
   const [editingEntry, setEditingEntry] = useState(null);
   const [closingId, setClosingId] = useState('');
+  const [deduping, setDeduping] = useState(false);
   const [notice, setNotice] = useState('');
 
   const active = Array.isArray(mealExclusionSummary?.active) ? mealExclusionSummary.active : [];
@@ -622,6 +624,24 @@ function MealExclusion() {
     finally { setClosingId(''); }
   };
   const handleSaved = async (message) => { await refreshSummary(); setNotice(message); };
+  const handleRemoveDuplicates = async () => {
+    if (!canEditMeals || deduping) return;
+    setDeduping(true);
+    setNotice('');
+    try {
+      const result = await dedupeMealExclusions();
+      await refreshSummary();
+      if (result.removed > 0) {
+        setNotice(`${result.removed} duplicate exclusion${result.removed === 1 ? '' : 's'} removed.`);
+      } else {
+        setNotice('No duplicate exclusions found.');
+      }
+    } catch (err) {
+      setNotice(err?.message || 'Unable to remove duplicate exclusions.');
+    } finally {
+      setDeduping(false);
+    }
+  };
   const openAddModal = () => { setEditingEntry(null); setModalOpen(true); };
   const openEditModal = (item) => { setEditingEntry(item); setModalOpen(true); };
 
@@ -666,6 +686,9 @@ function MealExclusion() {
             <>
               <button onClick={openAddModal} style={{ padding: '11px 16px', borderRadius: 10, border: 'none', background: '#2563eb', color: '#fff', fontWeight: 800, fontSize: 13, cursor: 'pointer', whiteSpace: 'nowrap', boxShadow: '0 2px 8px rgba(37,99,235,0.25)' }}>+ Add Exclusion</button>
               <button onClick={() => setImportOpen(true)} style={{ padding: '11px 16px', borderRadius: 10, border: 'none', background: '#16a34a', color: '#fff', fontWeight: 800, fontSize: 13, cursor: 'pointer', whiteSpace: 'nowrap', boxShadow: '0 2px 8px rgba(22,163,74,0.25)' }}>Import CSV</button>
+              <button onClick={handleRemoveDuplicates} disabled={deduping} style={{ padding: '11px 16px', borderRadius: 10, border: '1px solid #fdba74', background: '#fff7ed', color: '#c2410c', fontWeight: 800, fontSize: 13, cursor: deduping ? 'not-allowed' : 'pointer', whiteSpace: 'nowrap' }}>
+                {deduping ? 'Removing Duplicates...' : 'Remove Duplicates'}
+              </button>
             </>
           ) : null}
           <button onClick={() => setHistoryOpen(true)} style={{ padding: '11px 16px', borderRadius: 10, border: '1px solid #93c5fd', background: '#eff6ff', color: '#1d4ed8', fontWeight: 800, fontSize: 13, cursor: 'pointer', whiteSpace: 'nowrap' }}>Exclusion History</button>

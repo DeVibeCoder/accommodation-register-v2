@@ -78,3 +78,17 @@ export async function batchAddMealExclusions(entries = []) {
   });
   return data || { inserted: 0, errors: [], total: 0 };
 }
+
+export async function dedupeMealExclusions() {
+  const data = await apiRequest('/api/occupancy', {
+    method: 'POST',
+    body: {
+      __operation: 'meal-exclusion-dedupe',
+    },
+  });
+
+  return {
+    removed: Number(data?.removed || 0),
+    groups: Number(data?.groups || 0),
+  };
+}

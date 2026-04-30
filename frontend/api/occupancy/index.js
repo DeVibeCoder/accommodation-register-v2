@@ -37,6 +37,52 @@ function exclusionDateRangesOverlap(fromA, toA, fromB, toB) {
   return fromA <= endB && fromB <= endA;
 }
 
+function hasPersonIdentity(item = {}) {
+  if (item.occupant_id) return true;
+  if (String(item.staff_id || '').trim()) return true;
+  if (String(item.occupant_name || '').trim()) return true;
+  return false;
+}
+
+function findMealExclusionConflict(rows = [], candidate = {}, options = {}) {
+  const excludeId = options.excludeId ? String(options.excludeId) : '';
+  for (const row of rows) {
+    if (!row) continue;
+    const rowId = String(row.id || '');
+    if (excludeId && rowId === excludeId) continue;
+    if (!sameExcludedPerson(candidate, row)) continue;
+
+    const rowFrom = String(row.from_date || '').slice(0, 10);
+    const rowTo = String(row.to_date || '').slice(0, 10) || null;
+    if (!rowFrom) continue;
+
+    if (exclusionDateRangesOverlap(candidate.from_date, candidate.to_date, rowFrom, rowTo)) {
+      return row;
+    }
+  }
+  return null;
+}
+
+function duplicateIdentityKey(item = {}) {
+  const tokens = [...exclusionPersonTokens(item)].sort().join('|');
+  const fromDate = String(item.from_date || '').slice(0, 10);
+  const toDate = String(item.to_date || '').slice(0, 10);
+  const reason = normalizeMealReason(item.reason) || String(item.reason || '').trim();
+  if (!tokens || !fromDate || !reason) return '';
+  return `${tokens}::${reason}::${fromDate}::${toDate}`;
+}
+
+function toMidnightIsoDate(date) {
+  return new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate())).toISOString().slice(0, 10);
+}
+
+function previousIsoDate(value = todayIsoDate()) {
+  const dt = new Date(`${String(value).slice(0, 10)}T00:00:00.000Z`);
+  if (Number.isNaN(dt.getTime())) return value;
+  dt.setUTCDate(dt.getUTCDate() - 1);
+  return toMidnightIsoDate(dt);
+}
+
 function exclusionPersonTokens(item = {}) {
   const tokens = new Set();
   if (item.occupant_id) tokens.add(`id:${String(item.occupant_id)}`);
@@ -67,7 +113,7 @@ function classifyMealExclusion(row = {}, today = todayIsoDate()) {
 
   if (!fromDate || !reason) return 'invalid';
   if (reason === 'Exit' && autoCheckedOut) return 'completed';
-  if (toDate && toDate < today) return 'completed';
+  if (toDate && toDate <= today) return 'completed';
   if (fromDate > today) return 'upcoming';
   return 'active';
 }
@@ -569,20 +615,48 @@ export default async function handler(req, res) {
       if (!reason || !MEAL_REASONS.has(reason) || !fromDate) {
         return json(res, 400, { error: 'Reason and from date are required for meal exclusion.' });
       }
+      if (!isValidIsoDate(fromDate)) {
+        return json(res, 400, { error: 'from_date is invalid.' });
+      }
+      if (toDate && !isValidIsoDate(toDate)) {
+        return json(res, 400, { error: 'to_date is invalid.' });
+      }
+      if (toDate && toDate < fromDate) {
+        return json(res, 400, { error: 'to_date must be on or after from_date.' });
+      }
 
       const today = todayIsoDate();
+      const candidate = {
+        occupant_id: payload.occupantId || null,
+        occupant_name: payload.name || null,
+        staff_id: payload.staffId || null,
+        room_id: payload.roomId || null,
+        bed_no: payload.bedNo ?? null,
+        reason,
+        from_date: fromDate,
+        to_date: toDate,
+      };
+      if (!hasPersonIdentity(candidate)) {
+        return json(res, 400, { error: 'Occupant identity is required (occupantId, staff_id, or name).' });
+      }
+      const existingRows = await fetchMealExclusionRows();
+      const conflict = findMealExclusionConflict(existingRows, candidate);
+      if (conflict) {
+        return json(res, 409, { error: 'Duplicate/overlapping exclusion already exists for this person.' });
+      }
+
       const inserted = await supabaseRequest('/rest/v1/meal_exclusions', {
         method: 'POST',
         service: true,
         body: [{
-          occupant_id: payload.occupantId || null,
-          occupant_name: payload.name || null,
-          staff_id: payload.staffId || null,
-          room_id: payload.roomId || null,
-          bed_no: payload.bedNo ?? null,
-          reason,
-          from_date: fromDate,
-          to_date: toDate,
+          occupant_id: candidate.occupant_id,
+          occupant_name: candidate.occupant_name,
+          staff_id: candidate.staff_id,
+          room_id: candidate.room_id,
+          bed_no: candidate.bed_no,
+          reason: candidate.reason,
+          from_date: candidate.from_date,
+          to_date: candidate.to_date,
           notes: payload.notes || null,
           created_by: user?.id || null,
           auto_checked_out_at: null,
@@ -608,7 +682,7 @@ export default async function handler(req, res) {
         method: 'PATCH',
         service: true,
         body: {
-          to_date: todayIsoDate(),
+          to_date: previousIsoDate(todayIsoDate()),
         },
         prefer: 'return=representation',
       });
@@ -629,19 +703,47 @@ export default async function handler(req, res) {
       if (!reason || !MEAL_REASONS.has(reason) || !fromDate) {
         return json(res, 400, { error: 'Reason and from date are required for meal exclusion.' });
       }
+      if (!isValidIsoDate(fromDate)) {
+        return json(res, 400, { error: 'from_date is invalid.' });
+      }
+      if (toDate && !isValidIsoDate(toDate)) {
+        return json(res, 400, { error: 'to_date is invalid.' });
+      }
+      if (toDate && toDate < fromDate) {
+        return json(res, 400, { error: 'to_date must be on or after from_date.' });
+      }
+
+      const candidate = {
+        occupant_id: payload.occupantId || null,
+        occupant_name: payload.name || null,
+        staff_id: payload.staffId || null,
+        room_id: payload.roomId || null,
+        bed_no: payload.bedNo ?? null,
+        reason,
+        from_date: fromDate,
+        to_date: toDate,
+      };
+      if (!hasPersonIdentity(candidate)) {
+        return json(res, 400, { error: 'Occupant identity is required (occupantId, staff_id, or name).' });
+      }
+      const existingRows = await fetchMealExclusionRows();
+      const conflict = findMealExclusionConflict(existingRows, candidate, { excludeId: targetId });
+      if (conflict) {
+        return json(res, 409, { error: 'Duplicate/overlapping exclusion already exists for this person.' });
+      }
 
       const updated = await supabaseRequest(`/rest/v1/meal_exclusions?id=eq.${encodeURIComponent(targetId)}`, {
         method: 'PATCH',
         service: true,
         body: {
-          occupant_id: payload.occupantId || null,
-          occupant_name: payload.name || null,
-          staff_id: payload.staffId || null,
-          room_id: payload.roomId || null,
-          bed_no: payload.bedNo ?? null,
-          reason,
-          from_date: fromDate,
-          to_date: toDate,
+          occupant_id: candidate.occupant_id,
+          occupant_name: candidate.occupant_name,
+          staff_id: candidate.staff_id,
+          room_id: candidate.room_id,
+          bed_no: candidate.bed_no,
+          reason: candidate.reason,
+          from_date: candidate.from_date,
+          to_date: candidate.to_date,
           notes: payload.notes || null,
           auto_checked_out_at: null,
         },
@@ -702,11 +804,12 @@ export default async function handler(req, res) {
           created_by: user?.id || null,
           auto_checked_out_at: null,
         };
+        if (!hasPersonIdentity(candidate)) {
+          errors.push({ rowNum, name: label, error: 'Missing identity fields (occupantId/staff_id/name)' });
+          continue;
+        }
 
-        const hasConflictWithExisting = existingRows.some(existing => {
-          if (!sameExcludedPerson(candidate, existing)) return false;
-          return exclusionDateRangesOverlap(candidate.from_date, candidate.to_date, String(existing.from_date || '').slice(0, 10), String(existing.to_date || '').slice(0, 10) || null);
-        });
+        const hasConflictWithExisting = Boolean(findMealExclusionConflict(existingRows, candidate));
         if (hasConflictWithExisting) {
           errors.push({ rowNum, name: label, error: 'Duplicate/overlapping exclusion already exists for this person' });
           continue;
@@ -736,6 +839,43 @@ export default async function handler(req, res) {
       }
 
       return json(res, 200, { inserted: insertedCount, errors, total: entries.length });
+    }
+
+    if (payload?.__operation === 'meal-exclusion-dedupe') {
+      const rows = await fetchMealExclusionRows();
+      const groups = new Map();
+
+      for (const row of rows) {
+        const key = duplicateIdentityKey(row);
+        if (!key) continue;
+        const list = groups.get(key) || [];
+        list.push(row);
+        groups.set(key, list);
+      }
+
+      const idsToDelete = [];
+      for (const list of groups.values()) {
+        if (list.length <= 1) continue;
+        list.sort((a, b) => {
+          const aTime = String(a.created_at || '');
+          const bTime = String(b.created_at || '');
+          return aTime.localeCompare(bTime);
+        });
+        for (let i = 1; i < list.length; i++) {
+          if (list[i]?.id) idsToDelete.push(String(list[i].id));
+        }
+      }
+
+      if (idsToDelete.length > 0) {
+        const inFilter = idsToDelete.map(id => `"${String(id).replace(/"/g, '\\"')}"`).join(',');
+        await supabaseRequest(`/rest/v1/meal_exclusions?id=in.(${encodeURIComponent(inFilter)})`, {
+          method: 'DELETE',
+          service: true,
+          prefer: 'return=minimal',
+        });
+      }
+
+      return json(res, 200, { removed: idsToDelete.length, groups: groups.size });
     }
 
     if (payload?.__operation === 'mutate') {
