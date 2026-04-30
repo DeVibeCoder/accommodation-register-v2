@@ -134,28 +134,36 @@ export async function updateProfileRole(userId, email, role) {
   const allowedRoles = ['Viewer', 'Accommodation', 'Supervisor', 'Admin'];
   const nextRole = allowedRoles.includes(role) ? role : 'Viewer';
 
+  console.log('[updateProfileRole] Starting role change:', { userId, email, role, nextRole });
+
   try {
     const targetId = userId || currentUser?.id || 'me';
     let data;
 
     try {
+      console.log('[updateProfileRole] Attempt 1: POST /api/users', { userId: targetId, email, role: nextRole });
       data = await apiRequest('/api/users', {
         method: 'POST',
         body: { userId: targetId, email, role: nextRole },
       });
+      console.log('[updateProfileRole] Attempt 1 succeeded:', data);
     } catch (err1) {
-      console.error('[Role Update] POST /api/users failed:', err1?.message, 'Trying /role endpoint');
+      console.error('[updateProfileRole] Attempt 1 failed:', err1?.message);
       try {
+        console.log('[updateProfileRole] Attempt 2: POST /api/users/:id/role', { targetId, email, role: nextRole });
         data = await apiRequest(`/api/users/${encodeURIComponent(targetId)}/role`, {
           method: 'POST',
           body: { email, role: nextRole },
         });
+        console.log('[updateProfileRole] Attempt 2 succeeded:', data);
       } catch (err2) {
-        console.error('[Role Update] POST /api/users/:id/role failed:', err2?.message, 'Trying PUT');
+        console.error('[updateProfileRole] Attempt 2 failed:', err2?.message);
+        console.log('[updateProfileRole] Attempt 3: PUT /api/users/:id/role');
         data = await apiRequest(`/api/users/${encodeURIComponent(targetId)}/role`, {
           method: 'PUT',
           body: { email, role: nextRole },
         });
+        console.log('[updateProfileRole] Attempt 3 succeeded:', data);
       }
     }
 
@@ -171,7 +179,7 @@ export async function updateProfileRole(userId, email, role) {
 
     return { user, error: null };
   } catch (error) {
-    console.error('[Role Update] Final error:', error?.message);
+    console.error('[updateProfileRole] All attempts failed:', error?.message, error);
     return { user: null, error: error?.message || 'Unable to update role.' };
   }
 }
