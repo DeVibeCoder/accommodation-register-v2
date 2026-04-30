@@ -34,6 +34,12 @@ function normalizeText(value) {
   return String(value || '').trim().toLowerCase();
 }
 
+function normalizeDepartmentLabel(value) {
+  const raw = String(value || '').trim();
+  if (!raw) return '-';
+  return /^other(\b|\s|[-_/(:])/i.test(raw) ? 'OTHER' : raw;
+}
+
 // --- Add / Edit Modal -------------------------------------------------------
 function ExclusionModal({ open, onClose, occupants, canEdit, onSaved, editEntry = null }) {
   const isEditing = Boolean(editEntry?.id);
@@ -496,7 +502,7 @@ function MealExclusion() {
     occupants = [],
     mealExclusionSummary = { active: [], upcoming: [], mealExcludedCount: 0 },
     refreshMealExclusionSummary,
-    canEditAccommodation = true,
+    canEditMeals = false,
   } = useOutletContext();
 
   const [activeTab, setActiveTab] = useState('active');
@@ -517,20 +523,23 @@ function MealExclusion() {
     const map = new Map();
     for (const occ of occupants) {
       const key = normalizeText(occ.staffId);
-      if (key && !map.has(key)) map.set(key, occ.department || '-');
+      if (key && !map.has(key)) map.set(key, normalizeDepartmentLabel(occ.department));
     }
     return map;
   }, [occupants]);
 
   const hydrateRows = useMemo(() => {
-    const enrich = items => items.map(item => ({ ...item, department: item.department || departmentByStaffId.get(normalizeText(item.staffId)) || '-' }));
+    const enrich = items => items.map(item => ({
+      ...item,
+      department: normalizeDepartmentLabel(item.department || departmentByStaffId.get(normalizeText(item.staffId)) || '-'),
+    }));
     return { active: enrich(active), upcoming: enrich(upcoming) };
   }, [active, upcoming, departmentByStaffId]);
 
   const refreshSummary = () => refreshMealExclusionSummary();
 
   const handleCloseExclusion = async (id) => {
-    if (!canEditAccommodation || !id || closingId) return;
+    if (!canEditMeals || !id || closingId) return;
     setClosingId(id); setNotice('');
     try {
       await closeMealExclusion(id);
@@ -580,7 +589,7 @@ function MealExclusion() {
           <div style={{ fontSize: 28, fontWeight: 900, color: '#581c87', marginTop: 4 }}>{mealHeadcount}</div>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginLeft: 'auto', flexWrap: 'wrap', background: '#fff', border: '1px solid #dbe4f0', borderRadius: 14, padding: 8, boxShadow: '0 8px 20px rgba(15,23,42,0.06)' }}>
-          {canEditAccommodation ? (
+          {canEditMeals ? (
             <>
               <button onClick={openAddModal} style={{ padding: '11px 16px', borderRadius: 10, border: 'none', background: '#2563eb', color: '#fff', fontWeight: 800, fontSize: 13, cursor: 'pointer', whiteSpace: 'nowrap', boxShadow: '0 2px 8px rgba(37,99,235,0.25)' }}>+ Add Exclusion</button>
               <button onClick={() => setImportOpen(true)} style={{ padding: '11px 16px', borderRadius: 10, border: 'none', background: '#16a34a', color: '#fff', fontWeight: 800, fontSize: 13, cursor: 'pointer', whiteSpace: 'nowrap', boxShadow: '0 2px 8px rgba(22,163,74,0.25)' }}>Import CSV</button>
@@ -608,7 +617,7 @@ function MealExclusion() {
         <div style={{ minHeight: 420 }}>
           <ExclusionTable
             rows={activeTab === 'active' ? hydrateRows.active : hydrateRows.upcoming}
-            canEdit={canEditAccommodation}
+            canEdit={canEditMeals}
             closingId={closingId}
             onClose={handleCloseExclusion}
             onEdit={openEditModal}
@@ -617,7 +626,7 @@ function MealExclusion() {
         </div>
       </div>
 
-      <ExclusionModal open={modalOpen} onClose={() => { setModalOpen(false); setEditingEntry(null); }} occupants={occupants} canEdit={canEditAccommodation} onSaved={handleSaved} editEntry={editingEntry} />
+      <ExclusionModal open={modalOpen} onClose={() => { setModalOpen(false); setEditingEntry(null); }} occupants={occupants} canEdit={canEditMeals} onSaved={handleSaved} editEntry={editingEntry} />
       <ExclusionHistoryModal open={historyOpen} onClose={() => setHistoryOpen(false)} />
       <ImportModal open={importOpen} onClose={() => setImportOpen(false)} occupants={occupants} onImported={async () => { await refreshSummary(); setImportOpen(false); setNotice('Bulk import completed successfully.'); }} />
     </div>

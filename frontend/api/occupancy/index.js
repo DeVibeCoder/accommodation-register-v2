@@ -141,6 +141,13 @@ function normalizeDeptCounts(source = {}) {
   return counts;
 }
 
+function normalizeDepartmentForMeals(value = '') {
+  const raw = String(value || '').trim();
+  if (!raw) return 'OTHER';
+  if (/^other(\b|\s|[-_/(:])/i.test(raw)) return 'OTHER';
+  return raw;
+}
+
 function toIsoDateOrEmpty(value) {
   const dateText = String(value || '').slice(0, 10);
   return /^\d{4}-\d{2}-\d{2}$/.test(dateText) ? dateText : '';
@@ -204,7 +211,7 @@ async function computeMealSnapshotForDate(date = todayIsoDate()) {
 
   for (const row of occupants) {
     if (isExcludedFromMeals(row, exclusionIndex)) continue;
-    const dept = String(row.department || '').trim() || 'Other';
+    const dept = normalizeDepartmentForMeals(row.department);
     counts[dept] = (counts[dept] || 0) + 1;
   }
 
@@ -341,7 +348,7 @@ async function resolveTargetFilter(payload = {}) {
   return { filter: fallbackFilter, row: best.row };
 }
 
-async function findActiveConflict(row = {}, excludeId = null) {
+async function findActiveConflict(row = {}, excludeId = null, allowConflictWithId = null) {
   if (!row?.room_id || row?.bed_no == null || !isActiveStatus(row.status)) {
     return null;
   }
@@ -355,22 +362,38 @@ async function findActiveConflict(row = {}, excludeId = null) {
     return null;
   }
 
-  return rows.find(item => String(item?.id || '') !== String(excludeId || '')) || null;
+  return rows.find(item => {
+    const currentId = String(item?.id || '');
+    if (currentId === String(excludeId || '')) return false;
+    if (allowConflictWithId && currentId === String(allowConflictWithId)) return false;
+    return true;
+  }) || null;
 }
 
 async function writeHistoryIfProvided(payload = {}, user = {}) {
   const history = payload?.__history;
-  if (!history || typeof history !== 'object') return;
+  if (!history || typeof history !== 'object') return null;
 
-  await supabaseRequest('/rest/v1/stay_history', {
+  const inserted = await supabaseRequest('/rest/v1/stay_history', {
     method: 'POST',
     service: true,
     body: [{
       ...toStayHistoryRow({ ...history, user: user?.role || null }),
       created_by: user?.id || null,
     }],
-    prefer: 'return=minimal',
+    prefer: 'return=representation',
   });
+
+  return Array.isArray(inserted) && inserted[0] ? {
+    id: inserted[0].id,
+    type: inserted[0].action || history.type || 'Edit',
+    name: inserted[0].occupant_name || history.name || '',
+    roomId: inserted[0].room_id || history.roomId || '',
+    bedNo: inserted[0]?.details?.bedNo ?? history.bedNo ?? null,
+    details: inserted[0]?.details?.details || history.details || '',
+    timestamp: inserted[0].created_at || new Date().toISOString(),
+    user: inserted[0]?.details?.user || user?.role || '',
+  } : null;
 }
 
 export default async function handler(req, res) {
@@ -497,7 +520,7 @@ export default async function handler(req, res) {
       return json(res, 200, { success: true });
     }
 
-    const user = await requireRole(req, res, ['Admin', 'Accommodation']);
+    const user = await requireRole(req, res, ['Admin', 'Accommodation', 'Supervisor']);
     if (!user) return;
 
     const payload = await readBody(req);
@@ -658,15 +681,15 @@ export default async function handler(req, res) {
         });
 
         if (Array.isArray(removed) && removed.length > 0) {
-          await writeHistoryIfProvided(payload, user);
-          return json(res, 200, { success: true });
+          const historyEntry = await writeHistoryIfProvided(payload, user);
+          return json(res, 200, { success: true, historyEntry });
         }
 
         return json(res, 500, { error: 'Occupancy action could not remove the target row.' });
       }
 
       const nextRow = toOccupancyRow(payload);
-      const conflict = await findActiveConflict(nextRow, target.row?.id);
+      const conflict = await findActiveConflict(nextRow, target.row?.id, payload.__allowConflictOccupantId);
       if (conflict) {
         return json(res, 409, {
           error: `Bed ${nextRow.bed_no} in ${nextRow.room_id} is already assigned to ${conflict.full_name || 'another active occupant'}.`,
@@ -681,8 +704,8 @@ export default async function handler(req, res) {
       });
 
       if (Array.isArray(updated) && updated[0]) {
-        await writeHistoryIfProvided(payload, user);
-        return json(res, 200, { occupant: formatOccupantForClient(updated[0]) });
+        const historyEntry = await writeHistoryIfProvided(payload, user);
+        return json(res, 200, { occupant: formatOccupantForClient(updated[0]), historyEntry });
       }
 
       return json(res, 500, { error: 'Occupancy update could not persist changes.' });
@@ -725,10 +748,11 @@ export default async function handler(req, res) {
     }
 
     const occupant = Array.isArray(inserted) && inserted[0] ? formatOccupantForClient(inserted[0]) : null;
+    let historyEntry = null;
     if (occupant) {
-      await writeHistoryIfProvided(payload, user);
+      historyEntry = await writeHistoryIfProvided(payload, user);
     }
-    return json(res, 200, { occupant });
+    return json(res, 200, { occupant, historyEntry });
   } catch (error) {
     return json(res, 500, { error: error.message || 'Unable to process occupancy request.' });
   }

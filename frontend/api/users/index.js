@@ -26,7 +26,7 @@ export default async function handler(req, res) {
       const nextRole = payload?.role;
       const email = payload?.email || null;
 
-      if (!targetUserId || !['Viewer', 'Accommodation', 'Admin'].includes(nextRole)) {
+      if (!targetUserId || !['Viewer', 'Accommodation', 'Supervisor', 'Admin'].includes(nextRole)) {
         return json(res, 400, { error: 'Valid user ID and role are required.' });
       }
 

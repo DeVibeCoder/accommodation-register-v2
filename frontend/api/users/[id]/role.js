@@ -10,7 +10,7 @@ export default async function handler(req, res) {
     const rawId = req.query.id;
     const userId = Array.isArray(rawId) ? rawId[0] : rawId;
     const { email, role } = await readBody(req);
-    const nextRole = ['Viewer', 'Accommodation', 'Admin'].includes(role) ? role : null;
+    const nextRole = ['Viewer', 'Accommodation', 'Supervisor', 'Admin'].includes(role) ? role : null;
 
     if (!userId || !nextRole) {
       return json(res, 400, { error: 'User ID and role are required.' });

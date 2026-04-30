@@ -81,6 +81,25 @@ function Layout({ user, onLogout }) {
 
   const roomsState = useMemo(() => attachOccupantsToRooms(roomBaseState, occupants), [roomBaseState, occupants]);
   const sidebarWidth = sidebarCollapsed ? 70 : 220;
+  const role = user?.role || 'Viewer';
+  const isAdmin = role === 'Admin';
+  const canEditAccommodation = role === 'Admin' || role === 'Accommodation' || role === 'Supervisor';
+  const canEditMeals = role === 'Admin' || role === 'Supervisor';
+  const canUseOccupancyBulkTools = role === 'Admin' || role === 'Accommodation';
+  const canExportRooms = role === 'Admin' || role === 'Accommodation';
+
+  const prependStayHistoryEntry = (entry) => {
+    if (!entry) return;
+    setStayHistory(prev => {
+      const next = [entry, ...prev].slice(0, 500);
+      try {
+        localStorage.setItem('tic_stay_history', JSON.stringify(next));
+      } catch {
+        // ignore cache write issues
+      }
+      return next;
+    });
+  };
 
   const refreshMealExclusionSummary = async () => {
     try {
@@ -213,7 +232,7 @@ function Layout({ user, onLogout }) {
 
         <main style={{ flex: 1, overflowY: 'auto', overflowX: 'hidden' }}>
           <div style={{ width: '100%', maxWidth: '100%', margin: 0, padding: 0 }}>
-            <Outlet context={{ sidebarCollapsed, setSidebarCollapsed, occupants, setOccupants, roomsState, setRoomsState, getNextUid, stayHistory, setStayHistory, addStayHistory, mealExclusionSummary, setMealExclusionSummary, refreshMealExclusionSummary, user, isAdmin: (user?.role || 'Viewer') === 'Admin', canEditAccommodation: (user?.role || 'Viewer') !== 'Viewer' }} />
+            <Outlet context={{ sidebarCollapsed, setSidebarCollapsed, occupants, setOccupants, roomsState, setRoomsState, getNextUid, stayHistory, setStayHistory, addStayHistory, prependStayHistoryEntry, mealExclusionSummary, setMealExclusionSummary, refreshMealExclusionSummary, user, role, isAdmin, canEditAccommodation, canEditMeals, canUseOccupancyBulkTools, canExportRooms }} />
           </div>
         </main>
       </div>

@@ -8,7 +8,8 @@ import { formatDisplayDateTime } from '../utils/date';
 
 const roleDescriptions = [
   { role: 'Viewer', desc: 'Read-only access across the accommodation module.' },
-  { role: 'Accommodation', desc: 'Can manage rooms, occupancy, and stay history.' },
+  { role: 'Accommodation', desc: 'Can manage rooms and occupancy; meal pages are view-only.' },
+  { role: 'Supervisor', desc: 'Can edit accommodation and meals, but no bulk CSV tools or admin settings actions.' },
   { role: 'Admin', desc: 'Full control over users, settings, and data tools.' },
 ];
 
@@ -173,6 +174,7 @@ function Settings({ user, setUser }) {
   const roleCounts = useMemo(() => ({
     Admin: managedUsers.filter(item => item.role === 'Admin').length,
     Accommodation: managedUsers.filter(item => item.role === 'Accommodation').length,
+    Supervisor: managedUsers.filter(item => item.role === 'Supervisor').length,
     Viewer: managedUsers.filter(item => item.role === 'Viewer').length,
   }), [managedUsers]);
 

@@ -131,7 +131,7 @@ export async function signOutFromApi() {
 
 export async function updateProfileRole(userId, email, role) {
   const currentUser = readStoredUser();
-  const allowedRoles = ['Viewer', 'Accommodation', 'Admin'];
+  const allowedRoles = ['Viewer', 'Accommodation', 'Supervisor', 'Admin'];
   const nextRole = allowedRoles.includes(role) ? role : 'Viewer';
 
   try {

@@ -85,12 +85,8 @@ function Sidebar({ collapsed = false, setCollapsed, onLogout, user }) {
   // Role-based menu filtering
   const role = user?.role || 'Viewer';
   const roleInitial = String(role).charAt(0).toUpperCase() || 'U';
-  const filteredSections = navSections.map(section => {
-    // Meals section hidden for Accommodation role
-    if (section.label === 'Meals' && role === 'Accommodation') return null;
-    // All sections visible for Admin/Viewer
-    return section;
-  }).filter(Boolean);
+  const filteredSections = navSections;
+  const showSystemSection = role === 'Admin';
 
   return (
     <aside style={{
@@ -159,37 +155,38 @@ function Sidebar({ collapsed = false, setCollapsed, onLogout, user }) {
             ))}
           </div>
         ))}
-        {/* System Section (Settings) */}
-        <div key={systemSection.label} style={{ marginBottom: 8 }}>
-          {!collapsed && (
-            <div style={{ fontSize: 12, fontWeight: 700, color: '#b6c3e0', letterSpacing: 0.5, margin: '8px 0 4px 18px' }}>{systemSection.label}</div>
-          )}
-          {systemSection.items.map(item => (
-            <NavLink
-              key={item.label}
-              to={item.to}
-              style={({ isActive }) => ({
-                display: 'flex',
-                alignItems: 'center',
-                gap: collapsed ? 0 : 12,
-                padding: collapsed ? '10px 0' : '10px 18px',
-                color: isActive ? '#e3eafc' : '#b6c3e0',
-                background: isActive ? 'rgba(227,234,252,0.13)' : 'none',
-                borderRadius: 8,
-                fontWeight: 600,
-                fontSize: 15,
-                margin: '2px 0',
-                justifyContent: collapsed ? 'center' : 'flex-start',
-                transition: 'background 0.13s',
-                textDecoration: 'none',
-              })}
-              title={item.label}
-            >
-              <span style={{ display: 'flex', alignItems: 'center', fontSize: 20 }}>{item.icon}</span>
-              {!collapsed && item.label}
-            </NavLink>
-          ))}
-        </div>
+        {showSystemSection ? (
+          <div key={systemSection.label} style={{ marginBottom: 8 }}>
+            {!collapsed && (
+              <div style={{ fontSize: 12, fontWeight: 700, color: '#b6c3e0', letterSpacing: 0.5, margin: '8px 0 4px 18px' }}>{systemSection.label}</div>
+            )}
+            {systemSection.items.map(item => (
+              <NavLink
+                key={item.label}
+                to={item.to}
+                style={({ isActive }) => ({
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: collapsed ? 0 : 12,
+                  padding: collapsed ? '10px 0' : '10px 18px',
+                  color: isActive ? '#e3eafc' : '#b6c3e0',
+                  background: isActive ? 'rgba(227,234,252,0.13)' : 'none',
+                  borderRadius: 8,
+                  fontWeight: 600,
+                  fontSize: 15,
+                  margin: '2px 0',
+                  justifyContent: collapsed ? 'center' : 'flex-start',
+                  transition: 'background 0.13s',
+                  textDecoration: 'none',
+                })}
+                title={item.label}
+              >
+                <span style={{ display: 'flex', alignItems: 'center', fontSize: 20 }}>{item.icon}</span>
+                {!collapsed && item.label}
+              </NavLink>
+            ))}
+          </div>
+        ) : null}
       </nav>
 
       {/* Bottom section: Logout and user info */}

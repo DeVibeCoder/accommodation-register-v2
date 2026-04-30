@@ -1,5 +1,30 @@
 import React, { useState } from 'react';
 
+const DEPARTMENT_OPTIONS = [
+  'THILAFUSHI INDUSTRIAL COMPLEX',
+  'QMARINE',
+  'VILLA TRADE CENTER 2',
+  'VILLA MARINE TRANSPORT',
+  'VILLA TRADING',
+  'LOGISTICS',
+  'MAXX ROYAL',
+  'OTHER',
+];
+
+function toDepartmentValue(selected, otherValue) {
+  if (selected !== 'OTHER') return selected;
+  const custom = String(otherValue || '').trim();
+  return custom ? `OTHER - ${custom}` : 'OTHER';
+}
+
+function parseDepartmentValue(value) {
+  const raw = String(value || '').trim();
+  if (!raw) return { selected: '', other: '' };
+  if (!/^other(\b|\s|[-_/(:])/i.test(raw)) return { selected: raw, other: '' };
+  const other = raw.replace(/^other\s*[-:/()]*\s*/i, '').trim();
+  return { selected: 'OTHER', other };
+}
+
 const overlayStyle = {
   position: 'fixed',
   top: 0,
@@ -29,12 +54,14 @@ const closeBtnStyle = {
 };
 
 function AddOccupantModal({ open, onClose, rooms, onAdd }) {
+  const initialDepartment = parseDepartmentValue('');
   const [form, setForm] = useState({
     personType: '',
     staffId: '',
     fullName: '',
     section: '',
-    department: '',
+    department: initialDepartment.selected,
+    otherDepartment: initialDepartment.other,
     nationality: '',
     roomId: '',
     bedId: '',
@@ -60,6 +87,7 @@ function AddOccupantModal({ open, onClose, rooms, onAdd }) {
     if (!form.staffId) newErrors.staffId = 'Required';
     if (!form.fullName) newErrors.fullName = 'Required';
     if (!form.department) newErrors.department = 'Required';
+    if (form.department === 'OTHER' && !String(form.otherDepartment || '').trim()) newErrors.otherDepartment = 'Required for OTHER';
     if (!form.nationality) newErrors.nationality = 'Required';
     if (!form.roomId) newErrors.roomId = 'Required';
     if (!form.bedId) newErrors.bedId = 'Required';
@@ -72,10 +100,13 @@ function AddOccupantModal({ open, onClose, rooms, onAdd }) {
   const handleSubmit = e => {
     e.preventDefault();
     if (!validate()) return;
-    onAdd(form);
+    onAdd({
+      ...form,
+      department: toDepartmentValue(form.department, form.otherDepartment),
+    });
     onClose();
     setForm({
-      personType: '', staffId: '', fullName: '', section: '', department: '', nationality: '', roomId: '', bedId: '', fasting: '', checkin: '', projectMeals: ''
+      personType: '', staffId: '', fullName: '', section: '', department: '', otherDepartment: '', nationality: '', roomId: '', bedId: '', fasting: '', checkin: '', projectMeals: ''
     });
   };
 
@@ -112,9 +143,18 @@ function AddOccupantModal({ open, onClose, rooms, onAdd }) {
               <input name="section" value={form.section} onChange={handleChange} style={inp} />
             </label>
             <label style={lbl}>Department*
-              <input name="department" value={form.department} onChange={handleChange} style={inp} />
+              <select name="department" value={form.department} onChange={handleChange} style={inp}>
+                <option value="">Select</option>
+                {DEPARTMENT_OPTIONS.map(option => <option key={option} value={option}>{option}</option>)}
+              </select>
               {errors.department && <span style={err}>{errors.department}</span>}
             </label>
+            {form.department === 'OTHER' ? (
+              <label style={{...lbl, gridColumn:'1/3'}}>Other Department Name*
+                <input name="otherDepartment" value={form.otherDepartment} onChange={handleChange} style={inp} placeholder="Type custom department" />
+                {errors.otherDepartment && <span style={err}>{errors.otherDepartment}</span>}
+              </label>
+            ) : null}
             <label style={lbl}>Nationality*
               <input name="nationality" value={form.nationality} onChange={handleChange} style={inp} />
               {errors.nationality && <span style={err}>{errors.nationality}</span>}

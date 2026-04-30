@@ -72,7 +72,7 @@ function Rooms() {
   const [editBeds, setEditBeds] = useState('1');
   const [editRoomType, setEditRoomType] = useState('Internal');
   const [editAcType, setEditAcType] = useState('Non-AC');
-  const { sidebarCollapsed, roomsState, setRoomsState, canEditAccommodation = true } = useOutletContext();
+  const { sidebarCollapsed, roomsState, setRoomsState, canEditAccommodation = true, canExportRooms = true } = useOutletContext();
 
   const rooms = useMemo(() => deriveRooms(roomsState), [roomsState]);
 
@@ -232,12 +232,14 @@ function Rooms() {
           >
             Clear Filters
           </button>
-          <button
-            onClick={exportRoomsCsv}
-            style={{ padding: '10px 20px', borderRadius: 12, border: 'none', background: '#16a34a', color: '#fff', fontWeight: 700, fontSize: 15, cursor: 'pointer' }}
-          >
-            Export CSV
-          </button>
+          {canExportRooms ? (
+            <button
+              onClick={exportRoomsCsv}
+              style={{ padding: '10px 20px', borderRadius: 12, border: 'none', background: '#16a34a', color: '#fff', fontWeight: 700, fontSize: 15, cursor: 'pointer' }}
+            >
+              Export CSV
+            </button>
+          ) : null}
           <input
             className="search-bar"
             type="text"

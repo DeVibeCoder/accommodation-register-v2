@@ -130,7 +130,10 @@ export async function addOccupant(occupant) {
     });
 
     const record = data?.occupant ?? data?.data ?? data;
-    return record ? normalizeOccupantRecord(record) : null;
+    if (!record) return null;
+    const normalized = normalizeOccupantRecord(record);
+    if (data?.historyEntry) normalized.historyEntry = data.historyEntry;
+    return normalized;
   } catch (error) {
     console.error('[API] Unable to add occupant. Kept local UI state.', error.message || error);
     return null;
@@ -172,6 +175,9 @@ export async function updateOccupant(id, updates) {
   if (updates?.__history) {
     payload.__history = updates.__history;
   }
+  if (updates?.__allowConflictOccupantId) {
+    payload.__allowConflictOccupantId = updates.__allowConflictOccupantId;
+  }
 
   try {
     const data = await apiRequest('/api/occupancy', {
@@ -180,11 +186,14 @@ export async function updateOccupant(id, updates) {
     });
 
     if (data?.success) {
-      return { success: true };
+      return { success: true, historyEntry: data?.historyEntry || null };
     }
 
     const record = data?.occupant ?? data?.data ?? data;
-    return record ? normalizeOccupantRecord(record) : null;
+    if (!record) return null;
+    const normalized = normalizeOccupantRecord(record);
+    if (data?.historyEntry) normalized.historyEntry = data.historyEntry;
+    return normalized;
   } catch (error) {
     const message = error?.message || 'Unable to update occupant.';
     console.error('[API] Unable to update occupant. UI changes were preserved locally.', message);

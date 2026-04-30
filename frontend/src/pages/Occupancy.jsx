@@ -36,6 +36,31 @@ const OCCUPANCY_TEMPLATE_HEADERS = [
   'Status',
 ];
 
+const DEPARTMENT_OPTIONS = [
+  'THILAFUSHI INDUSTRIAL COMPLEX',
+  'QMARINE',
+  'VILLA TRADE CENTER 2',
+  'VILLA MARINE TRANSPORT',
+  'VILLA TRADING',
+  'LOGISTICS',
+  'MAXX ROYAL',
+  'OTHER',
+];
+
+function toDepartmentValue(selected, otherValue) {
+  if (selected !== 'OTHER') return selected;
+  const custom = String(otherValue || '').trim();
+  return custom ? `OTHER - ${custom}` : 'OTHER';
+}
+
+function parseDepartmentValue(value) {
+  const raw = String(value || '').trim();
+  if (!raw) return { selected: '', other: '' };
+  if (!/^other(\b|\s|[-_/(:])/i.test(raw)) return { selected: raw, other: '' };
+  const other = raw.replace(/^other\s*[-:/()]*\s*/i, '').trim();
+  return { selected: 'OTHER', other };
+}
+
 function compareRoomIds(a, b) {
   return a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' });
 }
@@ -289,7 +314,15 @@ function MoveModal({ open, onClose, occupant, allRooms, onMove }) {
 /* -- Edit Modal -- */
 function EditOccupantModal({ open, onClose, occupant, onSave }) {
   const [form, setForm] = useState(null);
-  React.useEffect(()=>{ if (occupant) setForm({ ...occupant }); }, [occupant]);
+  React.useEffect(()=>{
+    if (!occupant) return;
+    const parsedDepartment = parseDepartmentValue(occupant.department);
+    setForm({
+      ...occupant,
+      departmentChoice: parsedDepartment.selected || occupant.department || '',
+      otherDepartment: parsedDepartment.other || '',
+    });
+  }, [occupant]);
   if (!open || !occupant || !form) return null;
   const lbl2 = { display:'flex',flexDirection:'column',fontWeight:600,fontSize:13,color:'#475569',gap:5 };
   const inp2 = { padding:'10px 12px',borderRadius:10,border:'1.5px solid #d0d7e2',fontSize:13,fontWeight:500,color:'#1e293b',background:'#fff' };
@@ -305,13 +338,29 @@ function EditOccupantModal({ open, onClose, occupant, onSave }) {
           <label style={lbl2}>Staff ID<input name="staffId" value={form.staffId} onChange={handle} style={inp2} /></label>
           <label style={{...lbl2,gridColumn:'1/3'}}>Full Name<input name="name" value={form.name} onChange={handle} style={inp2} /></label>
           <label style={lbl2}>Section<input name="section" value={form.section} onChange={handle} style={inp2} /></label>
-          <label style={lbl2}>Department<input name="department" value={form.department} onChange={handle} style={inp2} /></label>
+          <label style={lbl2}>Department
+            <select name="departmentChoice" value={form.departmentChoice} onChange={handle} style={inp2}>
+              <option value="">Select</option>
+              {DEPARTMENT_OPTIONS.map(option => <option key={option} value={option}>{option}</option>)}
+            </select>
+          </label>
+          {form.departmentChoice === 'OTHER' ? (
+            <label style={{...lbl2, gridColumn:'1/3'}}>Other Department
+              <input name="otherDepartment" value={form.otherDepartment || ''} onChange={handle} style={inp2} placeholder="Type custom department" />
+            </label>
+          ) : null}
           <label style={lbl2}>Nationality<input name="nationality" value={form.nationality} onChange={handle} style={inp2} /></label>
           <label style={lbl2}>Fasting<select name="fasting" value={String(form.fasting)} onChange={handleFasting} style={inp2}><option value="true">Yes</option><option value="false">No</option></select></label>
         </div>
         <div style={{ display:'flex',justifyContent:'flex-end',gap:12 }}>
           <button onClick={onClose} style={{ padding:'10px 32px',borderRadius:10,border:'none',background:'#e3eafc',color:'#1e315f',fontWeight:700,cursor:'pointer',fontSize:14 }}>Cancel</button>
-          <button onClick={()=>{ onSave(form); onClose(); }} style={{ padding:'10px 32px',borderRadius:10,border:'none',background:'#3b82f6',color:'#fff',fontWeight:700,cursor:'pointer',fontSize:14 }}>Save</button>
+          <button onClick={()=>{
+            onSave({
+              ...form,
+              department: toDepartmentValue(form.departmentChoice, form.otherDepartment),
+            });
+            onClose();
+          }} style={{ padding:'10px 32px',borderRadius:10,border:'none',background:'#3b82f6',color:'#fff',fontWeight:700,cursor:'pointer',fontSize:14 }}>Save</button>
         </div>
       </div>
     </div>
@@ -329,6 +378,32 @@ function ConfirmModal({ open, onClose, onConfirm, title, message, confirmLabel='
         <div style={{ display:'flex',justifyContent:'flex-end',gap:12 }}>
           <button onClick={onClose} style={{ padding:'9px 28px',borderRadius:10,border:'none',background:'#e3eafc',color:'#1e315f',fontWeight:700,cursor:'pointer' }}>Cancel</button>
           <button onClick={()=>{ onConfirm(); onClose(); }} style={{ padding:'9px 28px',borderRadius:10,border:'none',background:confirmColor,color:'#fff',fontWeight:700,cursor:'pointer' }}>{confirmLabel}</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ActionToast({ notice, onClose }) {
+  React.useEffect(() => {
+    if (!notice?.open) return undefined;
+    const timeoutId = window.setTimeout(() => {
+      onClose();
+    }, 3200);
+    return () => window.clearTimeout(timeoutId);
+  }, [notice, onClose]);
+
+  if (!notice?.open) return null;
+  const isError = notice.type === 'error';
+  return (
+    <div style={{ position:'fixed',right:20,bottom:20,zIndex:3100,pointerEvents:'none' }}>
+      <div style={{ width:'min(380px, calc(100vw - 32px))',background:isError ? 'linear-gradient(135deg, #7f1d1d 0%, #dc2626 100%)' : 'linear-gradient(135deg, #1d4ed8 0%, #0f766e 100%)',color:'#fff',borderRadius:16,padding:'14px 16px',boxShadow:'0 18px 40px rgba(15,23,42,.24)',animation:'fadeToastIn .22s ease-out',pointerEvents:'auto' }}>
+        <div style={{ display:'flex',alignItems:'flex-start',justifyContent:'space-between',gap:12 }}>
+          <div>
+            <div style={{ fontWeight:900,fontSize:14,marginBottom:4 }}>{notice.title || (isError ? 'Action Failed' : 'Action Completed')}</div>
+            <div style={{ fontSize:12.5,lineHeight:1.5,opacity:.96 }}>{notice.message || ''}</div>
+          </div>
+          <button onClick={onClose} style={{ border:'none',background:'rgba(255,255,255,.14)',color:'#fff',width:28,height:28,borderRadius:999,cursor:'pointer',fontWeight:800,flexShrink:0 }}>X</button>
         </div>
       </div>
     </div>
@@ -366,7 +441,17 @@ function buildingCodeFrom(roomId) {
 }
 
 function Occupancy() {
-  const { occupants, setOccupants, roomsState, setRoomsState, getNextUid, addStayHistory, canEditAccommodation = true } = useOutletContext();
+  const {
+    occupants,
+    setOccupants,
+    roomsState,
+    setRoomsState,
+    getNextUid,
+    addStayHistory,
+    prependStayHistoryEntry,
+    canEditAccommodation = true,
+    canUseOccupancyBulkTools = true,
+  } = useOutletContext();
   const importInputRef = useRef(null);
 
   const refreshOccupantsFromBackend = async () => {
@@ -432,6 +517,7 @@ function Occupancy() {
   const [checkoutTarget, setCheckoutTarget] = useState(null);
   const [importNotice, setImportNotice] = useState(null);
   const [isImporting, setIsImporting] = useState(false);
+  const [actionNotice, setActionNotice] = useState({ open: false, type: 'success', title: '', message: '' });
 
   const filtered = useMemo(()=>{
     return occupants.filter(o=>{
@@ -472,6 +558,15 @@ function Occupancy() {
     return result;
   },[filtered]);
 
+  const showActionResult = (type, title, message) => {
+    setActionNotice({ open: true, type, title, message });
+  };
+
+  const pushHistoryEntry = (entry) => {
+    if (!entry) return;
+    prependStayHistoryEntry?.(entry);
+  };
+
   const handleAdd = async form => {
     if (!canEditAccommodation) return;
 
@@ -505,12 +600,14 @@ function Occupancy() {
     });
     if (!saved) {
       await refreshOccupantsFromBackend();
-      window.alert('Unable to add occupant to live data. Please try again.');
+      showActionResult('error', 'Add Failed', 'Unable to add occupant to live data. Please try again.');
       return;
     }
 
+    pushHistoryEntry(saved.historyEntry);
     await syncRoomCapacities([saved]);
     await refreshOccupantsFromBackend();
+    showActionResult('success', 'Occupant Added', `${normalized.name} was added to ${normalized.roomId} / Bed ${normalized.bedNo}.`);
   };
 
   const handleEdit = async updated => {
@@ -538,11 +635,13 @@ function Occupancy() {
     });
     if (!saved || saved?.success === false) {
       await refreshOccupantsFromBackend();
-      window.alert(saved?.error || 'Unable to save occupant changes to live data.');
+      showActionResult('error', 'Edit Failed', saved?.error || 'Unable to save occupant changes to live data.');
       return;
     }
 
+    pushHistoryEntry(saved?.historyEntry);
     await refreshOccupantsFromBackend();
+    showActionResult('success', 'Occupant Updated', `${updated.name} details were updated successfully.`);
   };
 
   const handleDelete = async occupant => {
@@ -562,9 +661,12 @@ function Occupancy() {
     await refreshOccupantsFromBackend();
 
     if (!deleted || deleted?.success === false) {
-      window.alert(deleted?.error || 'Delete failed on live data. Please refresh and try again.');
+      showActionResult('error', 'Delete Failed', deleted?.error || 'Delete failed on live data. Please refresh and try again.');
       return;
     }
+
+    pushHistoryEntry(deleted?.historyEntry);
+    showActionResult('success', 'Occupant Deleted', `${occupant.name} was removed from active occupancy.`);
 
   };
 
@@ -586,52 +688,55 @@ function Occupancy() {
     await refreshOccupantsFromBackend();
 
     if (!deleted || deleted?.success === false) {
-      window.alert(deleted?.error || 'Check-out failed on live data. Please refresh and try again.');
+      showActionResult('error', 'Check-out Failed', deleted?.error || 'Check-out failed on live data. Please refresh and try again.');
       return;
     }
+
+    pushHistoryEntry(deleted?.historyEntry);
+    showActionResult('success', 'Checked Out', `${occupant.name} was checked out successfully.`);
 
   };
 
   const handleSwap = async (idA, idB) => {
     if (!canEditAccommodation) return;
 
-    let swapped = [];
-    let beforeA = null;
-    let beforeB = null;
+    const currentA = occupants.find(o => o._id === idA);
+    const currentB = occupants.find(o => o._id === idB);
+    if (!currentA || !currentB) {
+      showActionResult('error', 'Swap Failed', 'Could not find both occupants for this swap.');
+      return;
+    }
 
-    setOccupants(prev => {
-      const next = prev.map(o => ({ ...o }));
-      const a = next.find(o => o._id === idA);
-      const b = next.find(o => o._id === idB);
-      if (!a || !b) return next;
+    const beforeA = { ...currentA };
+    const beforeB = { ...currentB };
+    const swappedA = {
+      ...beforeA,
+      roomId: beforeB.roomId,
+      bedNo: beforeB.bedNo,
+      building: beforeB.building,
+      buildingCode: beforeB.buildingCode,
+    };
+    const swappedB = {
+      ...beforeB,
+      roomId: beforeA.roomId,
+      bedNo: beforeA.bedNo,
+      building: beforeA.building,
+      buildingCode: beforeA.buildingCode,
+    };
+    const swapped = [swappedA, swappedB];
 
-      beforeA = { ...a };
-      beforeB = { ...b };
-
-      const tmpRoom = a.roomId;
-      const tmpBed = a.bedNo;
-      const tmpBuilding = a.building;
-      const tmpCode = a.buildingCode;
-
-      a.roomId = b.roomId;
-      a.bedNo = b.bedNo;
-      a.building = b.building;
-      a.buildingCode = b.buildingCode;
-
-      b.roomId = tmpRoom;
-      b.bedNo = tmpBed;
-      b.building = tmpBuilding;
-      b.buildingCode = tmpCode;
-
-      swapped = [{ ...a }, { ...b }];
-      return next;
-    });
+    setOccupants(prev => prev.map(o => {
+      if (o._id === idA) return swappedA;
+      if (o._id === idB) return swappedB;
+      return o;
+    }));
 
     let allSaved = swapped.length > 0;
     for (let index = 0; index < swapped.length; index += 1) {
       const occupant = swapped[index];
       const saved = await updateOccupantRecord(occupant.id, {
         ...occupant,
+        __allowConflictOccupantId: index === 0 ? beforeB?.id : beforeA?.id,
         ...(index === 0 ? {
           __history: {
             type: 'Swap',
@@ -643,13 +748,17 @@ function Occupancy() {
         } : {}),
       });
       if (!saved || saved?.success === false) allSaved = false;
+      if (saved?.historyEntry) pushHistoryEntry(saved.historyEntry);
     }
 
     await refreshOccupantsFromBackend();
 
     if (!allSaved) {
-      window.alert('Swap failed to save on live data.');
+      showActionResult('error', 'Swap Failed', 'Swap failed to save on live data.');
+      return;
     }
+
+    showActionResult('success', 'Swap Completed', `${beforeA.name || 'Occupant A'} and ${beforeB.name || 'Occupant B'} were swapped successfully.`);
   };
 
   const handleMove = async (id, toRoom, toBed) => {
@@ -688,8 +797,11 @@ function Occupancy() {
       await refreshOccupantsFromBackend();
 
       if (!saved || saved?.success === false) {
-        window.alert(saved?.error || 'Move failed to save on live data.');
+        showActionResult('error', 'Move Failed', saved?.error || 'Move failed to save on live data.');
+        return;
       }
+      pushHistoryEntry(saved?.historyEntry);
+      showActionResult('success', 'Move Completed', `${moved.name} moved to ${moved.roomId} / Bed ${moved.bedNo}.`);
       return;
     }
 
@@ -872,12 +984,14 @@ function Occupancy() {
         </div>
         <div style={{ display:'flex',gap:10,alignItems:'flex-start',flexWrap:'wrap' }}>
           {canEditAccommodation ? <button onClick={()=>setAddOpen(true)} style={{ padding:'11px 26px',borderRadius:12,border:'none',background:'#3b82f6',color:'#fff',fontWeight:700,fontSize:15,cursor:'pointer',display:'flex',alignItems:'center',gap:8,boxShadow:'0 2px 8px rgba(59,130,246,.35)' }}>+ Add Occupant</button> : null}
-          <div style={{ display:'flex',gap:8 }}>
-            <button onClick={handleExport} style={{ padding:'10px 18px',borderRadius:10,border:'1.5px solid #d0d7e2',background:'#fff',color:'#1e315f',fontWeight:700,fontSize:13,cursor:'pointer' }}>Export</button>
-            {canEditAccommodation ? <button disabled={isImporting} onClick={handleImportClick} style={{ padding:'10px 18px',borderRadius:10,border:'1.5px solid #d0d7e2',background:isImporting ? '#f1f5f9' : '#fff',color:'#1e315f',fontWeight:700,fontSize:13,cursor:isImporting ? 'not-allowed' : 'pointer',opacity:isImporting ? 0.7 : 1 }}>{isImporting ? 'Importing...' : 'Import'}</button> : null}
-            <button onClick={handleTemplate} style={{ padding:'10px 18px',borderRadius:10,border:'1.5px solid #d0d7e2',background:'#fff',color:'#1e315f',fontWeight:700,fontSize:13,cursor:'pointer' }}>Template</button>
-            <input ref={importInputRef} type="file" accept=".csv,text/csv" onChange={handleImportFile} style={{ display:'none' }} />
-          </div>
+          {canUseOccupancyBulkTools ? (
+            <div style={{ display:'flex',gap:8 }}>
+              <button onClick={handleExport} style={{ padding:'10px 18px',borderRadius:10,border:'1.5px solid #d0d7e2',background:'#fff',color:'#1e315f',fontWeight:700,fontSize:13,cursor:'pointer' }}>Export</button>
+              {canEditAccommodation ? <button disabled={isImporting} onClick={handleImportClick} style={{ padding:'10px 18px',borderRadius:10,border:'1.5px solid #d0d7e2',background:isImporting ? '#f1f5f9' : '#fff',color:'#1e315f',fontWeight:700,fontSize:13,cursor:isImporting ? 'not-allowed' : 'pointer',opacity:isImporting ? 0.7 : 1 }}>{isImporting ? 'Importing...' : 'Import'}</button> : null}
+              <button onClick={handleTemplate} style={{ padding:'10px 18px',borderRadius:10,border:'1.5px solid #d0d7e2',background:'#fff',color:'#1e315f',fontWeight:700,fontSize:13,cursor:'pointer' }}>Template</button>
+              <input ref={importInputRef} type="file" accept=".csv,text/csv" onChange={handleImportFile} style={{ display:'none' }} />
+            </div>
+          ) : null}
         </div>
       </div>
 
@@ -1029,6 +1143,8 @@ function Occupancy() {
       <MoveModal open={!!moveTarget} onClose={()=>setMoveTarget(null)} occupant={moveTarget} allRooms={roomsState} onMove={handleMove} />
       <ConfirmModal open={!!checkoutTarget} onClose={()=>setCheckoutTarget(null)} onConfirm={()=>handleCheckout(checkoutTarget)} title="Check Out Occupant" message={`Check out ${checkoutTarget?.name} from ${checkoutTarget?.roomId}? They will be removed from the active list.`} confirmLabel="Check Out" confirmColor="#f59e0b" />
       <ConfirmModal open={!!deleteTarget} onClose={()=>setDeleteTarget(null)} onConfirm={()=>handleDelete(deleteTarget)} title="Delete Occupant" message={`Permanently delete ${deleteTarget?.name}? This cannot be undone.`} confirmLabel="Delete" confirmColor="#ef4444" />
+      <style>{`@keyframes fadeToastIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }`}</style>
+      <ActionToast notice={actionNotice} onClose={() => setActionNotice({ open: false, type: 'success', title: '', message: '' })} />
     </div>
   );
 }

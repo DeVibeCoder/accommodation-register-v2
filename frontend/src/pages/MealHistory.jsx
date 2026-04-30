@@ -12,6 +12,7 @@ function shortCode(value) {
 }
 
 const DEPT_ORDER = ['TIC', 'QMAR', 'VTC2', 'VMT', 'VT', 'LOGI'];
+const MEAL_HISTORY_CACHE_KEY = 'tic_meal_history_cache_v1';
 
 function sortDepartments(departments) {
   return [...departments].sort((a, b) => {
@@ -128,6 +129,22 @@ function MealHistory() {
   const [loading, setLoading] = useState(false);
   const [notice, setNotice] = useState('');
 
+  const hydrateFromCache = () => {
+    try {
+      const raw = sessionStorage.getItem(MEAL_HISTORY_CACHE_KEY);
+      if (!raw) return false;
+      const parsed = JSON.parse(raw);
+      const deptList = Array.isArray(parsed?.departments) ? parsed.departments : [];
+      const rows = Array.isArray(parsed?.history) ? parsed.history : [];
+      if (deptList.length === 0 || rows.length === 0) return false;
+      setDepartments(sortDepartments(deptList));
+      setHistory(rows);
+      return true;
+    } catch {
+      return false;
+    }
+  };
+
   const loadHistory = async () => {
     setLoading(true);
     setNotice('');
@@ -151,6 +168,19 @@ function MealHistory() {
         }).filter(item => item.date)
       );
 
+      try {
+        sessionStorage.setItem(MEAL_HISTORY_CACHE_KEY, JSON.stringify({
+          departments: deptList,
+          history: (Array.isArray(payload?.history) ? payload.history : []).map(item => ({
+            date: toIsoDate(item.date),
+            counts: normalizeCounts(item.counts || {}, deptList),
+            total: Number.isFinite(Number(item.total || 0)) ? Math.max(0, Math.floor(Number(item.total || 0))) : 0,
+          })).filter(item => item.date),
+        }));
+      } catch {
+        // ignore cache write issues
+      }
+
       if (payload?.warning) {
         const msg = String(payload.warning);
         // Suppress table-setup noise — live data still shows correctly
@@ -167,6 +197,7 @@ function MealHistory() {
   };
 
   useEffect(() => {
+    hydrateFromCache();
     loadHistory();
   }, []);
 
@@ -192,6 +223,9 @@ function MealHistory() {
 
   const totalMeals = useMemo(() => filteredRows.reduce((sum, row) => sum + (row.total || 0), 0), [filteredRows]);
   const averageMeals = filteredRows.length > 0 ? (totalMeals / filteredRows.length) : 0;
+  const todayIso = new Date().toISOString().slice(0, 10);
+  const todayRow = useMemo(() => history.find(item => item.date === todayIso) || null, [history, todayIso]);
+  const todaysHeadcount = todayRow?.total || 0;
 
   const handleExport = () => {
     if (filteredRows.length === 0) return;
@@ -245,6 +279,10 @@ function MealHistory() {
           <div style={{ color: '#5b7090', fontSize: 11, fontWeight: 800, textTransform: 'uppercase' }}>Average Per Day</div>
           <div style={{ marginTop: 6, fontWeight: 900, color: '#0f172a', fontSize: 32 }}>{averageMeals.toFixed(1)}</div>
         </div>
+        <div style={{ border: '1px solid #bfdbfe', borderRadius: 14, background: 'linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%)', padding: '14px 16px', boxShadow: '0 12px 30px rgba(30,49,95,0.06)' }}>
+          <div style={{ color: '#1d4ed8', fontSize: 11, fontWeight: 800, textTransform: 'uppercase' }}>Today's Headcount</div>
+          <div style={{ marginTop: 6, fontWeight: 900, color: '#1e3a8a', fontSize: 32 }}>{todaysHeadcount}</div>
+        </div>
       </div>
 
       <div style={{ background: '#fff', border: '1px solid #dbe4f0', borderRadius: 18, overflow: 'hidden', boxShadow: '0 18px 40px rgba(15,23,42,0.06)' }}>
@@ -265,7 +303,7 @@ function MealHistory() {
               </thead>
               <tbody>
                 {filteredRows.map((row, index) => (
-                  <tr key={row.date} style={{ cursor: 'pointer', borderBottom: '1px solid #edf2f7', background: index % 2 === 0 ? '#fff' : '#fbfdff', transition: 'background .15s ease' }} onClick={() => setSelectedRow(row)} onMouseEnter={e => { e.currentTarget.style.background = '#eef6ff'; }} onMouseLeave={e => { e.currentTarget.style.background = index % 2 === 0 ? '#fff' : '#fbfdff'; }}>
+                  <tr key={row.date} style={{ cursor: 'pointer', borderBottom: '1px solid #edf2f7', background: row.date === todayIso ? '#e0f2fe' : (index % 2 === 0 ? '#fff' : '#fbfdff'), transition: 'background .15s ease' }} onClick={() => setSelectedRow(row)} onMouseEnter={e => { e.currentTarget.style.background = '#eef6ff'; }} onMouseLeave={e => { e.currentTarget.style.background = row.date === todayIso ? '#e0f2fe' : (index % 2 === 0 ? '#fff' : '#fbfdff'); }}>
                     <td style={{ padding: '13px 16px', color: '#1f2937', fontWeight: 700 }}>{formatDateForUi(row.date)}</td>
                     {departments.map(dept => (
                       <td key={`${row.date}-${dept}`} style={{ textAlign: 'center', padding: '13px 10px', color: '#1e3a8a', fontWeight: 700 }}>{row.counts?.[dept] || 0}</td>
