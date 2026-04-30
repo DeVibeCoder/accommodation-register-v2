@@ -99,6 +99,7 @@ function ExclusionModal({ open, onClose, occupants, canEdit, onSaved, editEntry 
     if (!resolved) { setError('Please select a valid occupant from the list.'); return; }
     if (!reason) { setError('Please select a reason.'); return; }
     if (!fromDate) { setError('Please select a from date.'); return; }
+    if (toDate && toDate < fromDate) { setError('To date cannot be earlier than from date.'); return; }
     setSaving(true); setError('');
     try {
       const payload = { occupantId: resolved.id, name: resolved.name, staffId: resolved.staffId, roomId: resolved.roomId, bedNo: resolved.bedNo, reason, fromDate, toDate: toDate || null, notes };
@@ -153,11 +154,11 @@ function ExclusionModal({ open, onClose, occupants, canEdit, onSaved, editEntry 
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, alignItems: 'end' }}>
               <label style={{ display: 'grid', gap: 5, fontWeight: 700, color: '#334155', fontSize: 12 }}>
                 <span>From Date</span><span style={{ fontWeight: 500, color: '#94a3b8', fontSize: 11 }}>required</span>
-                <input type="date" value={fromDate} onChange={e => setFromDate(e.target.value)} disabled={!canEdit || saving} required style={modalFieldStyle} />
+                <input type="date" value={fromDate} max={toDate || undefined} onChange={e => setFromDate(e.target.value)} disabled={!canEdit || saving} required style={modalFieldStyle} />
               </label>
               <label style={{ display: 'grid', gap: 5, fontWeight: 700, color: '#334155', fontSize: 12 }}>
                 <span>To Date</span><span style={{ fontWeight: 500, color: '#94a3b8', fontSize: 11 }}>optional</span>
-                <input type="date" value={toDate} onChange={e => setToDate(e.target.value)} disabled={!canEdit || saving} style={modalFieldStyle} />
+                <input type="date" value={toDate} min={fromDate || undefined} onChange={e => setToDate(e.target.value)} disabled={!canEdit || saving} style={modalFieldStyle} />
               </label>
             </div>
             <label style={{ display: 'grid', gap: 5, fontWeight: 700, color: '#334155', fontSize: 12 }}>
