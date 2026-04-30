@@ -143,13 +143,15 @@ export async function updateProfileRole(userId, email, role) {
         method: 'POST',
         body: { userId: targetId, email, role: nextRole },
       });
-    } catch {
+    } catch (err1) {
+      console.error('[Role Update] POST /api/users failed:', err1?.message, 'Trying /role endpoint');
       try {
         data = await apiRequest(`/api/users/${encodeURIComponent(targetId)}/role`, {
           method: 'POST',
           body: { email, role: nextRole },
         });
-      } catch {
+      } catch (err2) {
+        console.error('[Role Update] POST /api/users/:id/role failed:', err2?.message, 'Trying PUT');
         data = await apiRequest(`/api/users/${encodeURIComponent(targetId)}/role`, {
           method: 'PUT',
           body: { email, role: nextRole },
@@ -169,6 +171,7 @@ export async function updateProfileRole(userId, email, role) {
 
     return { user, error: null };
   } catch (error) {
+    console.error('[Role Update] Final error:', error?.message);
     return { user: null, error: error?.message || 'Unable to update role.' };
   }
 }
