@@ -5,7 +5,7 @@ import { formatDisplayDate } from '../utils/date';
 
 const REASONS = ['Off Site', 'Vacation', 'Restaurant', 'Exit'];
 const CSV_TEMPLATE_HEADER = 'name,staff_id,reason,from_date,to_date,notes';
-const CSV_TEMPLATE_EXAMPLE = 'JOHN DOE,12345,Vacation,2026-05-01,2026-05-10,Annual leave\nJANE SMITH,67890,Off Site,2026-05-03,,Off site training';
+const CSV_TEMPLATE_EXAMPLE = 'JOHN DOE,12345,Vacation,01-05-2026,10-05-2026,Annual leave\nJANE SMITH,67890,Off Site,03-05-2026,,Off site training';
 
 function reasonColor(reason) {
   if (reason === 'Exit') return { bg: '#fee2e2', text: '#991b1b' };
@@ -191,6 +191,72 @@ function parseCsvLine(line) {
   return cells;
 }
 
+function parseDmyDateToIso(value) {
+  const text = String(value || '').trim();
+  if (!text) return '';
+  const match = text.match(/^(\d{2})-(\d{2})-(\d{4})$/);
+  if (!match) return '';
+
+  const day = Number.parseInt(match[1], 10);
+  const month = Number.parseInt(match[2], 10);
+  const year = Number.parseInt(match[3], 10);
+  if (!Number.isFinite(day) || !Number.isFinite(month) || !Number.isFinite(year)) return '';
+
+  const dt = new Date(Date.UTC(year, month - 1, day));
+  if (
+    dt.getUTCFullYear() !== year
+    || (dt.getUTCMonth() + 1) !== month
+    || dt.getUTCDate() !== day
+  ) {
+    return '';
+  }
+
+  return `${match[3]}-${match[2]}-${match[1]}`;
+}
+
+function formatIsoDateToDmy(value) {
+  const text = String(value || '').slice(0, 10);
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(text)) return value || '';
+  const [y, m, d] = text.split('-');
+  return `${d}-${m}-${y}`;
+}
+
+function rangesOverlap(fromA, toA, fromB, toB) {
+  const endA = toA || '9999-12-31';
+  const endB = toB || '9999-12-31';
+  return fromA <= endB && fromB <= endA;
+}
+
+function mealExclusionPersonKey(row) {
+  if (row.occupantId) return `id:${String(row.occupantId)}`;
+  const staff = normalizeText(row.staffId);
+  if (staff) return `staff:${staff}`;
+  const name = normalizeText(row.name);
+  if (name) return `name:${name}`;
+  return '';
+}
+
+function validateInFileDuplicateOrOverlap(rows = []) {
+  const byPerson = new Map();
+
+  for (const row of rows) {
+    if (!row.valid) continue;
+    const key = mealExclusionPersonKey(row);
+    if (!key) continue;
+
+    const existing = byPerson.get(key) || [];
+    const conflict = existing.find(item => rangesOverlap(row.fromDate, row.toDate, item.fromDate, item.toDate));
+    if (conflict) {
+      row.errors.push(`duplicate/overlap with row ${conflict.rowNum}`);
+      row.valid = false;
+      continue;
+    }
+
+    existing.push({ rowNum: row.rowNum, fromDate: row.fromDate, toDate: row.toDate });
+    byPerson.set(key, existing);
+  }
+}
+
 function parseMealExclusionCsv(text, occupants) {
   const lines = text.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
   if (lines.length < 2) return { rows: [], error: 'File is empty or has no data rows.' };
@@ -207,16 +273,19 @@ function parseMealExclusionCsv(text, occupants) {
     const name = iName >= 0 ? (cells[iName] || '').trim() : '';
     const staffId = iStaff >= 0 ? (cells[iStaff] || '').trim() : '';
     const reason = iReason >= 0 ? (cells[iReason] || '').trim() : '';
-    const fromDate = iFrom >= 0 ? (cells[iFrom] || '').trim() : '';
-    const toDate = iTo >= 0 ? (cells[iTo] || '').trim() : '';
+    const fromDateRaw = iFrom >= 0 ? (cells[iFrom] || '').trim() : '';
+    const toDateRaw = iTo >= 0 ? (cells[iTo] || '').trim() : '';
     const notes = iNotes >= 0 ? (cells[iNotes] || '').trim() : '';
+    const fromDate = parseDmyDateToIso(fromDateRaw);
+    const toDate = parseDmyDateToIso(toDateRaw);
 
     const errors = [];
     if (!reason) errors.push('missing reason');
     else if (!VALID_REASONS.has(reason.toLowerCase())) errors.push(`invalid reason "${reason}"`);
-    if (!fromDate) errors.push('missing from_date');
-    else if (!/^\d{4}-\d{2}-\d{2}$/.test(fromDate)) errors.push('from_date must be YYYY-MM-DD');
-    if (toDate && !/^\d{4}-\d{2}-\d{2}$/.test(toDate)) errors.push('to_date must be YYYY-MM-DD');
+    if (!fromDateRaw) errors.push('missing from_date');
+    else if (!fromDate) errors.push('from_date must be DD-MM-YYYY');
+    if (toDateRaw && !toDate) errors.push('to_date must be DD-MM-YYYY');
+    if (fromDate && toDate && toDate < fromDate) errors.push('to_date must be on/after from_date');
 
     const match = occupants.find(o => staffId && normalizeText(o.staffId) === normalizeText(staffId))
       || occupants.find(o => name && normalizeText(o.name) === normalizeText(name));
@@ -228,6 +297,8 @@ function parseMealExclusionCsv(text, occupants) {
       reason,
       fromDate,
       toDate: toDate || '',
+      fromDateDisplay: fromDateRaw || '',
+      toDateDisplay: toDateRaw || '',
       notes,
       occupantId: match?.id || null,
       roomId: match?.roomId || null,
@@ -237,6 +308,7 @@ function parseMealExclusionCsv(text, occupants) {
       valid: errors.length === 0,
     });
   }
+  validateInFileDuplicateOrOverlap(rows);
   return { rows, error: null };
 }
 
@@ -277,6 +349,7 @@ function ImportModal({ open, onClose, occupants, onImported }) {
     setImporting(true);
     try {
       const entries = valid.map(r => ({
+        rowNum: r.rowNum,
         occupantId: r.occupantId, name: r.name, staffId: r.staffId,
         roomId: r.roomId, bedNo: r.bedNo,
         reason: r.reason, fromDate: r.fromDate, toDate: r.toDate || null, notes: r.notes,
@@ -317,7 +390,7 @@ function ImportModal({ open, onClose, occupants, onImported }) {
             <label htmlFor="csv-upload" style={{ cursor: 'pointer', display: 'inline-block' }}>
               <div style={{ fontSize: 13, color: '#2563eb', fontWeight: 700 }}>Click to select CSV file</div>
               <div style={{ fontSize: 11, color: '#64748b', marginTop: 4 }}>Columns: name, staff_id, reason, from_date, to_date, notes</div>
-              <div style={{ fontSize: 11, color: '#64748b' }}>Reasons accepted: Off Site, Vacation, Restaurant, Exit | Dates: YYYY-MM-DD</div>
+              <div style={{ fontSize: 11, color: '#64748b' }}>Reasons accepted: Off Site, Vacation, Restaurant, Exit | Dates: DD-MM-YYYY</div>
             </label>
           </div>
 
@@ -355,8 +428,8 @@ function ImportModal({ open, onClose, occupants, onImported }) {
                         <td style={{ ...tdStyle, padding: '8px 10px', fontSize: 12 }}>
                           {row.reason ? <span style={{ display: 'inline-block', padding: '2px 8px', borderRadius: 999, background: reasonColor(row.reason.charAt(0).toUpperCase() + row.reason.slice(1)).bg, color: reasonColor(row.reason.charAt(0).toUpperCase() + row.reason.slice(1)).text, fontWeight: 700, fontSize: 10 }}>{row.reason}</span> : '-'}
                         </td>
-                        <td style={{ ...tdStyle, padding: '8px 10px', fontSize: 12 }}>{row.fromDate || '-'}</td>
-                        <td style={{ ...tdStyle, padding: '8px 10px', fontSize: 12 }}>{row.toDate || '-'}</td>
+                        <td style={{ ...tdStyle, padding: '8px 10px', fontSize: 12 }}>{row.fromDateDisplay || formatIsoDateToDmy(row.fromDate) || '-'}</td>
+                        <td style={{ ...tdStyle, padding: '8px 10px', fontSize: 12 }}>{row.toDateDisplay || formatIsoDateToDmy(row.toDate) || '-'}</td>
                         <td style={{ ...tdStyle, padding: '8px 10px', fontSize: 11, color: '#64748b', maxWidth: 120, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{row.notes || '-'}</td>
                         <td style={{ ...tdStyle, padding: '8px 10px', fontSize: 11 }}>
                           {row.matchedOccupant ? <span style={{ color: '#166534', fontWeight: 600 }}>OK {row.matchedOccupant}</span> : <span style={{ color: '#92400e' }}>Unmatched</span>}

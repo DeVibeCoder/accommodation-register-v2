@@ -23,6 +23,42 @@ function normalizeMealReason(value = '') {
   return '';
 }
 
+function isValidIsoDate(value = '') {
+  const text = String(value || '').slice(0, 10);
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(text)) return false;
+  const dt = new Date(`${text}T00:00:00.000Z`);
+  if (Number.isNaN(dt.getTime())) return false;
+  return dt.toISOString().slice(0, 10) === text;
+}
+
+function exclusionDateRangesOverlap(fromA, toA, fromB, toB) {
+  const endA = toA || '9999-12-31';
+  const endB = toB || '9999-12-31';
+  return fromA <= endB && fromB <= endA;
+}
+
+function exclusionPersonTokens(item = {}) {
+  const tokens = new Set();
+  if (item.occupant_id) tokens.add(`id:${String(item.occupant_id)}`);
+
+  const staffId = String(item.staff_id || '').trim().toLowerCase();
+  if (staffId) tokens.add(`staff:${staffId}`);
+
+  const name = String(item.occupant_name || '').trim().toLowerCase();
+  if (name) tokens.add(`name:${name}`);
+
+  return tokens;
+}
+
+function sameExcludedPerson(a = {}, b = {}) {
+  const aTokens = exclusionPersonTokens(a);
+  const bTokens = exclusionPersonTokens(b);
+  for (const token of aTokens) {
+    if (bTokens.has(token)) return true;
+  }
+  return false;
+}
+
 function classifyMealExclusion(row = {}, today = todayIsoDate()) {
   const fromDate = String(row?.from_date || '').slice(0, 10);
   const toDate = String(row?.to_date || '').slice(0, 10);
@@ -626,18 +662,34 @@ export default async function handler(req, res) {
       if (entries.length === 0) return json(res, 400, { error: 'No entries provided.' });
 
       const today = todayIsoDate();
+      const existingRows = await fetchMealExclusionRows();
       const rows = [];
       const errors = [];
 
       for (const entry of entries) {
+        const rowNum = Number.parseInt(String(entry?.rowNum || ''), 10) || null;
+        const label = entry.name || entry.staffId || '?';
         const reason = normalizeMealReason(entry.reason);
-        const fromDate = String(entry.fromDate || '').slice(0, 10);
-        const toDate = entry.toDate ? String(entry.toDate).slice(0, 10) : null;
+        const fromDate = toIsoDateOrEmpty(entry.fromDate);
+        const toDate = entry.toDate ? toIsoDateOrEmpty(entry.toDate) : null;
         if (!reason || !MEAL_REASONS.has(reason) || !fromDate) {
-          errors.push({ name: entry.name || entry.staffId || '?', error: 'Invalid reason or missing from date' });
+          errors.push({ rowNum, name: label, error: 'Invalid reason or missing from date' });
           continue;
         }
-        rows.push({
+        if (!isValidIsoDate(fromDate)) {
+          errors.push({ rowNum, name: label, error: 'from_date is invalid' });
+          continue;
+        }
+        if (toDate && !isValidIsoDate(toDate)) {
+          errors.push({ rowNum, name: label, error: 'to_date is invalid' });
+          continue;
+        }
+        if (toDate && toDate < fromDate) {
+          errors.push({ rowNum, name: label, error: 'to_date must be on or after from_date' });
+          continue;
+        }
+
+        const candidate = {
           occupant_id: entry.occupantId || null,
           occupant_name: entry.name || null,
           staff_id: entry.staffId || null,
@@ -649,7 +701,27 @@ export default async function handler(req, res) {
           notes: entry.notes || null,
           created_by: user?.id || null,
           auto_checked_out_at: null,
+        };
+
+        const hasConflictWithExisting = existingRows.some(existing => {
+          if (!sameExcludedPerson(candidate, existing)) return false;
+          return exclusionDateRangesOverlap(candidate.from_date, candidate.to_date, String(existing.from_date || '').slice(0, 10), String(existing.to_date || '').slice(0, 10) || null);
         });
+        if (hasConflictWithExisting) {
+          errors.push({ rowNum, name: label, error: 'Duplicate/overlapping exclusion already exists for this person' });
+          continue;
+        }
+
+        const hasConflictInBatch = rows.some(existing => {
+          if (!sameExcludedPerson(candidate, existing)) return false;
+          return exclusionDateRangesOverlap(candidate.from_date, candidate.to_date, existing.from_date, existing.to_date);
+        });
+        if (hasConflictInBatch) {
+          errors.push({ rowNum, name: label, error: 'Duplicate/overlapping exclusion also exists in this import file' });
+          continue;
+        }
+
+        rows.push(candidate);
       }
 
       let insertedCount = 0;

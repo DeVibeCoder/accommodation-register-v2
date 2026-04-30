@@ -85,7 +85,11 @@ function Sidebar({ collapsed = false, setCollapsed, onLogout, user }) {
   // Role-based menu filtering
   const role = user?.role || 'Viewer';
   const roleInitial = String(role).charAt(0).toUpperCase() || 'U';
-  const filteredSections = navSections;
+  const filteredSections = navSections.map(section => (
+    section.label === 'Accommodation' && role === 'Supervisor'
+      ? { ...section, label: 'Supervisor' }
+      : section
+  ));
   const showSystemSection = role === 'Admin';
 
   return (

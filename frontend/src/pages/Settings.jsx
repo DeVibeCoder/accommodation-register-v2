@@ -207,7 +207,9 @@ function Settings({ user, setUser }) {
             return next;
           });
 
-          if (user?.id === targetUser.id) setUser(result.user);
+          if (user?.id === targetUser.id) {
+            setUser({ ...result.user, role: refreshedTarget.role });
+          }
           setNotice(`Updated ${targetUser.email} to ${nextRole}.`);
           setResultDialog({
             open: true,
