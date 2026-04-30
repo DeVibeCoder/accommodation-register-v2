@@ -83,6 +83,12 @@ function previousIsoDate(value = todayIsoDate()) {
   return toMidnightIsoDate(dt);
 }
 
+function isMissingTableError(error, tableName) {
+  const message = String(error?.message || '').toLowerCase();
+  const target = String(tableName || '').toLowerCase();
+  return message.includes('does not exist') && message.includes(target);
+}
+
 function exclusionPersonTokens(item = {}) {
   const tokens = new Set();
   if (item.occupant_id) tokens.add(`id:${String(item.occupant_id)}`);
@@ -599,6 +605,24 @@ export default async function handler(req, res) {
         prefer: 'return=minimal',
       });
 
+      await supabaseRequest('/rest/v1/meal_exclusions?id=not.is.null', {
+        method: 'DELETE',
+        service: true,
+        prefer: 'return=minimal',
+      });
+
+      try {
+        await supabaseRequest('/rest/v1/meal_history_daily?snapshot_date=not.is.null', {
+          method: 'DELETE',
+          service: true,
+          prefer: 'return=minimal',
+        });
+      } catch (error) {
+        if (!isMissingTableError(error, 'meal_history_daily')) {
+          throw error;
+        }
+      }
+
       return json(res, 200, { success: true });
     }
 
@@ -678,17 +702,13 @@ export default async function handler(req, res) {
         return json(res, 400, { error: 'Exclusion ID is required.' });
       }
 
-      const updated = await supabaseRequest(`/rest/v1/meal_exclusions?id=eq.${encodeURIComponent(targetId)}`, {
-        method: 'PATCH',
+      await supabaseRequest(`/rest/v1/meal_exclusions?id=eq.${encodeURIComponent(targetId)}`, {
+        method: 'DELETE',
         service: true,
-        body: {
-          to_date: previousIsoDate(todayIsoDate()),
-        },
-        prefer: 'return=representation',
+        prefer: 'return=minimal',
       });
 
-      const record = Array.isArray(updated) && updated[0] ? formatMealExclusionForClient(updated[0]) : null;
-      return json(res, 200, { entry: record });
+      return json(res, 200, { success: true });
     }
 
     if (payload?.__operation === 'meal-exclusion-update') {

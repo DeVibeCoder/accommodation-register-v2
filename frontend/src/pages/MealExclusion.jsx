@@ -194,7 +194,8 @@ function parseCsvLine(line) {
 function parseDmyDateToIso(value) {
   const text = String(value || '').trim();
   if (!text) return '';
-  const match = text.match(/^(\d{2})-(\d{2})-(\d{4})$/);
+  const normalized = text.replace(/\//g, '-');
+  const match = normalized.match(/^(\d{2})-(\d{2})-(\d{4})$/);
   if (!match) return '';
 
   const day = Number.parseInt(match[1], 10);
@@ -284,8 +285,8 @@ function parseMealExclusionCsv(text, occupants) {
     else if (!VALID_REASONS.has(reason.toLowerCase())) errors.push(`invalid reason "${reason}"`);
     if (!name && !staffId) errors.push('name or staff_id is required');
     if (!fromDateRaw) errors.push('missing from_date');
-    else if (!fromDate) errors.push('from_date must be DD-MM-YYYY');
-    if (toDateRaw && !toDate) errors.push('to_date must be DD-MM-YYYY');
+    else if (!fromDate) errors.push('from_date must be DD-MM-YYYY (or DD/MM/YYYY)');
+    if (toDateRaw && !toDate) errors.push('to_date must be DD-MM-YYYY (or DD/MM/YYYY)');
     if (fromDate && toDate && toDate < fromDate) errors.push('to_date must be on/after from_date');
 
     const match = occupants.find(o => staffId && normalizeText(o.staffId) === normalizeText(staffId))
@@ -391,7 +392,7 @@ function ImportModal({ open, onClose, occupants, onImported }) {
             <label htmlFor="csv-upload" style={{ cursor: 'pointer', display: 'inline-block' }}>
               <div style={{ fontSize: 13, color: '#2563eb', fontWeight: 700 }}>Click to select CSV file</div>
               <div style={{ fontSize: 11, color: '#64748b', marginTop: 4 }}>Columns: name, staff_id, reason, from_date, to_date, notes</div>
-              <div style={{ fontSize: 11, color: '#64748b' }}>Reasons accepted: Off Site, Vacation, Restaurant, Exit | Dates: DD-MM-YYYY</div>
+              <div style={{ fontSize: 11, color: '#64748b' }}>Reasons accepted: Off Site, Vacation, Restaurant, Exit | Dates: DD-MM-YYYY (DD/MM/YYYY also accepted)</div>
             </label>
           </div>
 
@@ -619,7 +620,7 @@ function MealExclusion() {
     try {
       await closeMealExclusion(id);
       await refreshSummary();
-      setNotice('Exclusion removed and moved to history.');
+      setNotice('Exclusion removed.');
     } catch (err) { setNotice(err?.message || 'Unable to remove exclusion.'); }
     finally { setClosingId(''); }
   };
