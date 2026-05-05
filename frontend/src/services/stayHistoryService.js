@@ -44,3 +44,9 @@ export async function addStayHistory(entry) {
     return null;
   }
 }
+
+export async function deleteStayHistoryEntry(id) {
+  await apiRequest(`/api/stay-history?id=${encodeURIComponent(id)}`, {
+    method: 'DELETE',
+  });
+}

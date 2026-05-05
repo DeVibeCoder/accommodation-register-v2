@@ -929,6 +929,17 @@ export default async function handler(req, res) {
       return json(res, 200, { removed: idsToDelete.length, groups: groups.size });
     }
 
+    if (payload?.__operation === 'stay-history-delete') {
+      const { id } = payload;
+      if (!id) return json(res, 400, { error: 'id is required.' });
+      await supabaseRequest(`/rest/v1/stay_history?id=eq.${encodeURIComponent(id)}`, {
+        method: 'DELETE',
+        service: true,
+        prefer: 'return=minimal',
+      });
+      return json(res, 200, { deleted: id });
+    }
+
     if (payload?.__operation === 'mutate') {
       const target = await resolveTargetFilter(payload);
       if (!target.filter) {

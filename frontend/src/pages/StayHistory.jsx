@@ -1,6 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { useOutletContext } from 'react-router-dom';
 import { formatDisplayDateTime } from '../utils/date';
+import { deleteStayHistoryEntry } from '../services/stayHistoryService';
 
 const FILTERS = ['All', 'Check Out', 'Check In', 'Swap', 'Move', 'Edits'];
 
@@ -17,9 +18,23 @@ function formatTime(value) {
 }
 
 function StayHistory() {
-  const { stayHistory = [] } = useOutletContext();
+  const { stayHistory = [], setStayHistory, isAdmin } = useOutletContext();
   const [activeFilter, setActiveFilter] = useState('All');
   const [search, setSearch] = useState('');
+  const [deletingId, setDeletingId] = useState(null);
+
+  const handleDeleteEntry = async (id) => {
+    if (!window.confirm('Delete this stay history entry? This cannot be undone.')) return;
+    setDeletingId(id);
+    try {
+      await deleteStayHistoryEntry(id);
+      setStayHistory(prev => prev.filter(e => e.id !== id));
+    } catch (err) {
+      alert('Failed to delete entry: ' + (err.message || err));
+    } finally {
+      setDeletingId(null);
+    }
+  };
 
   const filtered = useMemo(() => {
     return stayHistory.filter(item => {
@@ -83,8 +98,8 @@ function StayHistory() {
       </div>
 
       <div style={{ background: '#fff', borderRadius: 18, boxShadow: '0 8px 26px rgba(30,49,95,.08)', border: '1px solid #dfe6f1', overflow: 'hidden' }}>
-        <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 0.9fr 1fr 1.8fr 1fr', padding: '0 20px', height: 46, alignItems: 'center', background: 'linear-gradient(180deg, #f8fbff 0%, #f3f7fd 100%)', borderBottom: '1px solid #dfe6f1', gap: 12 }}>
-          {['Action', 'Person', 'Room', 'Details', 'Time'].map(label => (
+        <div style={{ display: 'grid', gridTemplateColumns: isAdmin ? '1.2fr 0.9fr 1fr 1.8fr 1fr auto' : '1.2fr 0.9fr 1fr 1.8fr 1fr', padding: '0 20px', height: 46, alignItems: 'center', background: 'linear-gradient(180deg, #f8fbff 0%, #f3f7fd 100%)', borderBottom: '1px solid #dfe6f1', gap: 12 }}>
+          {[...['Action', 'Person', 'Room', 'Details', 'Time'], ...(isAdmin ? [''] : [])].map(label => (
             <span key={label} style={{ fontSize: 10.5, fontWeight: 700, color: '#7f93b3', textTransform: 'uppercase', letterSpacing: 0.6 }}>
               {label}
             </span>
@@ -105,7 +120,7 @@ function StayHistory() {
                 key={item.id || index}
                 style={{
                   display: 'grid',
-                  gridTemplateColumns: '1.2fr 0.9fr 1fr 1.8fr 1fr',
+                  gridTemplateColumns: isAdmin ? '1.2fr 0.9fr 1fr 1.8fr 1fr auto' : '1.2fr 0.9fr 1fr 1.8fr 1fr',
                   gap: 12,
                   alignItems: 'center',
                   padding: '14px 20px',
@@ -135,6 +150,18 @@ function StayHistory() {
                 <div style={{ color: '#64748b', fontSize: 12.5, fontWeight: 600 }}>
                   {formatTime(item.timestamp)}
                 </div>
+                {isAdmin && (
+                  <div>
+                    <button
+                      onClick={() => handleDeleteEntry(item.id)}
+                      disabled={deletingId === item.id}
+                      title="Delete this entry"
+                      style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#dc2626', opacity: deletingId === item.id ? 0.4 : 0.6, fontSize: 16, padding: '2px 4px', lineHeight: 1 }}
+                    >
+                      ✕
+                    </button>
+                  </div>
+                )}
               </div>
             );
           })

@@ -20,6 +20,16 @@ export default async function handler(req, res) {
       const user = await requireRole(req, res, ['Admin']);
       if (!user) return;
 
+      const { id } = req.query || {};
+      if (id) {
+        await supabaseRequest(`/rest/v1/stay_history?id=eq.${encodeURIComponent(id)}`, {
+          method: 'DELETE',
+          service: true,
+          prefer: 'return=minimal',
+        });
+        return json(res, 200, { deleted: id });
+      }
+
       await supabaseRequest('/rest/v1/stay_history?action=not.is.null', {
         method: 'DELETE',
         service: true,
