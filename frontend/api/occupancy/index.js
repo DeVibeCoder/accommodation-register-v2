@@ -159,48 +159,76 @@ async function runMealExclusionAutomations(user = {}) {
   );
 
   for (const item of (Array.isArray(dueResignations) ? dueResignations : [])) {
-    let targetFilter = '';
-    if (item.occupant_id) {
-      targetFilter = `id=eq.${encodeURIComponent(item.occupant_id)}`;
-    } else if (item.room_id && item.bed_no != null) {
-      targetFilter = `room_id=eq.${encodeURIComponent(item.room_id)}&bed_no=eq.${encodeURIComponent(item.bed_no)}&status=eq.Active`;
-    }
+    let removedRow = null;
 
-    if (targetFilter) {
-      const removed = await supabaseRequest(`/rest/v1/occupancy?${targetFilter}`, {
+    if (item.occupant_id) {
+      const removedById = await supabaseRequest(`/rest/v1/occupancy?id=eq.${encodeURIComponent(item.occupant_id)}`, {
         method: 'DELETE',
         service: true,
         prefer: 'return=representation',
       });
-
-      if (Array.isArray(removed) && removed[0]) {
-        await supabaseRequest('/rest/v1/stay_history', {
-          method: 'POST',
-          service: true,
-          body: [{
-            ...toStayHistoryRow({
-              type: 'Check Out',
-              name: removed[0].full_name || item.occupant_name || 'Unknown',
-              roomId: removed[0].room_id || item.room_id || '',
-              bedNo: removed[0].bed_no ?? item.bed_no ?? null,
-              details: 'Auto checkout completed from Meal Exclusion (Exit).',
-              user: user?.role || null,
-            }),
-            created_by: user?.id || null,
-          }],
-          prefer: 'return=minimal',
-        });
+      if (Array.isArray(removedById) && removedById[0]) {
+        removedRow = removedById[0];
       }
     }
 
-    await supabaseRequest(`/rest/v1/meal_exclusions?id=eq.${encodeURIComponent(item.id)}`, {
-      method: 'PATCH',
-      service: true,
-      body: {
-        auto_checked_out_at: new Date().toISOString(),
-      },
-      prefer: 'return=minimal',
-    });
+    if (!removedRow && item.room_id && item.bed_no != null) {
+      const activeRows = await supabaseRequest(
+        `/rest/v1/occupancy?select=*&status=eq.Active&room_id=eq.${encodeURIComponent(item.room_id)}&bed_no=eq.${encodeURIComponent(item.bed_no)}&limit=20`,
+        { service: true }
+      );
+
+      const staffId = String(item.staff_id || '').trim().toLowerCase();
+      const name = String(item.occupant_name || '').trim().toLowerCase();
+
+      const candidates = Array.isArray(activeRows) ? activeRows : [];
+      const matched = candidates.find(row => {
+        const rowStaff = String(row?.staff_id || '').trim().toLowerCase();
+        const rowName = String(row?.full_name || '').trim().toLowerCase();
+        if (staffId && rowStaff && rowStaff === staffId) return true;
+        if (name && rowName && rowName === name) return true;
+        return false;
+      });
+
+      if (matched?.id) {
+        const removedByFallback = await supabaseRequest(`/rest/v1/occupancy?id=eq.${encodeURIComponent(matched.id)}`, {
+          method: 'DELETE',
+          service: true,
+          prefer: 'return=representation',
+        });
+        if (Array.isArray(removedByFallback) && removedByFallback[0]) {
+          removedRow = removedByFallback[0];
+        }
+      }
+    }
+
+    if (removedRow) {
+      await supabaseRequest('/rest/v1/stay_history', {
+        method: 'POST',
+        service: true,
+        body: [{
+          ...toStayHistoryRow({
+            type: 'Check Out',
+            name: removedRow.full_name || item.occupant_name || 'Unknown',
+            roomId: removedRow.room_id || item.room_id || '',
+            bedNo: removedRow.bed_no ?? item.bed_no ?? null,
+            details: 'Auto checkout completed from Meal Exclusion (Exit).',
+            user: user?.role || null,
+          }),
+          created_by: user?.id || null,
+        }],
+        prefer: 'return=minimal',
+      });
+
+      await supabaseRequest(`/rest/v1/meal_exclusions?id=eq.${encodeURIComponent(item.id)}`, {
+        method: 'PATCH',
+        service: true,
+        body: {
+          auto_checked_out_at: new Date().toISOString(),
+        },
+        prefer: 'return=minimal',
+      });
+    }
   }
 }
 
@@ -380,9 +408,6 @@ function buildRecordFilters(source = {}) {
   if (source.roomId && source.name) {
     filters.push(`room_id=eq.${encodeURIComponent(source.roomId)}&full_name=eq.${encodeURIComponent(source.name)}`);
   }
-  if (source.roomId) {
-    filters.push(`room_id=eq.${encodeURIComponent(source.roomId)}`);
-  }
   return filters;
 }
 
@@ -398,7 +423,11 @@ async function resolveTargetFilter(payload = {}) {
       service: true,
     });
     if (Array.isArray(rows) && rows.length > 0) {
-      return { filter, row: rows[0] };
+      const row = rows[0];
+      const preciseFilter = row?.id
+        ? `id=eq.${encodeURIComponent(row.id)}`
+        : filter;
+      return { filter: preciseFilter, row };
     }
   }
 
@@ -579,6 +608,8 @@ export default async function handler(req, res) {
           checkedAt: new Date().toISOString(),
         });
       }
+
+      await runMealExclusionAutomations(user);
 
       const rows = await supabaseRequest('/rest/v1/occupancy?select=*&status=eq.Active&order=room_id.asc&order=bed_no.asc', {
         service: true,
@@ -906,6 +937,10 @@ export default async function handler(req, res) {
 
       const action = payload.__action;
       if (action === 'delete' || action === 'checkout') {
+        if (!target?.row?.id) {
+          return json(res, 409, { error: 'Unable to safely resolve a unique occupancy target for deletion.' });
+        }
+
         const removed = await supabaseRequest(`/rest/v1/occupancy?${target.filter}`, {
           method: 'DELETE',
           service: true,
