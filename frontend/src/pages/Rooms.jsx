@@ -241,22 +241,30 @@ function Rooms() {
       return;
     }
 
+    const occupiedCount = occupants.filter(o => o.roomId === editRoomId).length;
+
     const updatedRoom = {
       ...current,
       totalBeds: nextTotalBeds,
       type: normalizeType(nextTotalBeds),
       roomType: editRoomType,
       ac: editAcType === 'AC',
+      usedBeds: occupiedCount,
+      availableBeds: Math.max(0, nextTotalBeds - occupiedCount),
       beds: createBeds(nextTotalBeds, current.beds),
     };
 
-    const saved = await updateRoomRecord(editRoomId, updatedRoom);
-    if (!saved) {
+    const saved = await updateRoomRecord(editRoomId, {
+      totalBeds: nextTotalBeds,
+      roomType: editRoomType,
+      ac: editAcType === 'AC',
+    });
+    if (!saved || saved?.success === false) {
       setSaveNotice({
         open: true,
         type: 'error',
         title: 'Save Failed',
-        message: 'Unable to save room changes to backend. Please try again.',
+        message: saved?.error || 'Unable to save room changes to backend. Please try again.',
       });
       return;
     }

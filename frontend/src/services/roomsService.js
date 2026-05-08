@@ -133,6 +133,9 @@ export async function updateRoom(roomId, updates) {
     return record ? normalizeRoomRecord(record) : true;
   } catch (error) {
     console.error('[API] Unable to update room on backend. Local UI state was preserved.', error.message || error);
-    return null;
+    return {
+      success: false,
+      error: error?.message || 'Unable to update room on backend.',
+    };
   }
 }
