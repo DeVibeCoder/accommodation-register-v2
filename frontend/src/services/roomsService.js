@@ -124,12 +124,13 @@ export async function updateRoom(roomId, updates) {
   if (!roomId) return null;
 
   try {
-    await apiRequest(`/api/rooms/${encodeURIComponent(roomId)}`, {
+    const data = await apiRequest(`/api/rooms/${encodeURIComponent(roomId)}`, {
       method: 'PUT',
       body: toApiPatchPayload(updates || {}),
     });
 
-    return true;
+    const record = data?.room ?? data?.data ?? data;
+    return record ? normalizeRoomRecord(record) : true;
   } catch (error) {
     console.error('[API] Unable to update room on backend. Local UI state was preserved.', error.message || error);
     return null;

@@ -1,7 +1,7 @@
 ﻿import React, { useMemo, useState } from 'react';
 import RoomModal from '../components/RoomModal';
 import { useOutletContext } from 'react-router-dom';
-import { updateRoom as updateRoomRecord } from '../services/roomsService';
+import { fetchRooms as fetchRoomsFromApi, updateRoom as updateRoomRecord } from '../services/roomsService';
 
 const STATUS_OPTIONS = ['All', 'Partial', 'Vacant', 'Full'];
 const ROOM_TYPE_OPTIONS = ['Internal', 'Project', 'Quarantine'];
@@ -59,6 +59,54 @@ function downloadCsv(filename, headers, rows) {
   window.URL.revokeObjectURL(url);
 }
 
+function isCurrentRoomId(roomId = '') {
+  return /^(OB|FB|VTV)-/i.test(String(roomId));
+}
+
+function SaveToast({ notice, onClose }) {
+  React.useEffect(() => {
+    if (!notice?.open) return undefined;
+    const timer = window.setTimeout(onClose, 2800);
+    return () => window.clearTimeout(timer);
+  }, [notice, onClose]);
+
+  if (!notice?.open) return null;
+  const isError = notice.type === 'error';
+
+  return (
+    <div style={{ position: 'fixed', right: 18, bottom: 18, zIndex: 3200 }}>
+      <div
+        style={{
+          minWidth: 260,
+          maxWidth: 420,
+          background: isError
+            ? 'linear-gradient(135deg, #7f1d1d 0%, #dc2626 100%)'
+            : 'linear-gradient(135deg, #1d4ed8 0%, #0f766e 100%)',
+          color: '#fff',
+          borderRadius: 14,
+          boxShadow: '0 16px 40px rgba(15,23,42,.28)',
+          padding: '12px 14px',
+          display: 'flex',
+          gap: 10,
+          alignItems: 'flex-start',
+        }}
+      >
+        <div style={{ flex: 1 }}>
+          <div style={{ fontWeight: 900, fontSize: 13 }}>{notice.title || (isError ? 'Save Failed' : 'Changes Saved')}</div>
+          <div style={{ marginTop: 2, fontSize: 12.5, lineHeight: 1.45 }}>{notice.message || ''}</div>
+        </div>
+        <button
+          type="button"
+          onClick={onClose}
+          style={{ border: 'none', background: 'rgba(255,255,255,.18)', color: '#fff', width: 24, height: 24, borderRadius: 999, cursor: 'pointer', fontWeight: 800 }}
+        >
+          X
+        </button>
+      </div>
+    </div>
+  );
+}
+
 function Rooms() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedRoom, setSelectedRoom] = useState(null);
@@ -72,7 +120,8 @@ function Rooms() {
   const [editBeds, setEditBeds] = useState('1');
   const [editRoomType, setEditRoomType] = useState('Internal');
   const [editAcType, setEditAcType] = useState('Non-AC');
-  const { sidebarCollapsed, roomsState, setRoomsState, canEditAccommodation = true, canExportRooms = true } = useOutletContext();
+  const [saveNotice, setSaveNotice] = useState({ open: false, type: 'success', title: '', message: '' });
+  const { sidebarCollapsed, roomsState, occupants = [], setRoomsState, canEditAccommodation = true, canExportRooms = true } = useOutletContext();
 
   const rooms = useMemo(() => deriveRooms(roomsState), [roomsState]);
 
@@ -178,6 +227,20 @@ function Rooms() {
       return;
     }
 
+    const highestOccupiedBed = occupants
+      .filter(o => o.roomId === editRoomId)
+      .reduce((max, o) => Math.max(max, Number.parseInt(o?.bedNo, 10) || 1), 0);
+
+    if (nextTotalBeds < highestOccupiedBed) {
+      setSaveNotice({
+        open: true,
+        type: 'error',
+        title: 'Cannot Reduce Bed Count',
+        message: `Bed ${highestOccupiedBed} is currently occupied in ${editRoomId}. Move/check out occupants first.`,
+      });
+      return;
+    }
+
     const updatedRoom = {
       ...current,
       totalBeds: nextTotalBeds,
@@ -189,11 +252,30 @@ function Rooms() {
 
     const saved = await updateRoomRecord(editRoomId, updatedRoom);
     if (!saved) {
-      window.alert('Unable to save room changes to backend. Please try again.');
+      setSaveNotice({
+        open: true,
+        type: 'error',
+        title: 'Save Failed',
+        message: 'Unable to save room changes to backend. Please try again.',
+      });
       return;
     }
 
-    setRoomsState(prev => prev.map(room => (room.id === editRoomId ? updatedRoom : room)));
+    const refreshed = await fetchRoomsFromApi();
+    const liveRooms = Array.isArray(refreshed) ? refreshed.filter(room => isCurrentRoomId(room?.id)) : [];
+
+    if (liveRooms.length > 0) {
+      setRoomsState(liveRooms.sort((a, b) => compareRoomIds(a.id, b.id)));
+    } else {
+      setRoomsState(prev => prev.map(room => (room.id === editRoomId ? updatedRoom : room)));
+    }
+
+    setSaveNotice({
+      open: true,
+      type: 'success',
+      title: 'Changes Saved',
+      message: `${editRoomId} updated to ${nextTotalBeds} bed${nextTotalBeds > 1 ? 's' : ''}.`,
+    });
     closeEditModal();
   }
 
@@ -498,6 +580,11 @@ function Rooms() {
 
       {/* Room Details Modal */}
       <RoomModal open={isModalOpen} onClose={() => { setIsModalOpen(false); setSelectedRoom(null); }} room={selectedRoom} />
+
+      <SaveToast
+        notice={saveNotice}
+        onClose={() => setSaveNotice({ open: false, type: 'success', title: '', message: '' })}
+      />
     </div>
   );
 }

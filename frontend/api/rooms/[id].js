@@ -1,4 +1,4 @@
-import { allowMethods, json, readBody, requireRole, supabaseRequest, toRoomRow } from '../_lib/supabase.js';
+import { allowMethods, formatRoomForClient, json, readBody, requireRole, supabaseRequest } from '../_lib/supabase.js';
 
 function hasOwn(obj, key) {
   return Object.prototype.hasOwnProperty.call(obj || {}, key);
@@ -48,7 +48,12 @@ export default async function handler(req, res) {
       prefer: 'return=representation',
     });
 
-    return json(res, 200, { success: true, room: Array.isArray(saved) ? saved[0] : saved });
+    const row = Array.isArray(saved) ? saved[0] : saved;
+    if (!row) {
+      return json(res, 404, { error: 'Room not found or no changes were applied.' });
+    }
+
+    return json(res, 200, { success: true, room: formatRoomForClient(row) });
   } catch (error) {
     return json(res, 500, { error: error.message || 'Unable to update room.' });
   }
