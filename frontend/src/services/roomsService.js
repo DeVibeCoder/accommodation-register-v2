@@ -124,9 +124,12 @@ export async function updateRoom(roomId, updates) {
   if (!roomId) return null;
 
   try {
-    const data = await apiRequest(`/api/rooms/${encodeURIComponent(roomId)}`, {
+    const data = await apiRequest('/api/rooms', {
       method: 'PUT',
-      body: toApiPatchPayload(updates || {}),
+      body: {
+        roomId,
+        ...toApiPatchPayload(updates || {}),
+      },
     });
 
     const record = data?.room ?? data?.data ?? data;
