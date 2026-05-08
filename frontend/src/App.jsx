@@ -4,7 +4,7 @@ import MealHistory from './pages/MealHistory';
 
 
 
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, Navigate } from 'react-router-dom';
 import Layout from './components/Layout';
 import Dashboard from './pages/Dashboard';
 import Rooms from './pages/Rooms';
@@ -15,13 +15,18 @@ import Settings from './pages/Settings';
 import PlaceholderPage from './pages/PlaceholderPage';
 
 function App({ user, setUser, onLogout }) {
+  const role = user?.role || 'Viewer';
+
   return (
     <Routes>
       <Route path="/" element={<Layout user={user} onLogout={onLogout} />}>
         <Route index element={<Dashboard />} />
         <Route path="rooms" element={<Rooms />} />
         <Route path="occupancy" element={<Occupancy />} />
-        <Route path="stay-history" element={<StayHistory />} />
+        <Route
+          path="stay-history"
+          element={role === 'Viewer' ? <Navigate to="/" replace /> : <StayHistory />}
+        />
         <Route path="meal-exclusion" element={<MealExclusion />} />
         <Route path="meal-history" element={<MealHistory />} />
         <Route path="meal" element={<MealEligibility />} />

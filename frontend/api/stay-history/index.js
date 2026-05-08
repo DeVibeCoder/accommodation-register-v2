@@ -5,7 +5,7 @@ export default async function handler(req, res) {
 
   try {
     if (req.method === 'GET') {
-      const user = await requireRole(req, res, []);
+      const user = await requireRole(req, res, ['Admin', 'Accommodation', 'Supervisor']);
       if (!user) return;
 
       const rows = await supabaseRequest('/rest/v1/stay_history?select=*&order=created_at.desc&limit=500', {

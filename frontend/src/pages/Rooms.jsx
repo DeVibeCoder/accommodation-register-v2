@@ -172,27 +172,29 @@ function Rooms() {
 
   async function saveRoomEdits() {
     const nextTotalBeds = Math.max(1, parseInt(editBeds, 10) || 1);
+    const current = roomsState.find(room => room.id === editRoomId);
+    if (!current) {
+      closeEditModal();
+      return;
+    }
 
-    setRoomsState(prev => prev.map(room => {
-      if (room.id !== editRoomId) return room;
-      return {
-        ...room,
-        totalBeds: nextTotalBeds,
-        type: normalizeType(nextTotalBeds),
-        roomType: editRoomType,
-        ac: editAcType === 'AC',
-        beds: createBeds(nextTotalBeds, room.beds),
-      };
-    }));
-
-    closeEditModal();
-
-    await updateRoomRecord(editRoomId, {
+    const updatedRoom = {
+      ...current,
       totalBeds: nextTotalBeds,
       type: normalizeType(nextTotalBeds),
       roomType: editRoomType,
       ac: editAcType === 'AC',
-    });
+      beds: createBeds(nextTotalBeds, current.beds),
+    };
+
+    const saved = await updateRoomRecord(editRoomId, updatedRoom);
+    if (!saved) {
+      window.alert('Unable to save room changes to backend. Please try again.');
+      return;
+    }
+
+    setRoomsState(prev => prev.map(room => (room.id === editRoomId ? updatedRoom : room)));
+    closeEditModal();
   }
 
   return (

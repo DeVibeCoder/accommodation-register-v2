@@ -79,6 +79,22 @@ function toApiPayload(room = {}) {
   };
 }
 
+function toApiPatchPayload(updates = {}) {
+  const payload = {};
+  if (Object.prototype.hasOwnProperty.call(updates, 'building')) payload.building = updates.building;
+  if (Object.prototype.hasOwnProperty.call(updates, 'buildingCode')) payload.buildingCode = updates.buildingCode;
+  if (Object.prototype.hasOwnProperty.call(updates, 'floor')) payload.floor = updates.floor;
+  if (Object.prototype.hasOwnProperty.call(updates, 'roomNo')) payload.roomNo = updates.roomNo;
+  if (Object.prototype.hasOwnProperty.call(updates, 'roomType')) payload.roomType = updates.roomType;
+  if (Object.prototype.hasOwnProperty.call(updates, 'ac')) payload.ac = Boolean(updates.ac);
+  if (Object.prototype.hasOwnProperty.call(updates, 'attached')) payload.attached = Boolean(updates.attached);
+  if (Object.prototype.hasOwnProperty.call(updates, 'roomActive')) payload.roomActive = updates.roomActive;
+  if (Object.prototype.hasOwnProperty.call(updates, 'totalBeds')) payload.totalBeds = Math.max(1, Number.parseInt(updates.totalBeds, 10) || 1);
+  if (Object.prototype.hasOwnProperty.call(updates, 'usedBeds')) payload.usedBeds = Math.max(0, Number.parseInt(updates.usedBeds, 10) || 0);
+  if (Object.prototype.hasOwnProperty.call(updates, 'availableBeds')) payload.availableBeds = Math.max(0, Number.parseInt(updates.availableBeds, 10) || 0);
+  return payload;
+}
+
 export async function fetchRooms() {
   try {
     const data = await apiRequest('/api/rooms');
@@ -110,7 +126,7 @@ export async function updateRoom(roomId, updates) {
   try {
     await apiRequest(`/api/rooms/${encodeURIComponent(roomId)}`, {
       method: 'PUT',
-      body: toApiPayload({ id: roomId, ...updates }),
+      body: toApiPatchPayload(updates || {}),
     });
 
     return true;

@@ -3,6 +3,7 @@ import { useOutletContext } from 'react-router-dom';
 import { deleteManagedUser, fetchUsersForRoleManagement, sendPasswordResetForUser, updateProfileRole } from '../services/authService';
 import { clearAllOccupancyData } from '../services/occupancyService';
 import { fetchOccupancyHealth } from '../services/healthService';
+import { createManualBackup, fetchBackups, restoreBackup } from '../services/backupService';
 import { createRoom } from '../services/roomsService';
 import { formatDisplayDateTime } from '../utils/date';
 
@@ -117,6 +118,9 @@ function Settings({ user, setUser }) {
   const [notice, setNotice] = useState('');
   const [healthLoading, setHealthLoading] = useState(false);
   const [healthSummary, setHealthSummary] = useState(null);
+  const [backupsLoading, setBackupsLoading] = useState(false);
+  const [backupsBusy, setBackupsBusy] = useState(false);
+  const [backups, setBackups] = useState([]);
   const isAdmin = (user?.role || 'Admin') === 'Admin';
 
   const existingRoomIds = useMemo(() => new Set(roomsState.map(room => String(room.id || '').toUpperCase())), [roomsState]);
@@ -137,6 +141,30 @@ function Settings({ user, setUser }) {
       .finally(() => {
         if (!cancelled) setUsersLoading(false);
       });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [isAdmin]);
+
+  useEffect(() => {
+    if (!isAdmin) return;
+
+    let cancelled = false;
+
+    (async () => {
+      setBackupsLoading(true);
+      const result = await fetchBackups(30);
+      if (cancelled) return;
+
+      if (Array.isArray(result)) {
+        setBackups(result);
+      } else {
+        setBackups([]);
+        setNotice(result?.error || 'Unable to load backups.');
+      }
+      setBackupsLoading(false);
+    })();
 
     return () => {
       cancelled = true;
@@ -404,6 +432,81 @@ function Settings({ user, setUser }) {
     setHealthLoading(false);
   };
 
+  const handleRefreshBackups = async () => {
+    if (!isAdmin || backupsLoading || backupsBusy) return;
+    setBackupsLoading(true);
+
+    const result = await fetchBackups(30);
+    if (Array.isArray(result)) {
+      setBackups(result);
+      setNotice('Backup list refreshed.');
+    } else {
+      setNotice(result?.error || 'Unable to refresh backups.');
+    }
+
+    setBackupsLoading(false);
+  };
+
+  const handleCreateBackup = async () => {
+    if (!isAdmin || backupsBusy) return;
+    setBackupsBusy(true);
+    setNotice('');
+
+    try {
+      const payload = await createManualBackup('Manual backup from Settings');
+      const newBackup = payload?.backup;
+      if (!newBackup) {
+        setNotice('Backup completed, but response was empty.');
+      } else {
+        setNotice(newBackup.alreadyExisted ? 'Backup already existed for this key.' : 'Manual backup created successfully.');
+      }
+
+      const refreshed = await fetchBackups(30);
+      if (Array.isArray(refreshed)) setBackups(refreshed);
+    } catch (error) {
+      setNotice(error?.message || 'Unable to create backup.');
+    }
+
+    setBackupsBusy(false);
+  };
+
+  const runRestoreBackup = async (backup) => {
+    if (!backup?.id) return;
+    setBackupsBusy(true);
+    setNotice('');
+
+    try {
+      const payload = await restoreBackup(backup.id);
+      const restored = payload?.result?.restored || null;
+
+      if (restored) {
+        const occupantCount = Number(restored.occupancy || 0);
+        const stayHistoryCount = Number(restored.stayHistory || 0);
+        setNotice(`Restore completed. Occupancy: ${occupantCount}, Stay history: ${stayHistoryCount}.`);
+      } else {
+        setNotice('Restore completed. Please refresh occupancy and history pages.');
+      }
+    } catch (error) {
+      setNotice(error?.message || 'Unable to restore backup.');
+    }
+
+    setBackupsBusy(false);
+  };
+
+  const handleRestoreBackup = (backup) => {
+    if (!isAdmin || backupsBusy) return;
+    const label = backup?.createdAt ? formatDate(backup.createdAt) : (backup?.day || 'selected day');
+
+    setConfirmConfig({
+      open: true,
+      variant: 'danger',
+      title: 'Restore Backup',
+      message: `Restore backup from ${label}? This will replace current occupancy, stay history, and meal exclusions.`,
+      confirmLabel: 'Yes, Restore Backup',
+      action: async () => runRestoreBackup(backup),
+    });
+  };
+
   const handleAddRoom = async (e) => {
     e.preventDefault();
     if (!isAdmin || isSavingRoom) return;
@@ -662,6 +765,79 @@ function Settings({ user, setUser }) {
                 </div>
               </div>
             ) : null}
+          </div>
+
+          <div style={cardStyle}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', gap: 14, alignItems: 'center', flexWrap: 'wrap', marginBottom: 14 }}>
+              <div>
+                <h2 style={{ fontWeight: 800, fontSize: '1.2rem', color: '#1e315f', margin: 0 }}>Backup & Restore</h2>
+                <p style={{ color: '#64748b', fontWeight: 600, margin: '6px 0 0' }}>
+                  Daily automatic backups are stored in the database, and you can create/restore manual snapshots any time.
+                </p>
+              </div>
+              <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                <button
+                  type="button"
+                  onClick={handleRefreshBackups}
+                  disabled={backupsLoading || backupsBusy}
+                  style={{ padding: '10px 14px', borderRadius: 10, border: '1px solid #cbd5e1', background: '#fff', color: '#334155', fontWeight: 800, cursor: backupsLoading || backupsBusy ? 'not-allowed' : 'pointer' }}
+                >
+                  {backupsLoading ? 'Refreshing...' : 'Refresh'}
+                </button>
+                <button
+                  type="button"
+                  onClick={handleCreateBackup}
+                  disabled={backupsBusy}
+                  style={{ padding: '10px 14px', borderRadius: 10, border: 'none', background: backupsBusy ? '#cbd5e1' : '#1d4ed8', color: '#fff', fontWeight: 800, cursor: backupsBusy ? 'not-allowed' : 'pointer' }}
+                >
+                  {backupsBusy ? 'Working...' : 'Create Backup Now'}
+                </button>
+              </div>
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 12, marginBottom: 14 }}>
+              <div style={{ borderRadius: 14, border: '1px solid #dbe4f0', background: '#f8fbff', padding: '14px 16px' }}>
+                <div style={{ fontSize: 12, color: '#64748b', fontWeight: 800, textTransform: 'uppercase' }}>Latest Backup</div>
+                <div style={{ marginTop: 8, fontWeight: 900, fontSize: 16, color: '#1e315f' }}>
+                  {backups[0]?.createdAt ? formatDate(backups[0].createdAt) : 'None'}
+                </div>
+              </div>
+              <div style={{ borderRadius: 14, border: '1px solid #dbe4f0', background: '#f8fbff', padding: '14px 16px' }}>
+                <div style={{ fontSize: 12, color: '#64748b', fontWeight: 800, textTransform: 'uppercase' }}>Backups Available</div>
+                <div style={{ marginTop: 8, fontWeight: 900, fontSize: 18, color: '#1e315f' }}>{backups.length}</div>
+              </div>
+            </div>
+
+            {backupsLoading ? (
+              <div style={{ color: '#64748b', fontWeight: 700 }}>Loading backups...</div>
+            ) : backups.length === 0 ? (
+              <div style={{ color: '#64748b', fontWeight: 700 }}>
+                No backups found. Run "Create Backup Now" after setting up the backup SQL migration.
+              </div>
+            ) : (
+              <div style={{ display: 'grid', gap: 10 }}>
+                {backups.map(item => (
+                  <div key={item.id} style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1.4fr) auto', gap: 12, alignItems: 'center', border: '1px solid #e2e8f0', borderRadius: 14, padding: '12px 14px', background: '#fff' }}>
+                    <div style={{ minWidth: 0 }}>
+                      <div style={{ fontWeight: 800, color: '#1e293b' }}>
+                        {item.type === 'daily' ? 'Daily Backup' : 'Manual Backup'} - {formatDate(item.createdAt)}
+                      </div>
+                      <div style={{ marginTop: 4, color: '#64748b', fontSize: 12, fontWeight: 700 }}>
+                        Rows: {item.rowCount || 0} | Occupancy: {item?.summary?.occupancy || 0} | Stay history: {item?.summary?.stayHistory || 0}
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => handleRestoreBackup(item)}
+                      disabled={backupsBusy}
+                      style={{ padding: '8px 12px', borderRadius: 10, border: 'none', background: backupsBusy ? '#cbd5e1' : '#dc2626', color: '#fff', fontWeight: 800, cursor: backupsBusy ? 'not-allowed' : 'pointer' }}
+                    >
+                      Restore
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
 
           <div style={cardStyle}>

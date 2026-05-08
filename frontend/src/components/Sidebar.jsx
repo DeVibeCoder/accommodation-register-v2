@@ -85,11 +85,19 @@ function Sidebar({ collapsed = false, setCollapsed, onLogout, user }) {
   // Role-based menu filtering
   const role = user?.role || 'Viewer';
   const roleInitial = String(role).charAt(0).toUpperCase() || 'U';
-  const filteredSections = navSections.map(section => (
-    section.label === 'Accommodation' && role === 'Supervisor'
-      ? { ...section, label: 'Supervisor' }
-      : section
-  ));
+  const filteredSections = navSections.map(section => {
+    let items = section.items;
+
+    if (role === 'Viewer') {
+      items = items.filter(item => item.to !== '/stay-history');
+    }
+
+    const nextSection = section.label === 'Accommodation' && role === 'Supervisor'
+      ? { ...section, label: 'Supervisor', items }
+      : { ...section, items };
+
+    return nextSection;
+  });
   const showSystemSection = role === 'Admin';
 
   return (
