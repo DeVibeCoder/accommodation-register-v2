@@ -18,10 +18,34 @@ function formatTime(value) {
 }
 
 function StayHistory() {
-  const { stayHistory = [], setStayHistory, isAdmin } = useOutletContext();
+  const { stayHistory = [], setStayHistory, isAdmin, occupants = [] } = useOutletContext();
   const [activeFilter, setActiveFilter] = useState('All');
   const [search, setSearch] = useState('');
   const [deletingId, setDeletingId] = useState(null);
+
+  // Build a lookup of occupant section/department by name (for existing records
+  // that pre-date section/department being stored in history).
+  const occupantInfoByName = useMemo(() => {
+    const map = new Map();
+    for (const o of occupants) {
+      const key = String(o.name || '').trim().toLowerCase();
+      if (key && !map.has(key)) {
+        map.set(key, { section: o.section || '', department: o.department || '' });
+      }
+    }
+    return map;
+  }, [occupants]);
+
+  // Enrich history items: fill section/department from live occupant list
+  // when the stored record doesn't already carry them.
+  const enrichedHistory = useMemo(() => {
+    return stayHistory.map(item => {
+      if (item.section || item.department) return item;
+      const info = occupantInfoByName.get(String(item.name || '').trim().toLowerCase());
+      if (!info) return item;
+      return { ...item, section: info.section, department: info.department };
+    });
+  }, [stayHistory, occupantInfoByName]);
 
   const handleDeleteEntry = async (id) => {
     if (!window.confirm('Delete this stay history entry? This cannot be undone.')) return;
@@ -37,7 +61,7 @@ function StayHistory() {
   };
 
   const filtered = useMemo(() => {
-    return stayHistory.filter(item => {
+    return enrichedHistory.filter(item => {
       const matchesFilter = activeFilter === 'All'
         ? true
         : activeFilter === 'Edits'
@@ -53,7 +77,7 @@ function StayHistory() {
 
       return matchesFilter && matchesSearch;
     });
-  }, [stayHistory, activeFilter, search]);
+  }, [enrichedHistory, activeFilter, search]);
 
   return (
     <div style={{ width: '100%', maxWidth: '100%', margin: 0, padding: '24px 32px', background: 'none', fontFamily: 'Inter, Segoe UI, Arial, sans-serif', boxSizing: 'border-box', minHeight: '100vh' }}>
@@ -136,6 +160,11 @@ function StayHistory() {
 
                 <div style={{ fontWeight: 700, color: '#1e293b', fontSize: 13.5 }}>
                   {item.name || '-'}
+                  {(item.section || item.department) ? (
+                    <div style={{ fontSize: 11, color: '#94a3b8', fontWeight: 600, marginTop: 2 }}>
+                      {[item.section, item.department].filter(Boolean).join(' | ')}
+                    </div>
+                  ) : null}
                 </div>
 
                 <div style={{ color: '#2563eb', fontWeight: 800, fontSize: 13 }}>

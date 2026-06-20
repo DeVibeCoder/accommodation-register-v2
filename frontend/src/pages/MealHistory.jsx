@@ -14,6 +14,10 @@ function shortCode(value) {
 const DEPT_ORDER = ['TIC', 'QMAR', 'VTC2', 'VMT', 'VT', 'LOGI'];
 const MEAL_HISTORY_CACHE_KEY = 'tic_meal_history_cache_v1';
 
+// Dates that were missed due to manual-refresh not being done.
+// Each entry is filled by copying the closest previous date's headcount.
+const MISSED_DATES = ['2026-05-15', '2026-06-12', '2026-06-16'];
+
 function sortDepartments(departments) {
   return [...departments].sort((a, b) => {
     const ai = DEPT_ORDER.indexOf(shortCode(a));
@@ -199,32 +203,73 @@ function MealHistory() {
   useEffect(() => {
     hydrateFromCache();
     loadHistory();
-  }, []);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Auto-refresh at midnight so the new day's snapshot appears automatically
+  // without anyone needing to click Refresh.
+  const [midnightTick, setMidnightTick] = useState(0);
+  useEffect(() => {
+    const now = new Date();
+    // Fire 30 seconds after midnight to give the backend time to snapshot
+    const tomorrow = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 0, 0, 30);
+    const msUntil = tomorrow - now;
+
+    const timer = setTimeout(() => {
+      // Switch selected month in case the month rolled over
+      setSelectedMonth(new Date().toISOString().slice(0, 7));
+      loadHistory();
+      setMidnightTick(t => t + 1); // re-trigger this effect for the next night
+    }, msUntil);
+
+    return () => clearTimeout(timer);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [midnightTick]);
+
+  // Inject missing dates by copying the closest prior date's headcount.
+  // These rows are marked _synthetic so they can be styled differently.
+  const filledHistory = useMemo(() => {
+    if (history.length === 0) return history;
+    const dateSet = new Set(history.map(r => r.date));
+    const extras = [];
+
+    for (const missedDate of MISSED_DATES) {
+      if (dateSet.has(missedDate)) continue;
+      // Find the most recent date before the missed date that has data
+      const prev = history
+        .filter(r => r.date < missedDate)
+        .sort((a, b) => b.date.localeCompare(a.date))[0];
+      if (!prev) continue;
+      extras.push({ ...prev, date: missedDate, _synthetic: true, _copiedFrom: prev.date });
+    }
+
+    if (extras.length === 0) return history;
+    return [...history, ...extras].sort((a, b) => b.date.localeCompare(a.date));
+  }, [history]);
 
   const monthOptions = useMemo(() => {
     const uniq = new Set();
-    for (const row of history) {
+    for (const row of filledHistory) {
       const monthKey = row.date.slice(0, 7);
       if (monthKey) uniq.add(monthKey);
     }
     const list = [...uniq].sort((a, b) => String(b).localeCompare(String(a)));
     if (selectedMonth && !list.includes(selectedMonth)) list.unshift(selectedMonth);
     return list;
-  }, [history, selectedMonth]);
+  }, [filledHistory, selectedMonth]);
 
   const filteredRows = useMemo(() => {
-    return history.filter(row => {
+    return filledHistory.filter(row => {
       if (selectedMonth && row.date.slice(0, 7) !== selectedMonth) return false;
       if (fromDate && row.date < fromDate) return false;
       if (toDate && row.date > toDate) return false;
       return true;
     });
-  }, [history, selectedMonth, fromDate, toDate]);
+  }, [filledHistory, selectedMonth, fromDate, toDate]);
 
   const totalMeals = useMemo(() => filteredRows.reduce((sum, row) => sum + (row.total || 0), 0), [filteredRows]);
   const averageMeals = filteredRows.length > 0 ? (totalMeals / filteredRows.length) : 0;
   const todayIso = new Date().toISOString().slice(0, 10);
-  const todayRow = useMemo(() => history.find(item => item.date === todayIso) || null, [history, todayIso]);
+  const todayRow = useMemo(() => filledHistory.find(item => item.date === todayIso) || null, [filledHistory, todayIso]);
   const todaysHeadcount = todayRow?.total || 0;
 
   const handleExport = () => {
@@ -302,15 +347,26 @@ function MealHistory() {
                 </tr>
               </thead>
               <tbody>
-                {filteredRows.map((row, index) => (
-                  <tr key={row.date} style={{ cursor: 'pointer', borderBottom: '1px solid #edf2f7', background: row.date === todayIso ? '#e0f2fe' : (index % 2 === 0 ? '#fff' : '#fbfdff'), transition: 'background .15s ease' }} onClick={() => setSelectedRow(row)} onMouseEnter={e => { e.currentTarget.style.background = '#eef6ff'; }} onMouseLeave={e => { e.currentTarget.style.background = row.date === todayIso ? '#e0f2fe' : (index % 2 === 0 ? '#fff' : '#fbfdff'); }}>
-                    <td style={{ padding: '13px 16px', color: '#1f2937', fontWeight: 700 }}>{formatDateForUi(row.date)}</td>
+                {filteredRows.map((row, index) => {
+                  const isSynthetic = Boolean(row._synthetic);
+                  const baseBg = row.date === todayIso ? '#e0f2fe' : isSynthetic ? '#fefce8' : (index % 2 === 0 ? '#fff' : '#fbfdff');
+                  return (
+                  <tr key={row.date} style={{ cursor: 'pointer', borderBottom: '1px solid #edf2f7', background: baseBg, transition: 'background .15s ease' }} onClick={() => setSelectedRow(row)} onMouseEnter={e => { e.currentTarget.style.background = '#eef6ff'; }} onMouseLeave={e => { e.currentTarget.style.background = baseBg; }}>
+                    <td style={{ padding: '13px 16px', color: '#1f2937', fontWeight: 700 }}>
+                      {formatDateForUi(row.date)}
+                      {isSynthetic && (
+                        <span title={`Copied from ${formatDateForUi(row._copiedFrom)}`} style={{ marginLeft: 6, fontSize: 10, fontWeight: 800, color: '#b45309', background: '#fef3c7', border: '1px solid #fcd34d', borderRadius: 4, padding: '1px 5px' }}>
+                          ~est
+                        </span>
+                      )}
+                    </td>
                     {departments.map(dept => (
                       <td key={`${row.date}-${dept}`} style={{ textAlign: 'center', padding: '13px 10px', color: '#1e3a8a', fontWeight: 700 }}>{row.counts?.[dept] || 0}</td>
                     ))}
                     <td style={{ textAlign: 'center', padding: '13px 12px', color: '#0f172a', fontWeight: 900 }}>{row.total || 0}</td>
                   </tr>
-                ))}
+                  );
+                })}
               </tbody>
             </table>
           </div>

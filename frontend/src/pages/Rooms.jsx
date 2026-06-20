@@ -364,14 +364,23 @@ function Rooms() {
 
           if (!isSpecialType) {
             if (occupied === 0) {
-              statusColor = '#22c55e';
+              // Vacant — green: easy to spot available rooms
+              statusColor = '#16a34a';
+              cardBg = '#f0fdf4';
+              cardBorder = '#86efac';
+              cardShadow = '0 0 0 1.5px #86efac55, 0 8px 20px rgba(34,197,94,0.14)';
             } else if (occupied === room.totalBeds) {
-              statusColor = '#94a3b8';
-            }
-            if (available > 0) {
-              cardBg = '#fff8d9';
-              cardBorder = '#d8ad1f';
-              cardShadow = '0 0 0 2px #d8ad1f55, 0 10px 24px rgba(184,136,8,0.24)';
+              // Full — red: immediately flags no-availability
+              statusColor = '#dc2626';
+              cardBg = '#fff1f2';
+              cardBorder = '#fca5a5';
+              cardShadow = '0 0 0 1.5px #fca5a555, 0 8px 20px rgba(239,68,68,0.13)';
+            } else {
+              // Partial — amber: some beds still free
+              statusColor = '#d97706';
+              cardBg = '#fffbeb';
+              cardBorder = '#fcd34d';
+              cardShadow = '0 0 0 1.5px #fcd34d55, 0 8px 20px rgba(251,191,36,0.14)';
             }
           }
 

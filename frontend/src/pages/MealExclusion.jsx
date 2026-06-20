@@ -1,6 +1,7 @@
 ﻿import React, { useMemo, useState, useEffect, useRef } from 'react';
 import { useOutletContext } from 'react-router-dom';
 import { addMealExclusion, closeMealExclusion, fetchMealExclusionHistory, updateMealExclusion, batchAddMealExclusions, dedupeMealExclusions } from '../services/mealService';
+import { updateOccupant as checkoutOccupantApi } from '../services/occupancyService';
 import { formatDisplayDate } from '../utils/date';
 
 const REASONS = ['Off Site', 'Vacation', 'Restaurant', 'Exit'];
@@ -576,9 +577,11 @@ function ExclusionTable({ rows, canEdit, closingId, onClose, onEdit, emptyText }
 function MealExclusion() {
   const {
     occupants = [],
+    setOccupants,
     mealExclusionSummary = { active: [], upcoming: [], mealExcludedCount: 0 },
     refreshMealExclusionSummary,
     canEditMeals = false,
+    canEditAccommodation = false,
   } = useOutletContext();
 
   const [activeTab, setActiveTab] = useState('active');
@@ -592,6 +595,84 @@ function MealExclusion() {
 
   const active = Array.isArray(mealExclusionSummary?.active) ? mealExclusionSummary.active : [];
   const upcoming = Array.isArray(mealExclusionSummary?.upcoming) ? mealExclusionSummary.upcoming : [];
+
+  // Track which Exit exclusions we've already auto-processed this session
+  const autoProcessedIds = useRef(new Set());
+
+  // Auto-checkout occupants whose upcoming Exit exclusion fromDate has arrived.
+  // Runs whenever the upcoming list changes (e.g. on page load or after refresh).
+  useEffect(() => {
+    if (!canEditAccommodation) return;
+
+    const today = new Date().toISOString().slice(0, 10);
+    const dueExits = upcoming.filter(ex =>
+      ex.reason === 'Exit' &&
+      ex.fromDate &&
+      ex.fromDate <= today &&
+      !autoProcessedIds.current.has(ex.id)
+    );
+
+    if (dueExits.length === 0) return;
+
+    let cancelled = false;
+
+    (async () => {
+      const checkedOutNames = [];
+
+      for (const exclusion of dueExits) {
+        if (cancelled) break;
+        autoProcessedIds.current.add(exclusion.id);
+
+        // Find the matching occupant
+        const occupant = occupants.find(o =>
+          (exclusion.occupantId && String(o.id) === String(exclusion.occupantId)) ||
+          (exclusion.staffId && normalizeText(o.staffId) === normalizeText(exclusion.staffId)) ||
+          (exclusion.name && normalizeText(o.name) === normalizeText(exclusion.name))
+        );
+
+        if (occupant) {
+          try {
+            await checkoutOccupantApi(occupant.id, {
+              ...occupant,
+              __action: 'checkout',
+              __method: 'DELETE',
+              checkOut: new Date().toISOString(),
+              status: 'Checked Out',
+              __history: {
+                type: 'Check Out',
+                name: occupant.name,
+                section: occupant.section,
+                department: occupant.department,
+                roomId: occupant.roomId,
+                bedNo: occupant.bedNo,
+                details: `Auto-checkout: Exit meal exclusion from ${exclusion.fromDate}`,
+              },
+            });
+            checkedOutNames.push(occupant.name);
+          } catch (err) {
+            console.error('[MealExclusion] Auto-checkout failed for', occupant.name, err?.message || err);
+          }
+        }
+
+        // Close/move the exclusion to history
+        try { await closeMealExclusion(exclusion.id); } catch { /* non-fatal */ }
+      }
+
+      if (cancelled) return;
+
+      // Refresh both summaries
+      await refreshMealExclusionSummary();
+
+      if (checkedOutNames.length > 0) {
+        setNotice(
+          `Auto-checkout: ${checkedOutNames.join(', ')} checked out due to Exit exclusion reaching start date. Please refresh Occupancy to see the updated list.`
+        );
+      }
+    })();
+
+    return () => { cancelled = true; };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [upcoming]);
   const activeCount = active.length;
   const upcomingCount = upcoming.length;
   const mealHeadcount = Math.max(occupants.length - activeCount, 0);

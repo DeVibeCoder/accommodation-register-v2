@@ -12,6 +12,8 @@ export function normalizeStayHistoryRecord(row = {}) {
     id: row.id || `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
     type: row.type || row.action || 'Edit',
     name: row.name || row.occupant_name || '',
+    section: row.section || '',
+    department: row.department || '',
     roomId: row.roomId || row.room_id || '',
     bedNo: row.bedNo ?? null,
     details: row.details || '',

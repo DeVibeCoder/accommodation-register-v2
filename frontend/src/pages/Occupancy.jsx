@@ -8,7 +8,10 @@ import {
   updateOccupant as updateOccupantRecord,
 } from '../services/occupancyService';
 import { updateRoom as updateRoomRecord } from '../services/roomsService';
+import { closeMealExclusion } from '../services/mealService';
 import { buildingFrom, buildingCodeFrom, compareRoomIds, normalizeRoomType, isCurrentRoomId } from '../utils/building';
+
+function normalizeText(v) { return String(v || '').trim().toLowerCase(); }
 
 const BUILDING_ORDER = ['OFFICE BUILDING', 'F&B BUILDING', 'VTV BUILDING'];
 const BUILDING_LABELS = {
@@ -429,6 +432,8 @@ function Occupancy() {
     getNextUid,
     addStayHistory,
     prependStayHistoryEntry,
+    mealExclusionSummary,
+    refreshMealExclusionSummary,
     canEditAccommodation = true,
     canUseOccupancyBulkTools = true,
   } = useOutletContext();
@@ -486,8 +491,20 @@ function Occupancy() {
 
   const [personTypeFilter, setPersonTypeFilter] = useState('All');
   const [buildingFilter,   setBuildingFilter]   = useState('All');
+  const [sectionFilter,    setSectionFilter]    = useState('');
   const [idNameSearch,     setIdNameSearch]      = useState('');
   const [roomSearch,       setRoomSearch]        = useState('');
+
+  // Unique sorted sections derived from current occupants
+  const sectionOptions = useMemo(() => {
+    const seen = new Set();
+    const opts = [];
+    for (const o of occupants) {
+      const s = String(o.section || '').trim();
+      if (s && !seen.has(s)) { seen.add(s); opts.push(s); }
+    }
+    return opts.sort((a, b) => a.localeCompare(b));
+  }, [occupants]);
 
   const [addOpen,        setAddOpen]        = useState(false);
   const [editTarget,     setEditTarget]     = useState(null);
@@ -503,6 +520,7 @@ function Occupancy() {
     return occupants.filter(o=>{
       if (personTypeFilter!=='All' && o.personType!==personTypeFilter) return false;
       if (buildingFilter!=='All' && o.building!==buildingFilter) return false;
+      if (sectionFilter && String(o.section||'').trim()!==sectionFilter) return false;
       if (idNameSearch.trim()){
         const q=idNameSearch.trim().toLowerCase();
         if (!o.name.toLowerCase().includes(q) && !String(o.staffId).toLowerCase().includes(q)) return false;
@@ -513,7 +531,7 @@ function Occupancy() {
       }
       return true;
     });
-  },[occupants,personTypeFilter,buildingFilter,idNameSearch,roomSearch]);
+  },[occupants,personTypeFilter,buildingFilter,sectionFilter,idNameSearch,roomSearch]);
 
   const grouped = useMemo(()=>{
     const buildingRank = Object.fromEntries(BUILDING_ORDER.map((b,i)=>[b,i]));
@@ -573,6 +591,8 @@ function Occupancy() {
       __history: {
         type: 'Check In',
         name: normalized.name,
+        section: normalized.section,
+        department: normalized.department,
         roomId: normalized.roomId,
         bedNo: normalized.bedNo,
         details: `Checked in to ${normalized.roomId} / Bed ${normalized.bedNo}`,
@@ -608,6 +628,8 @@ function Occupancy() {
       __history: {
         type: 'Edit',
         name: updated.name,
+        section: updated.section,
+        department: updated.department,
         roomId: updated.roomId,
         bedNo: updated.bedNo,
         details: changedFields.length > 0 ? `Updated ${changedFields.join(', ')}` : 'Occupant details edited',
@@ -633,6 +655,8 @@ function Occupancy() {
       __history: {
         type: 'Edit',
         name: occupant.name,
+        section: occupant.section,
+        department: occupant.department,
         roomId: occupant.roomId,
         bedNo: occupant.bedNo,
         details: 'Occupant record deleted',
@@ -660,6 +684,8 @@ function Occupancy() {
       __history: {
         type: 'Check Out',
         name: occupant.name,
+        section: occupant.section,
+        department: occupant.department,
         roomId: occupant.roomId,
         bedNo: occupant.bedNo,
         details: `Checked out from ${occupant.roomId} / Bed ${occupant.bedNo}`,
@@ -673,8 +699,30 @@ function Occupancy() {
     }
 
     pushHistoryEntry(deleted?.historyEntry);
-    showActionResult('success', 'Checked Out', `${occupant.name} was checked out successfully.`);
 
+    // Remove any upcoming Exit meal exclusions for this occupant so they
+    // don't linger in the upcoming list after the person has left.
+    const upcomingExclusions = Array.isArray(mealExclusionSummary?.upcoming)
+      ? mealExclusionSummary.upcoming
+      : [];
+    const exitMatches = upcomingExclusions.filter(ex => {
+      if (ex.reason !== 'Exit') return false;
+      return (
+        (occupant.id && String(ex.occupantId) === String(occupant.id)) ||
+        (occupant.staffId && normalizeText(ex.staffId) === normalizeText(occupant.staffId)) ||
+        (occupant.name && normalizeText(ex.name) === normalizeText(occupant.name))
+      );
+    });
+    if (exitMatches.length > 0) {
+      for (const ex of exitMatches) {
+        try { await closeMealExclusion(ex.id); } catch { /* non-fatal */ }
+      }
+      if (typeof refreshMealExclusionSummary === 'function') {
+        refreshMealExclusionSummary();
+      }
+    }
+
+    showActionResult('success', 'Checked Out', `${occupant.name} was checked out successfully.`);
   };
 
   const handleSwap = async (idA, idB) => {
@@ -721,6 +769,8 @@ function Occupancy() {
           __history: {
             type: 'Swap',
             name: `${beforeA?.name || ''} <-> ${beforeB?.name || ''}`,
+            section: beforeA?.section,
+            department: beforeA?.department,
             roomId: `${beforeA?.roomId || ''} <-> ${beforeB?.roomId || ''}`,
             bedNo: `${beforeA?.bedNo || ''} <-> ${beforeB?.bedNo || ''}`,
             details: 'Swapped occupant room and bed assignments',
@@ -769,6 +819,8 @@ function Occupancy() {
         __history: {
           type: 'Move',
           name: moved.name,
+          section: moved.section,
+          department: moved.department,
           roomId: moved.roomId,
           bedNo: moved.bedNo,
           details: `Moved from ${original?.roomId || ''} / Bed ${original?.bedNo || ''} to ${moved.roomId} / Bed ${moved.bedNo}`,
@@ -951,7 +1003,7 @@ function Occupancy() {
     }
   };
 
-  const hasFilters = personTypeFilter!=='All'||buildingFilter!=='All'||idNameSearch||roomSearch;
+  const hasFilters = personTypeFilter!=='All'||buildingFilter!=='All'||!!sectionFilter||idNameSearch||roomSearch;
 
   return (
     <div style={{ width:'100%',maxWidth:'100%',margin:0,padding:'clamp(14px, 2.3vw, 24px) clamp(12px, 3vw, 32px)',background:'none',fontFamily:'Inter,Segoe UI,Arial,sans-serif',boxSizing:'border-box',minHeight:'100vh' }}>
@@ -1026,6 +1078,13 @@ function Occupancy() {
             {BUILDING_ORDER.map(b=>(<option key={b} value={b}>{BUILDING_LABELS[b]}</option>))}
           </select>
         </div>
+        <div style={{ display:'flex',flexDirection:'column',gap:4 }}>
+          <span style={{ fontSize:11,fontWeight:700,color:'#94a3b8',textTransform:'uppercase',letterSpacing:.5 }}>Section</span>
+          <select value={sectionFilter} onChange={e=>setSectionFilter(e.target.value)} style={{ padding:'8px 14px',borderRadius:10,border:'1.5px solid #d0d7e2',fontSize:13,fontWeight:600,color:'#1e293b',background:'#f8fafc',cursor:'pointer',minWidth:150 }}>
+            <option value="">All Sections</option>
+            {sectionOptions.map(s=>(<option key={s} value={s}>{s}</option>))}
+          </select>
+        </div>
         <div style={{ display:'flex',flexDirection:'column',gap:4,flex:'1 1 180px' }}>
           <span style={{ fontSize:11,fontWeight:700,color:'#94a3b8',textTransform:'uppercase',letterSpacing:.5 }}>Search ID / Name</span>
           <div style={{ position:'relative' }}>
@@ -1043,7 +1102,7 @@ function Occupancy() {
           </div>
         </div>
         {hasFilters && (
-          <button onClick={()=>{ setPersonTypeFilter('All'); setBuildingFilter('All'); setIdNameSearch(''); setRoomSearch(''); }}
+          <button onClick={()=>{ setPersonTypeFilter('All'); setBuildingFilter('All'); setSectionFilter(''); setIdNameSearch(''); setRoomSearch(''); }}
             style={{ alignSelf:'flex-end',padding:'8px 16px',borderRadius:10,border:'1.5px solid #fca5a5',background:'#fff5f5',color:'#ef4444',fontSize:13,fontWeight:600,cursor:'pointer' }}>
             Clear
           </button>

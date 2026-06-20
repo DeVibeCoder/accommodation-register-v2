@@ -1,8 +1,6 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
 
-// New sidebar structure with sections
-// System section for Settings
 const systemSection = {
   label: 'System',
   items: [
@@ -18,6 +16,7 @@ const systemSection = {
     },
   ],
 };
+
 const navSections = [
   {
     label: 'Main',
@@ -25,7 +24,7 @@ const navSections = [
       {
         label: 'Dashboard',
         icon: (
-          <svg width="22" height="22" fill="none" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="2" fill="currentColor"/><rect x="14" y="3" width="7" height="7" rx="2" fill="currentColor"/><rect x="14" y="14" width="7" height="7" rx="2" fill="currentColor"/><rect x="3" y="14" width="7" height="7" rx="2" fill="currentColor"/></svg>
+          <svg width="20" height="20" fill="none" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="2" fill="currentColor"/><rect x="14" y="3" width="7" height="7" rx="2" fill="currentColor"/><rect x="14" y="14" width="7" height="7" rx="2" fill="currentColor"/><rect x="3" y="14" width="7" height="7" rx="2" fill="currentColor"/></svg>
         ),
         to: '/',
       },
@@ -37,21 +36,21 @@ const navSections = [
       {
         label: 'Rooms',
         icon: (
-          <svg width="22" height="22" fill="none" viewBox="0 0 24 24"><rect x="3" y="7" width="18" height="10" rx="2" fill="currentColor"/><rect x="7" y="11" width="2" height="2" rx="1" fill="#fff"/><rect x="15" y="11" width="2" height="2" rx="1" fill="#fff"/></svg>
+          <svg width="20" height="20" fill="none" viewBox="0 0 24 24"><rect x="3" y="7" width="18" height="10" rx="2" fill="currentColor"/><rect x="7" y="11" width="2" height="2" rx="1" fill="#fff"/><rect x="15" y="11" width="2" height="2" rx="1" fill="#fff"/></svg>
         ),
         to: '/rooms',
       },
       {
         label: 'Occupancy',
         icon: (
-          <svg width="22" height="22" fill="none" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4" fill="currentColor"/><rect x="4" y="16" width="16" height="4" rx="2" fill="currentColor"/></svg>
+          <svg width="20" height="20" fill="none" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4" fill="currentColor"/><rect x="4" y="16" width="16" height="4" rx="2" fill="currentColor"/></svg>
         ),
         to: '/occupancy',
       },
       {
         label: 'Stay History',
         icon: (
-          <svg width="22" height="22" fill="none" viewBox="0 0 24 24"><path d="M12 8v5l4 2" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/><circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2"/></svg>
+          <svg width="20" height="20" fill="none" viewBox="0 0 24 24"><path d="M12 8v5l4 2" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/><circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2"/></svg>
         ),
         to: '/stay-history',
       },
@@ -63,193 +62,256 @@ const navSections = [
       {
         label: 'Meal Exclusion',
         icon: (
-          <svg width="22" height="22" fill="none" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="3" fill="currentColor"/><rect x="7" y="9" width="2" height="6" rx="1" fill="#fff"/><rect x="15" y="9" width="2" height="6" rx="1" fill="#fff"/></svg>
+          <svg width="20" height="20" fill="none" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="3" fill="currentColor"/><rect x="7" y="9" width="2" height="6" rx="1" fill="#fff"/><rect x="15" y="9" width="2" height="6" rx="1" fill="#fff"/></svg>
         ),
         to: '/meal-exclusion',
       },
       {
         label: 'Meal History',
         icon: (
-          <svg width="22" height="22" fill="none" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="3" fill="currentColor"/><rect x="7" y="9" width="2" height="6" rx="1" fill="#fff"/><rect x="15" y="9" width="2" height="6" rx="1" fill="#fff"/></svg>
+          <svg width="20" height="20" fill="none" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" stroke="currentColor" strokeWidth="2" fill="none"/><line x1="16" y1="2" x2="16" y2="6" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/><line x1="8" y1="2" x2="8" y2="6" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/><line x1="3" y1="10" x2="21" y2="10" stroke="currentColor" strokeWidth="2"/></svg>
         ),
         to: '/meal-history',
       },
     ],
   },
-  // Removed System/Settings section to avoid duplicate Settings
 ];
 
-function Sidebar({ collapsed = false, setCollapsed, onLogout, user }) {
-  const sidebarWidth = collapsed ? 70 : 220;
+/* ── shared nav-link style builder ───────────────────────────── */
+function navLinkStyle(isActive, collapsed) {
+  return {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: collapsed ? 'center' : 'flex-start',
+    gap: collapsed ? 0 : 11,
+    width: '100%',
+    boxSizing: 'border-box',
+    padding: collapsed ? '11px 0' : '10px 16px',
+    color: isActive ? '#e3eafc' : '#b6c3e0',
+    background: isActive ? 'rgba(227,234,252,0.14)' : 'transparent',
+    borderLeft: isActive ? '3px solid #60a5fa' : '3px solid transparent',
+    borderRadius: collapsed ? 0 : '0 8px 8px 0',
+    fontWeight: 600,
+    fontSize: 14,
+    margin: '1px 0',
+    transition: 'background 0.13s, color 0.13s',
+    textDecoration: 'none',
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+  };
+}
 
-  // Role-based menu filtering
+function Sidebar({ collapsed = false, setCollapsed, onLogout, user }) {
+  const sidebarWidth = collapsed ? 64 : 220;
   const role = user?.role || 'Viewer';
-  const roleInitial = String(role).charAt(0).toUpperCase() || 'U';
+  const roleInitial = String(role).charAt(0).toUpperCase();
+
   const filteredSections = navSections.map(section => {
     let items = section.items;
-
     if (role === 'Viewer') {
       items = items.filter(item => item.to !== '/stay-history');
     }
-
-    const nextSection = section.label === 'Accommodation' && role === 'Supervisor'
-      ? { ...section, label: 'Supervisor', items }
-      : { ...section, items };
-
-    return nextSection;
+    return { ...section, items };
   });
+
   const showSystemSection = role === 'Admin';
 
   return (
-    <aside style={{
-      width: sidebarWidth,
-      background: '#1e315f',
-      color: '#fff',
-      minHeight: '100vh',
-      height: '100vh',
-      padding: 0,
-      display: 'flex',
-      flexDirection: 'column',
-      fontFamily: 'Inter, Segoe UI, Arial, sans-serif',
-      position: 'fixed',
-      left: 0,
-      top: 0,
-      zIndex: 200,
-      overflow: 'hidden',
-      boxShadow: '2px 0 12px #1e2233',
-      userSelect: 'none',
-      transition: 'width 0.18s',
-    }}>
-      {/* Logo/Header */}
-      <div style={{
-        height: 64,
+    <aside
+      style={{
+        width: sidebarWidth,
+        minWidth: sidebarWidth,
+        background: '#1e315f',
+        color: '#fff',
+        minHeight: '100vh',
+        height: '100vh',
         display: 'flex',
-        alignItems: 'center',
-        justifyContent: collapsed ? 'center' : 'flex-start',
-        padding: collapsed ? '0' : '0 18px',
-        borderBottom: '1px solid #223366',
-        marginBottom: 8,
-      }}>
-        <span style={{ fontWeight: 900, fontSize: 22, letterSpacing: 1, color: '#e3eafc', opacity: 0.95 }}>{collapsed ? 'T' : 'TIC'}</span>
+        flexDirection: 'column',
+        fontFamily: 'Inter, Segoe UI, Arial, sans-serif',
+        position: 'fixed',
+        left: 0,
+        top: 0,
+        zIndex: 200,
+        overflow: 'hidden',
+        boxShadow: '2px 0 16px rgba(15,23,60,0.22)',
+        userSelect: 'none',
+        transition: 'width 0.18s ease',
+      }}
+    >
+      {/* ── Logo / header ── */}
+      <div
+        style={{
+          height: 64,
+          minHeight: 64,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: collapsed ? 'center' : 'flex-start',
+          padding: collapsed ? 0 : '0 20px',
+          borderBottom: '1px solid rgba(255,255,255,0.1)',
+          marginBottom: 6,
+          flexShrink: 0,
+        }}
+      >
+        <span
+          style={{
+            fontWeight: 900,
+            fontSize: collapsed ? 18 : 20,
+            letterSpacing: collapsed ? 0 : 1,
+            color: '#e3eafc',
+          }}
+        >
+          {collapsed ? 'T' : 'TIC'}
+        </span>
       </div>
 
-      {/* Navigation Sections */}
-      <nav style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 0 }}>
+      {/* ── Navigation ── */}
+      <nav style={{ flex: 1, display: 'flex', flexDirection: 'column', overflowY: 'auto', overflowX: 'hidden' }}>
         {filteredSections.map(section => (
-          <div key={section.label} style={{ marginBottom: 8 }}>
+          <div key={section.label} style={{ marginBottom: 4 }}>
             {!collapsed && (
-              <div style={{ fontSize: 12, fontWeight: 700, color: '#b6c3e0', letterSpacing: 0.5, margin: '8px 0 4px 18px' }}>{section.label}</div>
+              <div
+                style={{
+                  fontSize: 10,
+                  fontWeight: 800,
+                  color: 'rgba(182,195,224,0.6)',
+                  letterSpacing: 1.2,
+                  textTransform: 'uppercase',
+                  padding: '10px 16px 4px',
+                }}
+              >
+                {section.label}
+              </div>
             )}
             {section.items.map(item => (
               <NavLink
                 key={item.label}
                 to={item.to}
-                style={({ isActive }) => ({
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: collapsed ? 0 : 12,
-                  padding: collapsed ? '10px 0' : '10px 18px',
-                  color: isActive ? '#e3eafc' : '#b6c3e0',
-                  background: isActive ? 'rgba(227,234,252,0.13)' : 'none',
-                  borderRadius: 8,
-                  fontWeight: 600,
-                  fontSize: 15,
-                  margin: '2px 0',
-                  justifyContent: collapsed ? 'center' : 'flex-start',
-                  transition: 'background 0.13s',
-                  textDecoration: 'none',
-                })}
-                title={item.label}
+                end={item.to === '/'}
+                style={({ isActive }) => navLinkStyle(isActive, collapsed)}
+                title={collapsed ? item.label : undefined}
               >
-                <span style={{ display: 'flex', alignItems: 'center', fontSize: 20 }}>{item.icon}</span>
-                {!collapsed && item.label}
+                <span style={{ display: 'flex', alignItems: 'center', flexShrink: 0 }}>
+                  {item.icon}
+                </span>
+                {!collapsed && (
+                  <span style={{ fontSize: 14, fontWeight: 600 }}>{item.label}</span>
+                )}
               </NavLink>
             ))}
           </div>
         ))}
-        {showSystemSection ? (
-          <div key={systemSection.label} style={{ marginBottom: 8 }}>
+
+        {showSystemSection && (
+          <div style={{ marginBottom: 4 }}>
             {!collapsed && (
-              <div style={{ fontSize: 12, fontWeight: 700, color: '#b6c3e0', letterSpacing: 0.5, margin: '8px 0 4px 18px' }}>{systemSection.label}</div>
+              <div
+                style={{
+                  fontSize: 10,
+                  fontWeight: 800,
+                  color: 'rgba(182,195,224,0.6)',
+                  letterSpacing: 1.2,
+                  textTransform: 'uppercase',
+                  padding: '10px 16px 4px',
+                }}
+              >
+                {systemSection.label}
+              </div>
             )}
             {systemSection.items.map(item => (
               <NavLink
                 key={item.label}
                 to={item.to}
-                style={({ isActive }) => ({
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: collapsed ? 0 : 12,
-                  padding: collapsed ? '10px 0' : '10px 18px',
-                  color: isActive ? '#e3eafc' : '#b6c3e0',
-                  background: isActive ? 'rgba(227,234,252,0.13)' : 'none',
-                  borderRadius: 8,
-                  fontWeight: 600,
-                  fontSize: 15,
-                  margin: '2px 0',
-                  justifyContent: collapsed ? 'center' : 'flex-start',
-                  transition: 'background 0.13s',
-                  textDecoration: 'none',
-                })}
-                title={item.label}
+                style={({ isActive }) => navLinkStyle(isActive, collapsed)}
+                title={collapsed ? item.label : undefined}
               >
-                <span style={{ display: 'flex', alignItems: 'center', fontSize: 20 }}>{item.icon}</span>
-                {!collapsed && item.label}
+                <span style={{ display: 'flex', alignItems: 'center', flexShrink: 0 }}>
+                  {item.icon}
+                </span>
+                {!collapsed && (
+                  <span style={{ fontSize: 14, fontWeight: 600 }}>{item.label}</span>
+                )}
               </NavLink>
             ))}
           </div>
-        ) : null}
+        )}
       </nav>
 
-      {/* Bottom section: Logout and user info */}
+      {/* ── Bottom: logout + user info ── */}
       <div
         style={{
-          width: '100%',
-          background: 'rgba(255,255,255,0.12)',
-          padding: collapsed ? '14px 4px 10px 4px' : '18px 12px 12px 12px',
+          flexShrink: 0,
+          background: 'rgba(0,0,0,0.18)',
+          borderTop: '1px solid rgba(255,255,255,0.08)',
+          padding: collapsed ? '12px 0' : '14px 12px',
           display: 'flex',
           flexDirection: 'column',
-          alignItems: 'stretch',
-          gap: 10,
-          marginTop: 24,
-          borderRadius: collapsed ? '14px' : '20px 20px 0 0',
-          boxShadow: '0 -2px 12px #1e223333',
+          alignItems: 'center',
+          gap: 8,
         }}
       >
         <button
+          onClick={onLogout}
+          title="Logout"
           style={{
-            width: collapsed ? 36 : '100%',
-            background: '#e3eafc',
-            color: '#1e315f',
-            border: 'none',
-            borderRadius: 6,
-            padding: '7px 0',
-            fontWeight: 700,
-            fontSize: 13,
-            cursor: 'pointer',
-            boxShadow: '0 2px 8px #d0d7e2',
-            margin: '0 0 0 0',
-            transition: 'background 0.15s',
+            width: collapsed ? 38 : '100%',
+            height: 36,
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            gap: 0,
-            marginLeft: collapsed ? 0 : 0,
+            gap: collapsed ? 0 : 6,
+            background: '#e3eafc',
+            color: '#1e315f',
+            border: 'none',
+            borderRadius: 8,
+            fontWeight: 700,
+            fontSize: 13,
+            cursor: 'pointer',
+            boxShadow: '0 2px 6px rgba(0,0,0,0.15)',
+            transition: 'background 0.15s',
+            flexShrink: 0,
           }}
-          onClick={onLogout}
-          title="Logout"
         >
-          <svg width="15" height="15" fill="none" viewBox="0 0 24 24" style={{ marginRight: collapsed ? 0 : 4 }}>
+          <svg width="15" height="15" fill="none" viewBox="0 0 24 24">
             <path d="M16 17l5-5m0 0l-5-5m5 5H9" stroke="#1e315f" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
             <rect x="3" y="4" width="7" height="16" rx="2" stroke="#1e315f" strokeWidth="2"/>
           </svg>
           {!collapsed && 'Logout'}
         </button>
-        <div style={{ color: '#b6c3e0', fontSize: 11, fontWeight: 500, textAlign: 'center', margin: '0 0 2px 0', width: '100%', display: 'flex', alignItems: 'center', justifyContent: collapsed ? 'center' : 'flex-start', paddingLeft: collapsed ? 0 : 8 }}>
-          <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-            <svg width="14" height="14" fill="none" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke="#b6c3e0" strokeWidth="2"/><text x="50%" y="55%" textAnchor="middle" fill="#b6c3e0" fontSize="7" fontWeight="bold" dy=".3em">{roleInitial}</text></svg>
-            {collapsed ? '' : `Logged in as: ${role}`}
+
+        <div
+          style={{
+            width: '100%',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: 6,
+            color: 'rgba(182,195,224,0.7)',
+            fontSize: 11,
+            fontWeight: 500,
+          }}
+        >
+          <span
+            style={{
+              width: 22,
+              height: 22,
+              borderRadius: '50%',
+              background: 'rgba(255,255,255,0.14)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontSize: 10,
+              fontWeight: 800,
+              color: '#e3eafc',
+              flexShrink: 0,
+            }}
+          >
+            {roleInitial}
           </span>
+          {!collapsed && (
+            <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+              {role}
+            </span>
+          )}
         </div>
       </div>
     </aside>
