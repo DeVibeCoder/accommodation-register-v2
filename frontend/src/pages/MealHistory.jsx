@@ -67,7 +67,7 @@ function MealDayDetailModal({ row, departments, onClose }) {
   const maxCount = sorted.length > 0 ? (row.counts?.[sorted[0]] || 0) : 1;
 
   const BADGE_COLORS = [
-    { bg: '#dbeafe', text: '#1d4ed8' },
+    { bg: '#dbeafe', text: '#6366f1' },
     { bg: '#dcfce7', text: '#16a34a' },
     { bg: '#fef3c7', text: '#b45309' },
     { bg: '#f3e8ff', text: '#7c3aed' },
@@ -295,7 +295,7 @@ function MealHistory() {
     <div className="page-container" style={{ width: '100%', maxWidth: '100%', margin: 0, padding: 'clamp(14px, 2.2vw, 24px) clamp(12px, 3vw, 32px) 30px', background: 'none', fontFamily: 'Inter, Segoe UI, Arial, sans-serif', boxSizing: 'border-box' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 16, marginBottom: 18, flexWrap: 'wrap' }}>
         <div>
-          <h1 style={{ margin: 0, color: '#1e315f', fontWeight: 900, fontSize: '1.8rem' }}>Meal History</h1>
+          <h1 style={{ margin: 0, color: '#1e293b', fontWeight: 900, fontSize: '1.8rem' }}>Meal History</h1>
           <p style={{ margin: '6px 0 0', color: '#64748b', fontWeight: 600 }}>Daily meal headcount snapshots by department with export.</p>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', padding: 10, borderRadius: 16, background: 'linear-gradient(180deg, #ffffff 0%, #f8fbff 100%)', border: '1px solid #dbe4f0', boxShadow: '0 10px 28px rgba(15,23,42,0.06)' }}>
@@ -304,8 +304,8 @@ function MealHistory() {
           </select>
           <input type="date" value={fromDate} onChange={e => setFromDate(e.target.value)} style={{ height: 36, border: '1px solid #cbd5e1', borderRadius: 8, padding: '0 10px', fontWeight: 600, color: '#334155' }} />
           <input type="date" value={toDate} onChange={e => setToDate(e.target.value)} style={{ height: 36, border: '1px solid #cbd5e1', borderRadius: 8, padding: '0 10px', fontWeight: 600, color: '#334155' }} />
-          <button onClick={handleExport} disabled={filteredRows.length === 0} style={{ height: 36, padding: '0 14px', borderRadius: 8, border: '1px solid #94a3b8', background: filteredRows.length === 0 ? '#e2e8f0' : '#dbe4ef', color: '#1e315f', fontWeight: 800, cursor: filteredRows.length === 0 ? 'not-allowed' : 'pointer' }}>Export CSV</button>
-          <button onClick={loadHistory} disabled={loading} style={{ height: 36, padding: '0 14px', borderRadius: 8, border: 'none', background: loading ? '#cbd5e1' : '#1d4ed8', color: '#fff', fontWeight: 800, cursor: loading ? 'not-allowed' : 'pointer' }}>{loading ? 'Refreshing...' : 'Refresh'}</button>
+          <button onClick={handleExport} disabled={filteredRows.length === 0} style={{ height: 36, padding: '0 14px', borderRadius: 8, border: '1px solid #94a3b8', background: filteredRows.length === 0 ? '#e2e8f0' : '#dbe4ef', color: '#1e293b', fontWeight: 800, cursor: filteredRows.length === 0 ? 'not-allowed' : 'pointer' }}>Export CSV</button>
+          <button onClick={loadHistory} disabled={loading} style={{ height: 36, padding: '0 14px', borderRadius: 8, border: 'none', background: loading ? '#cbd5e1' : '#6366f1', color: '#fff', fontWeight: 800, cursor: loading ? 'not-allowed' : 'pointer' }}>{loading ? 'Refreshing...' : 'Refresh'}</button>
         </div>
       </div>
 
@@ -325,8 +325,8 @@ function MealHistory() {
           <div style={{ marginTop: 6, fontWeight: 900, color: '#0f172a', fontSize: 32, animation: 'numberPop 0.5s cubic-bezier(0.22,1,0.36,1) both', animationDelay: '185ms' }}>{averageMeals.toFixed(1)}</div>
         </div>
         <div style={{ border: '1px solid #bfdbfe', borderRadius: 14, background: 'linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%)', padding: '14px 16px', boxShadow: '0 12px 30px rgba(30,49,95,0.06)', animation: 'fadeUp 0.38s cubic-bezier(0.22,1,0.36,1) both', animationDelay: '130ms' }}>
-          <div style={{ color: '#1d4ed8', fontSize: 11, fontWeight: 800, textTransform: 'uppercase' }}>Today's Headcount</div>
-          <div style={{ marginTop: 6, fontWeight: 900, color: '#1e3a8a', fontSize: 32, animation: 'numberPop 0.5s cubic-bezier(0.22,1,0.36,1) both', animationDelay: '250ms' }}>{todaysHeadcount}</div>
+          <div style={{ color: '#6366f1', fontSize: 11, fontWeight: 800, textTransform: 'uppercase' }}>Today's Headcount</div>
+          <div style={{ marginTop: 6, fontWeight: 900, color: '#3730a3', fontSize: 32, animation: 'numberPop 0.5s cubic-bezier(0.22,1,0.36,1) both', animationDelay: '250ms' }}>{todaysHeadcount}</div>
         </div>
       </div>
 
@@ -355,7 +355,7 @@ function MealHistory() {
                       {formatDateForUi(row.date)}
                     </td>
                     {departments.map(dept => (
-                      <td key={`${row.date}-${dept}`} style={{ textAlign: 'center', padding: '13px 10px', color: '#1e3a8a', fontWeight: 700 }}>{row.counts?.[dept] || 0}</td>
+                      <td key={`${row.date}-${dept}`} style={{ textAlign: 'center', padding: '13px 10px', color: '#3730a3', fontWeight: 700 }}>{row.counts?.[dept] || 0}</td>
                     ))}
                     <td style={{ textAlign: 'center', padding: '13px 12px', color: '#0f172a', fontWeight: 900 }}>{row.total || 0}</td>
                   </tr>

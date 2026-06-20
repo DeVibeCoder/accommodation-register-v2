@@ -99,7 +99,7 @@ function DonutCard({ title, data, subtitle }) {
                 transform={`rotate(-90 ${size / 2} ${size / 2})`}
               />
             ))}
-            <text x="50%" y="47%" textAnchor="middle" dominantBaseline="middle" style={{ fill:'#1e315f', fontSize:19, fontWeight:900 }}>{total}</text>
+            <text x="50%" y="47%" textAnchor="middle" dominantBaseline="middle" style={{ fill:'#1e293b', fontSize:19, fontWeight:900 }}>{total}</text>
             <text x="50%" y="60%" textAnchor="middle" dominantBaseline="middle" style={{ fill:'#64748b', fontSize:10, fontWeight:700, letterSpacing:'.4px' }}>TOTAL</text>
           </svg>
         </div>
@@ -177,10 +177,10 @@ function Dashboard() {
   }, [occupants, roomsState, mealExclusionSummary]);
 
   const cards = [
-    { title: 'Total Beds', value: metrics.totalBeds, bg: 'linear-gradient(135deg, #e0ecff 0%, #d9f3ff 100%)', color: '#1e3a8a' },
-    { title: 'Occupied Beds', value: metrics.occupied, bg: 'linear-gradient(135deg, #ffe9d6 0%, #ffe2bf 100%)', color: '#9a3412' },
-    { title: 'Available Beds', value: metrics.available, bg: 'linear-gradient(135deg, #dcfce7 0%, #d1fae5 100%)', color: '#166534' },
-    { title: 'Meal Headcount', value: metrics.mealHeadcount, bg: 'linear-gradient(135deg, #f3e8ff 0%, #ede9fe 100%)', color: '#6b21a8' },
+    { title: 'Total Beds',     value: metrics.totalBeds,     bg: 'linear-gradient(135deg,#eef2ff 0%,#e0e7ff 100%)', color: '#3730a3' },
+    { title: 'Occupied Beds',  value: metrics.occupied,      bg: 'linear-gradient(135deg,#fef3c7 0%,#fde68a 100%)', color: '#92400e' },
+    { title: 'Available Beds', value: metrics.available,     bg: 'linear-gradient(135deg,#d1fae5 0%,#a7f3d0 100%)', color: '#065f46' },
+    { title: 'Meal Headcount', value: metrics.mealHeadcount, bg: 'linear-gradient(135deg,#f5f3ff 0%,#ede9fe 100%)', color: '#5b21b6' },
   ];
 
   const chartGridColumns = viewportWidth >= 1700
@@ -192,18 +192,20 @@ function Dashboard() {
   return (
     <div style={{ width:'100%', padding:'clamp(12px, 2vw, 24px) clamp(12px, 2.6vw, 28px) 20px', boxSizing:'border-box', minHeight:'100vh', background:'linear-gradient(180deg, #f4f7fb 0%, #eef3f9 100%)', overflowX:'hidden' }}>
       <div style={{
-        background:'linear-gradient(125deg, #0f172a 0%, #1e3a8a 45%, #0ea5e9 100%)',
+        background:'linear-gradient(135deg, #1e1b4b 0%, #4f46e5 52%, #0891b2 100%)',
         color:'#fff',
-        borderRadius:18,
-        padding:'24px 26px',
-        boxShadow:'0 16px 32px rgba(15,23,42,.24)',
+        borderRadius:16,
+        padding:'22px 26px',
+        boxShadow:'0 12px 32px rgba(79,70,229,0.28)',
         marginBottom:16,
         animation:'headerSlide 0.4s cubic-bezier(0.22,1,0.36,1) both',
       }}>
-        <div style={{ fontSize:12, opacity:.92, letterSpacing:.5, textTransform:'uppercase', fontWeight:700 }}>Live Occupancy Snapshot</div>
+        <div style={{ fontSize:11, opacity:.8, letterSpacing:1.2, textTransform:'uppercase', fontWeight:700 }}>Live Occupancy Snapshot</div>
         <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-end', gap:20, marginTop:8, flexWrap:'wrap' }}>
-          <h1 style={{ margin:0, fontSize:'1.9rem', lineHeight:1.1, fontWeight:900 }}>Accommodation Dashboard</h1>
-          <div style={{ fontSize:14, opacity:.95 }}>Occupancy Rate: <strong>{percent(metrics.occupied, metrics.totalBeds)}%</strong></div>
+          <h1 style={{ margin:0, fontSize:'1.8rem', lineHeight:1.1, fontWeight:900, letterSpacing:'-0.3px' }}>Accommodation Dashboard</h1>
+          <div style={{ fontSize:14, background:'rgba(255,255,255,0.14)', padding:'6px 14px', borderRadius:999, fontWeight:700 }}>
+            Occupancy: <strong>{percent(metrics.occupied, metrics.totalBeds)}%</strong>
+          </div>
         </div>
       </div>
 
@@ -218,24 +220,24 @@ function Dashboard() {
 
       <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit, minmax(280px, 1fr))', gap:14, marginBottom:14 }}>
         <div style={{ background:'#fff', border:'1px solid #dfe6f2', borderRadius:16, padding:'20px 22px', boxShadow:'0 6px 16px rgba(15,23,42,.05)', animation:'fadeUp 0.4s cubic-bezier(0.22,1,0.36,1) both', animationDelay:'260ms' }}>
-          <div style={{ fontWeight:800, color:'#1e315f', marginBottom:10 }}>Occupancy Overview</div>
+          <div style={{ fontWeight:800, color:'#1e293b', marginBottom:10 }}>Occupancy Overview</div>
           <div style={{ height:14, background:'#e7edf7', borderRadius:999, overflow:'hidden' }}>
-            <div style={{ width:`${percent(metrics.occupied, metrics.totalBeds)}%`, height:'100%', borderRadius:999, background:'linear-gradient(90deg, #2563eb 0%, #0ea5e9 100%)' }} />
+            <div style={{ width:`${percent(metrics.occupied, metrics.totalBeds)}%`, height:'100%', borderRadius:999, background:'linear-gradient(90deg, #6366f1 0%, #0891b2 100%)' }} />
           </div>
           <div style={{ display:'flex', justifyContent:'space-between', marginTop:10, fontSize:13, color:'#64748b' }}>
-            <span><strong style={{ color:'#1e315f' }}>{metrics.occupied}</strong> occupied</span>
+            <span><strong style={{ color:'#1e293b' }}>{metrics.occupied}</strong> occupied</span>
             <span>{metrics.totalBeds} total beds</span>
             <span><strong style={{ color:'#166534' }}>{metrics.available}</strong> available</span>
           </div>
         </div>
 
         <div style={{ background:'#fff', border:'1px solid #dfe6f2', borderRadius:16, padding:'20px 22px', boxShadow:'0 6px 16px rgba(15,23,42,.05)', animation:'fadeUp 0.4s cubic-bezier(0.22,1,0.36,1) both', animationDelay:'320ms' }}>
-          <div style={{ fontWeight:800, color:'#1e315f', marginBottom:10 }}>Occupant Types</div>
+          <div style={{ fontWeight:800, color:'#1e293b', marginBottom:10 }}>Occupant Types</div>
           <div style={{ display:'flex', flexDirection:'column', gap:8 }}>
             {Object.entries(metrics.typeBreakdown).map(([k, v]) => (
               <div key={k} style={{ display:'flex', justifyContent:'space-between', alignItems:'center', fontSize:13 }}>
                 <span style={{ color:'#334155', fontWeight:600 }}>{k}</span>
-                <span style={{ background:'#eef2ff', color:'#3730a3', border:'1px solid #c7d2fe', borderRadius:999, padding:'2px 9px', fontWeight:700 }}>{v}</span>
+                <span style={{ background:'#f5f3ff', color:'#5b21b6', border:'1px solid #c7d2fe', borderRadius:999, padding:'2px 9px', fontWeight:700 }}>{v}</span>
               </div>
             ))}
           </div>
@@ -244,7 +246,7 @@ function Dashboard() {
 
       <div style={{ background:'#fff', border:'1px solid #dfe6f2', borderRadius:16, padding:'18px 20px', boxShadow:'0 6px 16px rgba(15,23,42,.05)', marginBottom:14, animation:'fadeUp 0.4s cubic-bezier(0.22,1,0.36,1) both', animationDelay:'380ms' }}>
         <div style={{ display:'flex', justifyContent:'space-between', alignItems:'baseline', marginBottom:14 }}>
-          <div style={{ fontWeight:800, color:'#1e315f' }}>Building Breakdown</div>
+          <div style={{ fontWeight:800, color:'#1e293b' }}>Building Breakdown</div>
           <div style={{ fontSize:12, color:'#64748b' }}>Live from current room and occupancy data</div>
         </div>
         <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit, minmax(260px, 1fr))', gap:14 }}>
@@ -257,7 +259,7 @@ function Dashboard() {
                 </div>
                 <div style={{ display:'flex', flexDirection:'column', alignItems:'flex-end', gap:4 }}>
                   <span style={{ fontSize:11, fontWeight:800, color:'#1e3a8a', background:'#dbeafe', borderRadius:999, padding:'3px 8px' }}>{b.code}</span>
-                  <span style={{ fontSize:11, fontWeight:800, color:'#1e315f', background:'#e0e7ff', borderRadius:999, padding:'2px 8px' }}>{b.occupancyPct}% occ</span>
+                  <span style={{ fontSize:11, fontWeight:800, color:'#1e293b', background:'#e0e7ff', borderRadius:999, padding:'2px 8px' }}>{b.occupancyPct}% occ</span>
                 </div>
               </div>
 
@@ -273,7 +275,7 @@ function Dashboard() {
               </div>
 
               <div style={{ height:11, background:'#e8eef7', borderRadius:999, overflow:'hidden', position:'relative' }}>
-                <div style={{ width:`${b.occupancyPct}%`, height:'100%', background:'linear-gradient(90deg, #60a5fa 0%, #2563eb 45%, #1d4ed8 100%)' }} />
+                <div style={{ width:`${b.occupancyPct}%`, height:'100%', background:'linear-gradient(90deg, #a5b4fc 0%, #6366f1 45%, #4338ca 100%)' }} />
               </div>
             </div>
           ))}

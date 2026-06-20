@@ -9,7 +9,7 @@ const ACTION_STYLES = {
   'Check In': { bg: '#dcfce7', text: '#15803d' },
   'Check Out': { bg: '#fee2e2', text: '#dc2626' },
   Swap: { bg: '#ede9fe', text: '#7c3aed' },
-  Move: { bg: '#dbeafe', text: '#2563eb' },
+  Move: { bg: '#dbeafe', text: '#6366f1' },
   Edit: { bg: '#fef3c7', text: '#b45309' },
 };
 
@@ -83,7 +83,7 @@ function StayHistory() {
     <div style={{ width: '100%', maxWidth: '100%', margin: 0, padding: '24px 32px', background: 'none', fontFamily: 'Inter, Segoe UI, Arial, sans-serif', boxSizing: 'border-box', minHeight: '100vh' }}>
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 16, marginBottom: 20, flexWrap: 'wrap' }}>
         <div>
-          <h1 style={{ fontWeight: 800, fontSize: '1.7rem', color: '#1e315f', margin: 0, letterSpacing: '-0.4px' }}>Stay History</h1>
+          <h1 style={{ fontWeight: 800, fontSize: '1.7rem', color: '#1e293b', margin: 0, letterSpacing: '-0.4px' }}>Stay History</h1>
           <p style={{ margin: '6px 0 0', color: '#94a3b8', fontSize: 13 }}>
             {filtered.length} of {stayHistory.length} recorded accommodation activities
           </p>
@@ -109,7 +109,7 @@ function StayHistory() {
                 borderRadius: 999,
                 border: isActive ? '1px solid #2563eb' : '1px solid #d7e1ef',
                 background: isActive ? '#dbeafe' : '#fff',
-                color: isActive ? '#1d4ed8' : '#475569',
+                color: isActive ? '#4338ca' : '#475569',
                 fontWeight: 700,
                 fontSize: 13,
                 cursor: 'pointer',
@@ -167,7 +167,7 @@ function StayHistory() {
                   ) : null}
                 </div>
 
-                <div style={{ color: '#2563eb', fontWeight: 800, fontSize: 13 }}>
+                <div style={{ color: '#6366f1', fontWeight: 800, fontSize: 13 }}>
                   {item.roomId || '-'}
                   {item.bedNo ? <div style={{ color: '#94a3b8', fontWeight: 600, fontSize: 11, marginTop: 2 }}>Bed {item.bedNo}</div> : null}
                 </div>

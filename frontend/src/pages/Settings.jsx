@@ -88,7 +88,7 @@ function ResultDialog({ open, title, message, onClose }) {
             <button
               type="button"
               onClick={onClose}
-              style={{ padding: '10px 14px', borderRadius: 10, border: 'none', background: '#2563eb', color: '#fff', fontWeight: 800, cursor: 'pointer' }}
+              style={{ padding: '10px 14px', borderRadius: 10, border: 'none', background: '#6366f1', color: '#fff', fontWeight: 800, cursor: 'pointer' }}
             >
               OK
             </button>
@@ -599,7 +599,7 @@ function Settings({ user, setUser }) {
 
   return (
     <div className="page-container" style={{ width: '100%', maxWidth: '100%', margin: 0, padding: '24px 32px 24px 32px', background: 'none', fontFamily: 'Inter, Segoe UI, Arial, sans-serif', boxSizing: 'border-box' }}>
-      <div style={{ background: 'linear-gradient(125deg, #0f172a 0%, #1e3a8a 45%, #0ea5e9 100%)', color: '#fff', borderRadius: 18, padding: '24px 26px', boxShadow: '0 16px 32px rgba(15,23,42,.18)', marginBottom: 18 }}>
+      <div style={{ background: 'linear-gradient(135deg, #1e1b4b 0%, #4f46e5 52%, #0891b2 100%)', color: '#fff', borderRadius: 16, padding: '22px 26px', boxShadow: '0 12px 32px rgba(79,70,229,0.28)', marginBottom: 18 }}>
         <div style={{ fontSize: 12, opacity: 0.92, letterSpacing: 0.5, textTransform: 'uppercase', fontWeight: 700 }}>System Control Center</div>
         <div style={{ display: 'flex', justifyContent: 'space-between', gap: 16, alignItems: 'flex-end', flexWrap: 'wrap', marginTop: 8 }}>
           <div>
@@ -613,16 +613,16 @@ function Settings({ user, setUser }) {
       </div>
 
       {notice ? (
-        <div style={{ marginBottom: 16, background: '#eff6ff', color: '#1d4ed8', border: '1px solid #bfdbfe', borderRadius: 12, padding: '12px 14px', fontWeight: 700 }}>
+        <div style={{ marginBottom: 16, background: '#eef2ff', color: '#4338ca', border: '1px solid #c7d2fe', borderRadius: 12, padding: '12px 14px', fontWeight: 700 }}>
           {notice}
         </div>
       ) : null}
 
       <div style={cardStyle}>
-        <h2 style={{ fontWeight: 800, fontSize: '1.25rem', color: '#1e315f', margin: 0 }}>My Access</h2>
+        <h2 style={{ fontWeight: 800, fontSize: '1.25rem', color: '#1e293b', margin: 0 }}>My Access</h2>
         <p style={{ color: '#64748b', fontWeight: 600, margin: '6px 0 16px' }}>Your current permission level in the accommodation system.</p>
 
-        <div style={{ display: 'inline-flex', padding: '8px 14px', borderRadius: 999, background: '#eef2ff', color: '#3730a3', fontWeight: 900, fontSize: 13, marginBottom: 14 }}>
+        <div style={{ display: 'inline-flex', padding: '8px 14px', borderRadius: 999, background: '#eef2ff', color: '#4338ca', fontWeight: 900, fontSize: 13, marginBottom: 14 }}>
           {user?.role || 'Viewer'}
         </div>
 
@@ -636,7 +636,7 @@ function Settings({ user, setUser }) {
           <div style={cardStyle}>
             <div style={{ display: 'flex', justifyContent: 'space-between', gap: 14, alignItems: 'center', flexWrap: 'wrap', marginBottom: 16 }}>
               <div>
-                <h2 style={{ fontWeight: 800, fontSize: '1.25rem', color: '#1e315f', margin: 0 }}>User Access Management</h2>
+                <h2 style={{ fontWeight: 800, fontSize: '1.25rem', color: '#1e293b', margin: 0 }}>User Access Management</h2>
                 <p style={{ color: '#64748b', fontWeight: 600, margin: '6px 0 0' }}>Manage roles, send password reset emails, and remove users safely.</p>
               </div>
               <input
@@ -651,9 +651,9 @@ function Settings({ user, setUser }) {
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 12, marginBottom: 18 }}>
               {roleDescriptions.map(item => (
                 <div key={item.role} style={{ borderRadius: 14, border: '1px solid #dbe4f0', background: '#f8fbff', padding: '14px 16px' }}>
-                  <div style={{ fontWeight: 900, color: '#1e315f', fontSize: 16 }}>{item.role}</div>
+                  <div style={{ fontWeight: 900, color: '#1e293b', fontSize: 16 }}>{item.role}</div>
                   <div style={{ marginTop: 4, color: '#64748b', fontSize: 13, minHeight: 36 }}>{item.desc}</div>
-                  <div style={{ marginTop: 10, display: 'inline-flex', padding: '4px 10px', borderRadius: 999, background: '#e0e7ff', color: '#3730a3', fontWeight: 800, fontSize: 12 }}>
+                  <div style={{ marginTop: 10, display: 'inline-flex', padding: '4px 10px', borderRadius: 999, background: '#e0e7ff', color: '#4338ca', fontWeight: 800, fontSize: 12 }}>
                     {roleCounts[item.role]} users
                   </div>
                 </div>
@@ -683,7 +683,7 @@ function Settings({ user, setUser }) {
                       </div>
                       <div style={{ fontWeight: 700, color: item.emailConfirmed ? '#166534' : '#b45309' }}>{item.emailConfirmed ? 'Confirmed' : 'Pending'}</div>
                       <div>
-                        <span style={{ display: 'inline-flex', padding: '5px 10px', borderRadius: 999, background: '#eef2ff', color: '#3730a3', fontWeight: 800, fontSize: 12 }}>{item.role}</span>
+                        <span style={{ display: 'inline-flex', padding: '5px 10px', borderRadius: 999, background: '#eef2ff', color: '#4338ca', fontWeight: 800, fontSize: 12 }}>{item.role}</span>
                       </div>
                       <div style={{ display: 'grid', gap: 8 }}>
                         <select value={selectedRole} onChange={e => handleRoleSelectionChange(item.id, e.target.value)} style={inputStyle} disabled={isBusyUser}>
@@ -748,14 +748,14 @@ function Settings({ user, setUser }) {
           <div style={cardStyle}>
             <div style={{ display: 'flex', justifyContent: 'space-between', gap: 14, alignItems: 'center', flexWrap: 'wrap', marginBottom: 14 }}>
               <div>
-                <h2 style={{ fontWeight: 800, fontSize: '1.2rem', color: '#1e315f', margin: 0 }}>System Health</h2>
+                <h2 style={{ fontWeight: 800, fontSize: '1.2rem', color: '#1e293b', margin: 0 }}>System Health</h2>
                 <p style={{ color: '#64748b', fontWeight: 600, margin: '6px 0 0' }}>Backend integrity snapshot for live occupancy and stay history.</p>
               </div>
               <button
                 type="button"
                 onClick={handleRefreshHealth}
                 disabled={healthLoading}
-                style={{ padding: '10px 14px', borderRadius: 10, border: 'none', background: healthLoading ? '#cbd5e1' : '#1d4ed8', color: '#fff', fontWeight: 800, cursor: healthLoading ? 'not-allowed' : 'pointer' }}
+                style={{ padding: '10px 14px', borderRadius: 10, border: 'none', background: healthLoading ? '#cbd5e1' : '#6366f1', color: '#fff', fontWeight: 800, cursor: healthLoading ? 'not-allowed' : 'pointer' }}
               >
                 {healthLoading ? 'Refreshing...' : 'Refresh Health'}
               </button>
@@ -770,15 +770,15 @@ function Settings({ user, setUser }) {
               </div>
               <div style={{ borderRadius: 14, border: '1px solid #dbe4f0', background: '#f8fbff', padding: '14px 16px' }}>
                 <div style={{ fontSize: 12, color: '#64748b', fontWeight: 800, textTransform: 'uppercase' }}>Active Occupants</div>
-                <div style={{ marginTop: 8, fontWeight: 900, fontSize: 18, color: '#1e315f' }}>{healthSummary?.activeOccupants ?? '-'}</div>
+                <div style={{ marginTop: 8, fontWeight: 900, fontSize: 18, color: '#1e293b' }}>{healthSummary?.activeOccupants ?? '-'}</div>
               </div>
               <div style={{ borderRadius: 14, border: '1px solid #dbe4f0', background: '#f8fbff', padding: '14px 16px' }}>
                 <div style={{ fontSize: 12, color: '#64748b', fontWeight: 800, textTransform: 'uppercase' }}>Total Occupancy Rows</div>
-                <div style={{ marginTop: 8, fontWeight: 900, fontSize: 18, color: '#1e315f' }}>{healthSummary?.totalRows ?? '-'}</div>
+                <div style={{ marginTop: 8, fontWeight: 900, fontSize: 18, color: '#1e293b' }}>{healthSummary?.totalRows ?? '-'}</div>
               </div>
               <div style={{ borderRadius: 14, border: '1px solid #dbe4f0', background: '#f8fbff', padding: '14px 16px' }}>
                 <div style={{ fontSize: 12, color: '#64748b', fontWeight: 800, textTransform: 'uppercase' }}>Stay History Entries</div>
-                <div style={{ marginTop: 8, fontWeight: 900, fontSize: 18, color: '#1e315f' }}>{healthSummary?.stayHistoryEntries ?? '-'}</div>
+                <div style={{ marginTop: 8, fontWeight: 900, fontSize: 18, color: '#1e293b' }}>{healthSummary?.stayHistoryEntries ?? '-'}</div>
               </div>
             </div>
 
@@ -809,7 +809,7 @@ function Settings({ user, setUser }) {
           <div style={cardStyle}>
             <div style={{ display: 'flex', justifyContent: 'space-between', gap: 14, alignItems: 'center', flexWrap: 'wrap', marginBottom: 14 }}>
               <div>
-                <h2 style={{ fontWeight: 800, fontSize: '1.2rem', color: '#1e315f', margin: 0 }}>Backup & Restore</h2>
+                <h2 style={{ fontWeight: 800, fontSize: '1.2rem', color: '#1e293b', margin: 0 }}>Backup & Restore</h2>
                 <p style={{ color: '#64748b', fontWeight: 600, margin: '6px 0 0' }}>
                   Daily automatic backups are stored in the database, and you can create/restore manual snapshots any time.
                 </p>
@@ -827,7 +827,7 @@ function Settings({ user, setUser }) {
                   type="button"
                   onClick={handleCreateBackup}
                   disabled={backupsBusy}
-                  style={{ padding: '10px 14px', borderRadius: 10, border: 'none', background: backupsBusy ? '#cbd5e1' : '#1d4ed8', color: '#fff', fontWeight: 800, cursor: backupsBusy ? 'not-allowed' : 'pointer' }}
+                  style={{ padding: '10px 14px', borderRadius: 10, border: 'none', background: backupsBusy ? '#cbd5e1' : '#6366f1', color: '#fff', fontWeight: 800, cursor: backupsBusy ? 'not-allowed' : 'pointer' }}
                 >
                   {backupsBusy ? 'Working...' : 'Create Backup Now'}
                 </button>
@@ -837,13 +837,13 @@ function Settings({ user, setUser }) {
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 12, marginBottom: 14 }}>
               <div style={{ borderRadius: 14, border: '1px solid #dbe4f0', background: '#f8fbff', padding: '14px 16px' }}>
                 <div style={{ fontSize: 12, color: '#64748b', fontWeight: 800, textTransform: 'uppercase' }}>Latest Backup</div>
-                <div style={{ marginTop: 8, fontWeight: 900, fontSize: 16, color: '#1e315f' }}>
+                <div style={{ marginTop: 8, fontWeight: 900, fontSize: 16, color: '#1e293b' }}>
                   {backups[0]?.createdAt ? formatDate(backups[0].createdAt) : 'None'}
                 </div>
               </div>
               <div style={{ borderRadius: 14, border: '1px solid #dbe4f0', background: '#f8fbff', padding: '14px 16px' }}>
                 <div style={{ fontSize: 12, color: '#64748b', fontWeight: 800, textTransform: 'uppercase' }}>Backups Available</div>
-                <div style={{ marginTop: 8, fontWeight: 900, fontSize: 18, color: '#1e315f' }}>{backups.length}</div>
+                <div style={{ marginTop: 8, fontWeight: 900, fontSize: 18, color: '#1e293b' }}>{backups.length}</div>
               </div>
             </div>
 
@@ -880,7 +880,7 @@ function Settings({ user, setUser }) {
           </div>
 
           <div style={cardStyle}>
-            <h2 style={{ fontWeight: 800, fontSize: '1.2rem', color: '#1e315f', marginBottom: 10 }}>Test Data Reset</h2>
+            <h2 style={{ fontWeight: 800, fontSize: '1.2rem', color: '#1e293b', marginBottom: 10 }}>Test Data Reset</h2>
             <p style={{ color: '#64748b', fontWeight: 600, margin: '0 0 16px' }}>
               Clear live occupancy and stay history while keeping all room cards and room master data untouched.
             </p>
@@ -894,7 +894,7 @@ function Settings({ user, setUser }) {
           </div>
 
           <div style={cardStyle}>
-            <h2 style={{ fontWeight: 800, fontSize: '1.2rem', color: '#1e315f', marginBottom: 10 }}>Add Room</h2>
+            <h2 style={{ fontWeight: 800, fontSize: '1.2rem', color: '#1e293b', marginBottom: 10 }}>Add Room</h2>
             <p style={{ color: '#64748b', fontWeight: 600, margin: '0 0 18px' }}>
               Add a new room to the live room master so it appears in the Rooms section for future use.
             </p>

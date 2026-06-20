@@ -193,47 +193,44 @@ function Layout({ user, onLogout }) {
       >
         <header
           style={{
-            height: 70,
-            minHeight: 70,
-            background: '#fff',
-            borderBottom: '1.5px solid #e3eafc',
-            boxShadow: '0 2px 12px rgba(30,40,90,0.06)',
+            height: 62,
+            minHeight: 62,
+            background: '#ffffff',
+            borderBottom: '1px solid #e2e8f0',
             display: 'flex',
             alignItems: 'center',
-            padding: '0 32px',
+            padding: '0 24px',
             position: 'sticky',
             top: 0,
             zIndex: 20,
-            gap: 18,
+            gap: 14,
           }}
         >
           <button
             onClick={() => setSidebarCollapsed((prev) => !prev)}
             style={{
-              background: sidebarCollapsed ? '#e3eafc' : '#f0f4ff',
-              border: '1.5px solid #d0d7e2',
-              color: '#1e315f',
-              fontSize: 24,
+              width: 34, height: 34,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              background: 'transparent',
+              border: '1px solid #e2e8f0',
+              color: '#64748b',
               cursor: 'pointer',
               borderRadius: 8,
-              padding: 6,
-              marginRight: 18,
-              boxShadow: sidebarCollapsed ? '0 2px 8px #d0d7e2' : 'none',
-              transition: 'all 0.18s',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
+              transition: 'all 0.15s',
+              flexShrink: 0,
             }}
+            onMouseEnter={e => { e.currentTarget.style.background = '#f1f5f9'; e.currentTarget.style.color = '#1e293b'; }}
+            onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#64748b'; }}
             title={sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
             aria-label="Toggle sidebar"
           >
-            <svg width="28" height="28" fill="none" viewBox="0 0 28 28">
-              <rect x="4" y="5" width="20" height="18" rx="4" fill="#1e315f" />
-              <rect x="8" y="9" width="3" height="10" rx="1.5" fill="#fff" />
+            <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+              <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
             </svg>
           </button>
-          <div style={{ flex: 1, display: 'flex', justifyContent: 'center' }}>
-            <span style={{ fontWeight: 900, fontSize: 28, color: '#1e315f', letterSpacing: 0.5, textAlign: 'center' }}>TIC Meals & Stay</span>
+          <div style={{ flex: 1, display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 10 }}>
+            <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#6366f1', animation: 'pulseDot 2s ease-in-out infinite' }} />
+            <span style={{ fontWeight: 800, fontSize: 17, color: '#1e293b', letterSpacing: 0.2 }}>TIC Meals &amp; Stay</span>
           </div>
         </header>
 

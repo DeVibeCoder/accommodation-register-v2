@@ -120,7 +120,7 @@ function ExclusionModal({ open, onClose, occupants, canEdit, onSaved, editEntry 
       <div style={{ background: 'linear-gradient(180deg,#ffffff 0%,#f8fbff 100%)', borderRadius: 16, width: '100%', maxWidth: 560, boxShadow: '0 20px 60px rgba(0,0,0,0.2)', border: '1px solid #dbeafe', fontFamily: 'Inter,Segoe UI,Arial,sans-serif', animation: 'scaleIn 0.22s cubic-bezier(0.22,1,0.36,1) both' }}>
         <div style={{ padding: '18px 24px 15px', borderBottom: '1px solid #dbeafe', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'linear-gradient(130deg,#eff6ff 0%,#f8fbff 100%)', borderRadius: '16px 16px 0 0' }}>
           <div>
-            <div style={{ fontWeight: 800, fontSize: '1.1rem', color: '#1e315f' }}>{isEditing ? 'Edit Meal Exclusion' : 'Add Meal Exclusion'}</div>
+            <div style={{ fontWeight: 800, fontSize: '1.1rem', color: '#1e293b' }}>{isEditing ? 'Edit Meal Exclusion' : 'Add Meal Exclusion'}</div>
             <div style={{ fontSize: 12, color: '#64748b', marginTop: 2 }}>{isEditing ? 'Update exclusion details for selected occupant' : 'Exclude a staff member from meals for a date range'}</div>
           </div>
           <button onClick={handleClose} style={{ background: 'none', border: 'none', fontSize: 22, cursor: 'pointer', color: '#64748b', lineHeight: 1 }}>X</button>
@@ -169,7 +169,7 @@ function ExclusionModal({ open, onClose, occupants, canEdit, onSaved, editEntry 
           </div>
           <div style={{ display: 'flex', gap: 10, marginTop: 20, justifyContent: 'flex-end' }}>
             <button type="button" onClick={handleClose} style={{ padding: '9px 18px', borderRadius: 8, border: '1px solid #cbd5e1', background: '#fff', color: '#334155', fontWeight: 700, cursor: 'pointer', fontSize: 13 }}>Cancel</button>
-            <button type="submit" disabled={!canEdit || saving} style={{ padding: '9px 22px', borderRadius: 8, border: 'none', background: saving ? '#93c5fd' : '#2563eb', color: '#fff', fontWeight: 700, cursor: saving ? 'not-allowed' : 'pointer', fontSize: 13 }}>
+            <button type="submit" disabled={!canEdit || saving} style={{ padding: '9px 22px', borderRadius: 8, border: 'none', background: saving ? '#93c5fd' : '#6366f1', color: '#fff', fontWeight: 700, cursor: saving ? 'not-allowed' : 'pointer', fontSize: 13 }}>
               {saving ? 'Saving...' : isEditing ? 'Update Exclusion' : 'Save Exclusion'}
             </button>
           </div>
@@ -375,7 +375,7 @@ function ImportModal({ open, onClose, occupants, onImported }) {
       <div style={{ background: '#fff', borderRadius: 16, width: '100%', maxWidth: 860, maxHeight: '88vh', overflow: 'hidden', display: 'flex', flexDirection: 'column', boxShadow: '0 20px 60px rgba(0,0,0,0.2)', fontFamily: 'Inter,Segoe UI,Arial,sans-serif' }}>
         <div style={{ padding: '18px 22px', borderBottom: '1px solid #e2e8f0', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'linear-gradient(130deg,#f0fdf4 0%,#f8fbff 100%)', borderRadius: '16px 16px 0 0' }}>
           <div>
-            <div style={{ fontWeight: 800, color: '#1e315f', fontSize: '1.05rem' }}>Bulk Import Meal Exclusions</div>
+            <div style={{ fontWeight: 800, color: '#1e293b', fontSize: '1.05rem' }}>Bulk Import Meal Exclusions</div>
             <div style={{ fontSize: 12, color: '#64748b', marginTop: 2 }}>Upload a CSV to add multiple exclusions at once - existing data is never overwritten</div>
           </div>
           <button onClick={handleClose} style={{ background: 'none', border: 'none', fontSize: 22, cursor: 'pointer', color: '#64748b', lineHeight: 1 }}>X</button>
@@ -392,7 +392,7 @@ function ImportModal({ open, onClose, occupants, onImported }) {
           <div style={{ background: '#f8fafc', border: '2px dashed #cbd5e1', borderRadius: 10, padding: '16px', marginBottom: 14, textAlign: 'center' }}>
             <input ref={fileRef} type="file" accept=".csv,text/csv" onChange={handleFile} style={{ display: 'none' }} id="csv-upload" />
             <label htmlFor="csv-upload" style={{ cursor: 'pointer', display: 'inline-block' }}>
-              <div style={{ fontSize: 13, color: '#2563eb', fontWeight: 700 }}>Click to select CSV file</div>
+              <div style={{ fontSize: 13, color: '#6366f1', fontWeight: 700 }}>Click to select CSV file</div>
               <div style={{ fontSize: 11, color: '#64748b', marginTop: 4 }}>Columns: name, staff_id, reason, from_date, to_date, notes</div>
               <div style={{ fontSize: 11, color: '#64748b' }}>Reasons accepted: Off Site, Vacation, Restaurant, Exit | Dates: DD-MM-YYYY (DD/MM/YYYY also accepted)</div>
             </label>
@@ -457,7 +457,7 @@ function ImportModal({ open, onClose, occupants, onImported }) {
             {result ? 'Close' : 'Cancel'}
           </button>
           {parsed && !result ? (
-            <button onClick={handleImport} disabled={importing || validCount === 0} style={{ padding: '9px 22px', borderRadius: 8, border: 'none', background: importing || validCount === 0 ? '#93c5fd' : '#2563eb', color: '#fff', fontWeight: 700, cursor: importing || validCount === 0 ? 'not-allowed' : 'pointer', fontSize: 13 }}>
+            <button onClick={handleImport} disabled={importing || validCount === 0} style={{ padding: '9px 22px', borderRadius: 8, border: 'none', background: importing || validCount === 0 ? '#93c5fd' : '#6366f1', color: '#fff', fontWeight: 700, cursor: importing || validCount === 0 ? 'not-allowed' : 'pointer', fontSize: 13 }}>
               {importing ? 'Importing...' : `Import ${validCount} Exclusion${validCount !== 1 ? 's' : ''}`}
             </button>
           ) : null}
@@ -494,7 +494,7 @@ function ExclusionHistoryModal({ open, onClose }) {
       <div style={{ background: '#fff', borderRadius: 16, width: '100%', maxWidth: 980, boxShadow: '0 20px 60px rgba(0,0,0,0.2)', maxHeight: '84vh', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
         <div style={{ padding: '18px 22px', borderBottom: '1px solid #e2e8f0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div>
-            <div style={{ fontWeight: 800, color: '#1e315f', fontSize: '1.05rem' }}>Exclusion History</div>
+            <div style={{ fontWeight: 800, color: '#1e293b', fontSize: '1.05rem' }}>Exclusion History</div>
             <div style={{ fontSize: 12, color: '#64748b', marginTop: 2 }}>Past exclusions that have reached their to-date</div>
           </div>
           <button onClick={onClose} style={{ background: 'none', border: 'none', fontSize: 22, cursor: 'pointer', color: '#64748b', lineHeight: 1 }}>X</button>
@@ -557,7 +557,7 @@ function ExclusionTable({ rows, canEdit, closingId, onClose, onEdit, emptyText }
                   <td style={{ ...tdStyle, textAlign: 'right' }}>
                     {canEdit ? (
                       <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 6 }}>
-                        <button onClick={() => onEdit(item)} style={{ padding: '5px 10px', borderRadius: 6, border: '1px solid #93c5fd', background: '#eff6ff', color: '#1d4ed8', fontWeight: 700, cursor: 'pointer', fontSize: 12 }}>Edit</button>
+                        <button onClick={() => onEdit(item)} style={{ padding: '5px 10px', borderRadius: 6, border: '1px solid #93c5fd', background: '#eff6ff', color: '#4338ca', fontWeight: 700, cursor: 'pointer', fontSize: 12 }}>Edit</button>
                         <button onClick={() => onClose(item.id)} disabled={closingId === item.id} style={{ padding: '5px 10px', borderRadius: 6, border: '1px solid #fca5a5', background: '#fff', color: '#dc2626', fontWeight: 700, cursor: closingId === item.id ? 'not-allowed' : 'pointer', fontSize: 12 }}>
                           {closingId === item.id ? 'Removing...' : 'Remove'}
                         </button>
@@ -758,7 +758,7 @@ function MealExclusion() {
         </div>
         <div style={{ background: 'linear-gradient(135deg,#e0ecff 0%,#d9f3ff 100%)', borderRadius: 14, border: '1px solid rgba(30,58,138,0.1)', padding: '14px 20px', flex: '1 1 170px', boxShadow: '0 8px 18px rgba(30,58,138,0.1)', animation: 'fadeUp 0.38s cubic-bezier(0.22,1,0.36,1) both', animationDelay: '65ms' }}>
           <div style={{ fontSize: 11, color: '#1e3a8a', fontWeight: 800, textTransform: 'uppercase' }}>Upcoming</div>
-          <div style={{ fontSize: 28, fontWeight: 900, color: '#1e315f', marginTop: 4 }}>{upcomingCount}</div>
+          <div style={{ fontSize: 28, fontWeight: 900, color: '#1e293b', marginTop: 4 }}>{upcomingCount}</div>
         </div>
         <div style={{ background: 'linear-gradient(135deg,#f3e8ff 0%,#ede9fe 100%)', borderRadius: 14, border: '1px solid rgba(107,33,168,0.1)', padding: '14px 20px', flex: '1 1 170px', boxShadow: '0 8px 18px rgba(107,33,168,0.1)', animation: 'fadeUp 0.38s cubic-bezier(0.22,1,0.36,1) both', animationDelay: '130ms' }}>
           <div style={{ fontSize: 11, color: '#6b21a8', fontWeight: 800, textTransform: 'uppercase' }}>Meal Headcount</div>
@@ -767,19 +767,19 @@ function MealExclusion() {
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginLeft: 'auto', flexWrap: 'wrap', background: '#fff', border: '1px solid #dbe4f0', borderRadius: 14, padding: 8, boxShadow: '0 8px 20px rgba(15,23,42,0.06)' }}>
           {canEditMeals ? (
             <>
-              <button onClick={openAddModal} style={{ padding: '11px 16px', borderRadius: 10, border: 'none', background: '#2563eb', color: '#fff', fontWeight: 800, fontSize: 13, cursor: 'pointer', whiteSpace: 'nowrap', boxShadow: '0 2px 8px rgba(37,99,235,0.25)' }}>+ Add Exclusion</button>
+              <button onClick={openAddModal} style={{ padding: '11px 16px', borderRadius: 10, border: 'none', background: '#6366f1', color: '#fff', fontWeight: 800, fontSize: 13, cursor: 'pointer', whiteSpace: 'nowrap', boxShadow: '0 2px 8px rgba(37,99,235,0.25)' }}>+ Add Exclusion</button>
               <button onClick={() => setImportOpen(true)} style={{ padding: '11px 16px', borderRadius: 10, border: 'none', background: '#16a34a', color: '#fff', fontWeight: 800, fontSize: 13, cursor: 'pointer', whiteSpace: 'nowrap', boxShadow: '0 2px 8px rgba(22,163,74,0.25)' }}>Import CSV</button>
               <button onClick={handleRemoveDuplicates} disabled={deduping} style={{ padding: '11px 16px', borderRadius: 10, border: '1px solid #fdba74', background: '#fff7ed', color: '#c2410c', fontWeight: 800, fontSize: 13, cursor: deduping ? 'not-allowed' : 'pointer', whiteSpace: 'nowrap' }}>
                 {deduping ? 'Removing Duplicates...' : 'Remove Duplicates'}
               </button>
             </>
           ) : null}
-          <button onClick={() => setHistoryOpen(true)} style={{ padding: '11px 16px', borderRadius: 10, border: '1px solid #93c5fd', background: '#eff6ff', color: '#1d4ed8', fontWeight: 800, fontSize: 13, cursor: 'pointer', whiteSpace: 'nowrap' }}>Exclusion History</button>
+          <button onClick={() => setHistoryOpen(true)} style={{ padding: '11px 16px', borderRadius: 10, border: '1px solid #93c5fd', background: '#eff6ff', color: '#4338ca', fontWeight: 800, fontSize: 13, cursor: 'pointer', whiteSpace: 'nowrap' }}>Exclusion History</button>
         </div>
       </div>
 
       {notice ? (
-        <div style={{ marginBottom: 14, padding: '10px 14px', border: '1px solid #bfdbfe', borderRadius: 10, background: '#eff6ff', color: '#1d4ed8', fontWeight: 700, fontSize: 13, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div style={{ marginBottom: 14, padding: '10px 14px', border: '1px solid #bfdbfe', borderRadius: 10, background: '#eff6ff', color: '#4338ca', fontWeight: 700, fontSize: 13, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <span>{notice}</span>
           <button onClick={() => setNotice('')} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#93c5fd', fontSize: 18, lineHeight: 1 }}>X</button>
         </div>
@@ -790,7 +790,7 @@ function MealExclusion() {
         {/* Tab bar */}
         <div style={{ display: 'flex', borderBottom: '1px solid #e2e8f0', background: 'linear-gradient(180deg, #f8fafc 0%, #f3f7fd 100%)', overflowX: 'auto' }}>
           {tabBtn('Active Exclusions', 'active', activeCount, '#ea580c')}
-          {tabBtn('Upcoming Exclusions', 'upcoming', upcomingCount, '#2563eb')}
+          {tabBtn('Upcoming Exclusions', 'upcoming', upcomingCount, '#6366f1')}
         </div>
         {/* Tab content */}
         <div style={{ minHeight: 420 }}>

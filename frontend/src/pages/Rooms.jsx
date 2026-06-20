@@ -282,7 +282,7 @@ function Rooms() {
     >
       {/* Filters */}
       <div style={{ marginBottom: 24, width: '100%' }}>
-        <h1 style={{ fontWeight: 900, fontSize: '2rem', margin: '0 0 16px 0', color: '#1e315f', letterSpacing: 0.5 }}>
+        <h1 style={{ fontWeight: 900, fontSize: '2rem', margin: '0 0 16px 0', color: '#1e293b', letterSpacing: 0.5 }}>
           Rooms <span style={{ fontWeight: 400, fontSize: '1.1rem', opacity: 0.7 }}>(Room Master)</span>
         </h1>
         <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'nowrap', width: '100%' }}>
@@ -308,7 +308,7 @@ function Rooms() {
           </select>
           <button
             onClick={() => { setBuilding('All Buildings'); setAcType('All'); setShareType('All'); setStatus('All'); setSearch(''); }}
-            style={{ padding: '10px 20px', borderRadius: 12, border: 'none', background: '#e3eafc', color: '#1e315f', fontWeight: 700, marginLeft: 6, fontSize: 15, cursor: 'pointer' }}
+            style={{ padding: '10px 20px', borderRadius: 12, border: 'none', background: '#e3eafc', color: '#1e293b', fontWeight: 700, marginLeft: 6, fontSize: 15, cursor: 'pointer' }}
           >
             Clear Filters
           </button>
@@ -357,7 +357,7 @@ function Rooms() {
           let cardBg = '#ffffff';
           let cardBorder = '#0000002e';
           let cardShadow = '0 2px 10px rgba(30,40,90,0.06)';
-          let cardText = '#1e315f';
+          let cardText = '#1e293b';
           let mutedText = '#6b7a94';
           let floorText = '#6b7a94';
           let statusColor = '#3b82f6';
@@ -575,7 +575,7 @@ function Rooms() {
             </div>
             <div style={{ marginTop: 16, display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
               <button type="button" onClick={closeEditModal} style={{ padding: '8px 14px', borderRadius: 9, border: '1px solid #d4dded', background: '#f8faff', color: '#40527a', fontWeight: 700, cursor: 'pointer', fontSize: 14 }}>Cancel</button>
-              <button type="button" onClick={saveRoomEdits} style={{ padding: '8px 14px', borderRadius: 9, border: 'none', background: '#315fcf', color: '#ffffff', fontWeight: 800, cursor: 'pointer', fontSize: 14 }}>Save</button>
+              <button type="button" onClick={saveRoomEdits} style={{ padding: '8px 14px', borderRadius: 9, border: 'none', background: '#6366f1', color: '#ffffff', fontWeight: 800, cursor: 'pointer', fontSize: 14 }}>Save</button>
             </div>
           </div>
         </div>

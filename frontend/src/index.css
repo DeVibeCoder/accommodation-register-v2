@@ -15,7 +15,21 @@ body,
 
 body {
   font-family: 'Inter', 'Segoe UI', Arial, sans-serif;
-  background: #f5f7fa;
+  background: #f1f5f9;
+}
+
+/* ─── Design tokens (used by plain CSS classes below) ────────── */
+:root {
+  --primary:      #6366f1;
+  --primary-d:    #4338ca;
+  --primary-l:    #e0e7ff;
+  --accent:       #0891b2;
+  --surface:      #ffffff;
+  --bg:           #f1f5f9;
+  --border:       #e2e8f0;
+  --text:         #1e293b;
+  --muted:        #64748b;
+  --gradient-hdr: linear-gradient(135deg,#1e1b4b 0%,#4f46e5 52%,#0891b2 100%);
 }
 
 /* ─── Motion keyframes ──────────────────────────────────────── */

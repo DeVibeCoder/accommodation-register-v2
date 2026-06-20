@@ -20,7 +20,7 @@ const BUILDING_LABELS = {
   'VTV BUILDING': 'VTV Building',
 };
 const PERSON_TYPE_COLORS = {
-  Permanent: { bg: '#dbeafe', text: '#1d4ed8' },
+  Permanent: { bg: '#e0e7ff', text: '#1d4ed8' },
   Temporary:  { bg: '#fef9c3', text: '#a16207' },
   Project:    { bg: '#dcfce7', text: '#16a34a' },
 };
@@ -190,7 +190,7 @@ function SwapModal({ open, onClose, occupant, allOccupants, onSwap }) {
     <div onClick={onClose} style={{ position:'fixed',inset:0,zIndex:3000,background:'rgba(20,30,60,.55)',display:'flex',alignItems:'center',justifyContent:'center',animation:'fadeIn 0.18s ease both' }}>
       <div onClick={e=>e.stopPropagation()} style={{ background:'#fff',borderRadius:18,padding:'28px 32px',maxWidth:560,width:'95%',boxShadow:'0 8px 40px rgba(30,50,120,.18)',position:'relative',display:'flex',flexDirection:'column',maxHeight:'88vh',animation:'scaleIn 0.22s cubic-bezier(0.22,1,0.36,1) both' }}>
         <button onClick={onClose} style={{ position:'absolute',top:14,right:18,fontSize:22,border:'none',background:'none',cursor:'pointer',color:'#64748b' }}>X</button>
-        <h2 style={{ fontWeight:800,fontSize:'1.1rem',marginBottom:4,color:'#1e315f' }}>Swap Occupant</h2>
+        <h2 style={{ fontWeight:800,fontSize:'1.1rem',marginBottom:4,color:'#1e293b' }}>Swap Occupant</h2>
         <p style={{ fontSize:12,color:'#64748b',marginBottom:14 }}>
           Swapping <strong>{occupant.name}</strong> - {occupant.roomId} / Bed {occupant.bedNo}
         </p>
@@ -253,11 +253,11 @@ function SwapModal({ open, onClose, occupant, allOccupants, onSwap }) {
         )}
 
         <div style={{ display:'flex',justifyContent:'flex-end',gap:10 }}>
-          <button onClick={onClose} style={{ padding:'9px 26px',borderRadius:10,border:'none',background:'#e3eafc',color:'#1e315f',fontWeight:700,cursor:'pointer' }}>Cancel</button>
+          <button onClick={onClose} style={{ padding:'9px 26px',borderRadius:10,border:'none',background:'#e3eafc',color:'#1e293b',fontWeight:700,cursor:'pointer' }}>Cancel</button>
           <button
             disabled={targetId == null}
             onClick={() => { onSwap(occupant._id, targetId); onClose(); }}
-            style={{ padding:'9px 26px',borderRadius:10,border:'none',background:targetId!=null?'#3b82f6':'#93c5fd',color:'#fff',fontWeight:700,cursor:targetId!=null?'pointer':'not-allowed' }}
+            style={{ padding:'9px 26px',borderRadius:10,border:'none',background:targetId!=null?'#6366f1':'#93c5fd',color:'#fff',fontWeight:700,cursor:targetId!=null?'pointer':'not-allowed' }}
           >
             Confirm Swap
           </button>
@@ -280,7 +280,7 @@ function MoveModal({ open, onClose, occupant, allRooms, onMove }) {
     <div onClick={onClose} style={{ position:'fixed',inset:0,zIndex:3000,background:'rgba(20,30,60,.55)',display:'flex',alignItems:'center',justifyContent:'center',animation:'fadeIn 0.18s ease both' }}>
       <div onClick={e=>e.stopPropagation()} style={{ background:'#fff',borderRadius:18,padding:'32px 40px',maxWidth:520,width:'95%',boxShadow:'0 8px 40px rgba(30,50,120,.18)',position:'relative',animation:'scaleIn 0.22s cubic-bezier(0.22,1,0.36,1) both' }}>
         <button onClick={onClose} style={{ position:'absolute',top:16,right:20,fontSize:22,border:'none',background:'none',cursor:'pointer',color:'#64748b' }}>X</button>
-        <h2 style={{ fontWeight:800,fontSize:'1.15rem',marginBottom:8,color:'#1e315f' }}>Move Occupant</h2>
+        <h2 style={{ fontWeight:800,fontSize:'1.15rem',marginBottom:8,color:'#1e293b' }}>Move Occupant</h2>
         <p style={{ fontSize:13,color:'#64748b',marginBottom:20 }}>Moving <strong>{occupant.name}</strong> from {occupant.roomId} / Bed {occupant.bedNo}</p>
         <div style={{ display:'grid',gridTemplateColumns:'1fr 1fr',gap:16,marginBottom:24 }}>
           <label style={{ display:'flex',flexDirection:'column',fontWeight:600,fontSize:14,color:'#334155',gap:6 }}>Room
@@ -299,7 +299,7 @@ function MoveModal({ open, onClose, occupant, allRooms, onMove }) {
           </label>
         </div>
         <div style={{ display:'flex',justifyContent:'flex-end',gap:12 }}>
-          <button onClick={onClose} style={{ padding:'9px 28px',borderRadius:10,border:'none',background:'#e3eafc',color:'#1e315f',fontWeight:700,cursor:'pointer' }}>Cancel</button>
+          <button onClick={onClose} style={{ padding:'9px 28px',borderRadius:10,border:'none',background:'#e3eafc',color:'#1e293b',fontWeight:700,cursor:'pointer' }}>Cancel</button>
           <button disabled={!ready} onClick={()=>{ onMove(occupant._id,targetRoom,targetBed); onClose(); }} style={{ padding:'9px 28px',borderRadius:10,border:'none',background:ready?'#10b981':'#6ee7b7',color:'#fff',fontWeight:700,cursor:ready?'pointer':'not-allowed' }}>Confirm Move</button>
         </div>
       </div>
@@ -328,7 +328,7 @@ function EditOccupantModal({ open, onClose, occupant, onSave }) {
     <div onClick={onClose} style={{ position:'fixed',inset:0,zIndex:3000,background:'rgba(20,30,60,.55)',display:'flex',alignItems:'center',justifyContent:'center',animation:'fadeIn 0.18s ease both' }}>
       <div onClick={e=>e.stopPropagation()} style={{ background:'#fff',borderRadius:18,padding:'40px',maxWidth:700,width:'95%',boxShadow:'0 8px 40px rgba(30,50,120,.18)',position:'relative',animation:'scaleIn 0.22s cubic-bezier(0.22,1,0.36,1) both' }}>
         <button onClick={onClose} style={{ position:'absolute',top:16,right:20,fontSize:24,border:'none',background:'none',cursor:'pointer',color:'#94a3b8' }}>X</button>
-        <h2 style={{ fontWeight:800,fontSize:'1.3rem',marginBottom:32,color:'#1e315f',letterSpacing:'-0.3px' }}>Edit Occupant</h2>
+        <h2 style={{ fontWeight:800,fontSize:'1.3rem',marginBottom:32,color:'#1e293b',letterSpacing:'-0.3px' }}>Edit Occupant</h2>
         <div style={{ display:'grid',gridTemplateColumns:'1fr 1fr',gap:'18px 24px',marginBottom:32 }}>
           <label style={lbl2}>Person Type<select name="personType" value={form.personType} onChange={handle} style={inp2}><option value="Permanent">Permanent</option><option value="Temporary">Temporary</option><option value="Project">Project</option></select></label>
           <label style={lbl2}>Staff ID<input name="staffId" value={form.staffId} onChange={handle} style={inp2} /></label>
@@ -349,14 +349,14 @@ function EditOccupantModal({ open, onClose, occupant, onSave }) {
           <label style={lbl2}>Fasting<select name="fasting" value={String(form.fasting)} onChange={handleFasting} style={inp2}><option value="true">Yes</option><option value="false">No</option></select></label>
         </div>
         <div style={{ display:'flex',justifyContent:'flex-end',gap:12 }}>
-          <button onClick={onClose} style={{ padding:'10px 32px',borderRadius:10,border:'none',background:'#e3eafc',color:'#1e315f',fontWeight:700,cursor:'pointer',fontSize:14 }}>Cancel</button>
+          <button onClick={onClose} style={{ padding:'10px 32px',borderRadius:10,border:'none',background:'#e3eafc',color:'#1e293b',fontWeight:700,cursor:'pointer',fontSize:14 }}>Cancel</button>
           <button onClick={()=>{
             onSave({
               ...form,
               department: toDepartmentValue(form.departmentChoice, form.otherDepartment),
             });
             onClose();
-          }} style={{ padding:'10px 32px',borderRadius:10,border:'none',background:'#3b82f6',color:'#fff',fontWeight:700,cursor:'pointer',fontSize:14 }}>Save</button>
+          }} style={{ padding:'10px 32px',borderRadius:10,border:'none',background:'#6366f1',color:'#fff',fontWeight:700,cursor:'pointer',fontSize:14 }}>Save</button>
         </div>
       </div>
     </div>
@@ -369,10 +369,10 @@ function ConfirmModal({ open, onClose, onConfirm, title, message, confirmLabel='
   return (
     <div onClick={onClose} style={{ position:'fixed',inset:0,zIndex:3000,background:'rgba(20,30,60,.55)',display:'flex',alignItems:'center',justifyContent:'center',animation:'fadeIn 0.18s ease both' }}>
       <div onClick={e=>e.stopPropagation()} style={{ background:'#fff',borderRadius:18,padding:'32px 40px',maxWidth:420,width:'95%',boxShadow:'0 8px 40px rgba(30,50,120,.18)',animation:'scaleIn 0.22s cubic-bezier(0.22,1,0.36,1) both' }}>
-        <h2 style={{ fontWeight:800,fontSize:'1.1rem',marginBottom:10,color:'#1e315f' }}>{title}</h2>
+        <h2 style={{ fontWeight:800,fontSize:'1.1rem',marginBottom:10,color:'#1e293b' }}>{title}</h2>
         <p style={{ fontSize:14,color:'#64748b',marginBottom:28 }}>{message}</p>
         <div style={{ display:'flex',justifyContent:'flex-end',gap:12 }}>
-          <button onClick={onClose} style={{ padding:'9px 28px',borderRadius:10,border:'none',background:'#e3eafc',color:'#1e315f',fontWeight:700,cursor:'pointer' }}>Cancel</button>
+          <button onClick={onClose} style={{ padding:'9px 28px',borderRadius:10,border:'none',background:'#e3eafc',color:'#1e293b',fontWeight:700,cursor:'pointer' }}>Cancel</button>
           <button onClick={()=>{ onConfirm(); onClose(); }} style={{ padding:'9px 28px',borderRadius:10,border:'none',background:confirmColor,color:'#fff',fontWeight:700,cursor:'pointer' }}>{confirmLabel}</button>
         </div>
       </div>
@@ -393,7 +393,7 @@ function ActionToast({ notice, onClose }) {
   const isError = notice.type === 'error';
   return (
     <div style={{ position:'fixed',right:20,bottom:20,zIndex:3100,pointerEvents:'none' }}>
-      <div style={{ width:'min(380px, calc(100vw - 32px))',background:isError ? 'linear-gradient(135deg, #7f1d1d 0%, #dc2626 100%)' : 'linear-gradient(135deg, #1d4ed8 0%, #0f766e 100%)',color:'#fff',borderRadius:16,padding:'14px 16px',boxShadow:'0 18px 40px rgba(15,23,42,.24)',animation:'slideInRight 0.28s cubic-bezier(0.22,1,0.36,1) both',pointerEvents:'auto' }}>
+      <div style={{ width:'min(380px, calc(100vw - 32px))',background:isError ? 'linear-gradient(135deg, #7f1d1d 0%, #dc2626 100%)' : 'linear-gradient(135deg, #4338ca 0%, #0891b2 100%)',color:'#fff',borderRadius:16,padding:'14px 16px',boxShadow:'0 18px 40px rgba(15,23,42,.24)',animation:'slideInRight 0.28s cubic-bezier(0.22,1,0.36,1) both',pointerEvents:'auto' }}>
         <div style={{ display:'flex',alignItems:'flex-start',justifyContent:'space-between',gap:12 }}>
           <div>
             <div style={{ fontWeight:900,fontSize:14,marginBottom:4 }}>{notice.title || (isError ? 'Action Failed' : 'Action Completed')}</div>
@@ -1011,16 +1011,16 @@ function Occupancy() {
       {/* Header */}
       <div style={{ display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:20,flexWrap:'wrap',gap:12 }}>
         <div>
-          <h1 style={{ fontWeight:800,fontSize:'1.7rem',color:'#1e315f',margin:0,letterSpacing:'-0.5px' }}>Occupancy</h1>
+          <h1 style={{ fontWeight:800,fontSize:'1.7rem',color:'#1e293b',margin:0,letterSpacing:'-0.5px' }}>Occupancy</h1>
           <p style={{ margin:'4px 0 0',fontSize:13,color:'#94a3b8' }}>{filtered.length} of {occupants.length} active occupants</p>
         </div>
         <div style={{ display:'flex',gap:10,alignItems:'flex-start',flexWrap:'wrap' }}>
-          {canEditAccommodation ? <button onClick={()=>setAddOpen(true)} style={{ padding:'11px 26px',borderRadius:12,border:'none',background:'#3b82f6',color:'#fff',fontWeight:700,fontSize:15,cursor:'pointer',display:'flex',alignItems:'center',gap:8,boxShadow:'0 2px 8px rgba(59,130,246,.35)' }}>+ Add Occupant</button> : null}
+          {canEditAccommodation ? <button onClick={()=>setAddOpen(true)} style={{ padding:'11px 26px',borderRadius:12,border:'none',background:'#6366f1',color:'#fff',fontWeight:700,fontSize:15,cursor:'pointer',display:'flex',alignItems:'center',gap:8,boxShadow:'0 2px 8px rgba(59,130,246,.35)' }}>+ Add Occupant</button> : null}
           {canUseOccupancyBulkTools ? (
             <div style={{ display:'flex',gap:8 }}>
-              <button onClick={handleExport} style={{ padding:'10px 18px',borderRadius:10,border:'1.5px solid #d0d7e2',background:'#fff',color:'#1e315f',fontWeight:700,fontSize:13,cursor:'pointer' }}>Export</button>
-              {canEditAccommodation ? <button disabled={isImporting} onClick={handleImportClick} style={{ padding:'10px 18px',borderRadius:10,border:'1.5px solid #d0d7e2',background:isImporting ? '#f1f5f9' : '#fff',color:'#1e315f',fontWeight:700,fontSize:13,cursor:isImporting ? 'not-allowed' : 'pointer',opacity:isImporting ? 0.7 : 1 }}>{isImporting ? 'Importing...' : 'Import'}</button> : null}
-              <button onClick={handleTemplate} style={{ padding:'10px 18px',borderRadius:10,border:'1.5px solid #d0d7e2',background:'#fff',color:'#1e315f',fontWeight:700,fontSize:13,cursor:'pointer' }}>Template</button>
+              <button onClick={handleExport} style={{ padding:'10px 18px',borderRadius:10,border:'1.5px solid #d0d7e2',background:'#fff',color:'#1e293b',fontWeight:700,fontSize:13,cursor:'pointer' }}>Export</button>
+              {canEditAccommodation ? <button disabled={isImporting} onClick={handleImportClick} style={{ padding:'10px 18px',borderRadius:10,border:'1.5px solid #d0d7e2',background:isImporting ? '#f1f5f9' : '#fff',color:'#1e293b',fontWeight:700,fontSize:13,cursor:isImporting ? 'not-allowed' : 'pointer',opacity:isImporting ? 0.7 : 1 }}>{isImporting ? 'Importing...' : 'Import'}</button> : null}
+              <button onClick={handleTemplate} style={{ padding:'10px 18px',borderRadius:10,border:'1.5px solid #d0d7e2',background:'#fff',color:'#1e293b',fontWeight:700,fontSize:13,cursor:'pointer' }}>Template</button>
               <input ref={importInputRef} type="file" accept=".csv,text/csv" onChange={handleImportFile} style={{ display:'none' }} />
             </div>
           ) : null}
@@ -1150,7 +1150,7 @@ function Occupancy() {
               </div>
 
               <div style={{ display:'flex',flexDirection:'column',gap:5,minWidth:0,justifyContent:'center' }}>
-                <span style={{ fontSize:13,fontWeight:800,padding:'2px 10px',borderRadius:6,background:'#dbeafe',color:'#2563eb',display:'inline-block',width:'fit-content',whiteSpace:'nowrap',letterSpacing:'0.5px' }}>{o.roomId}</span>
+                <span style={{ fontSize:13,fontWeight:800,padding:'2px 10px',borderRadius:6,background:'#e0e7ff',color:'#6366f1',display:'inline-block',width:'fit-content',whiteSpace:'nowrap',letterSpacing:'0.5px' }}>{o.roomId}</span>
                 <span style={{ fontSize:11,color:'#94a3b8',whiteSpace:'nowrap',marginLeft:20 }}>Bed {o.bedNo}</span>
               </div>
 
