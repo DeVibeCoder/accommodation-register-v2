@@ -348,17 +348,11 @@ function MealHistory() {
               </thead>
               <tbody>
                 {filteredRows.map((row, index) => {
-                  const isSynthetic = Boolean(row._synthetic);
-                  const baseBg = row.date === todayIso ? '#e0f2fe' : isSynthetic ? '#fefce8' : (index % 2 === 0 ? '#fff' : '#fbfdff');
+                  const baseBg = row.date === todayIso ? '#e0f2fe' : (index % 2 === 0 ? '#fff' : '#fbfdff');
                   return (
                   <tr key={row.date} style={{ cursor: 'pointer', borderBottom: '1px solid #edf2f7', background: baseBg, transition: 'background .15s ease' }} onClick={() => setSelectedRow(row)} onMouseEnter={e => { e.currentTarget.style.background = '#eef6ff'; }} onMouseLeave={e => { e.currentTarget.style.background = baseBg; }}>
                     <td style={{ padding: '13px 16px', color: '#1f2937', fontWeight: 700 }}>
                       {formatDateForUi(row.date)}
-                      {isSynthetic && (
-                        <span title={`Copied from ${formatDateForUi(row._copiedFrom)}`} style={{ marginLeft: 6, fontSize: 10, fontWeight: 800, color: '#b45309', background: '#fef3c7', border: '1px solid #fcd34d', borderRadius: 4, padding: '1px 5px' }}>
-                          ~est
-                        </span>
-                      )}
                     </td>
                     {departments.map(dept => (
                       <td key={`${row.date}-${dept}`} style={{ textAlign: 'center', padding: '13px 10px', color: '#1e3a8a', fontWeight: 700 }}>{row.counts?.[dept] || 0}</td>
