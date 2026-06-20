@@ -17,3 +17,83 @@ body {
   font-family: 'Inter', 'Segoe UI', Arial, sans-serif;
   background: #f5f7fa;
 }
+
+/* ─── Motion keyframes ──────────────────────────────────────── */
+
+/* Fade + slide up — main content sections, cards */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0);    }
+}
+
+/* Plain opacity fade — page wrappers, overlays */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* Scale + fade — modals, popovers */
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(0.93); }
+  to   { opacity: 1; transform: scale(1);    }
+}
+
+/* Slide in from right — toasts, drawers */
+@keyframes slideInRight {
+  from { opacity: 0; transform: translateX(28px); }
+  to   { opacity: 1; transform: translateX(0);    }
+}
+
+/* Slide in from left — sidebar items on expand */
+@keyframes slideInLeft {
+  from { opacity: 0; transform: translateX(-14px); }
+  to   { opacity: 1; transform: translateX(0);     }
+}
+
+/* Shimmer — loading skeletons */
+@keyframes shimmer {
+  0%   { background-position:  200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* Pulse — live / active dot indicators */
+@keyframes pulseDot {
+  0%, 100% { transform: scale(1);    opacity: 1;   }
+  50%       { transform: scale(1.45); opacity: 0.55; }
+}
+
+/* Number pop — big metric counters on dashboard */
+@keyframes numberPop {
+  from { opacity: 0; transform: translateY(8px) scale(0.94); }
+  to   { opacity: 1; transform: translateY(0)   scale(1);    }
+}
+
+/* Subtle bounce for the dashboard header */
+@keyframes headerSlide {
+  from { opacity: 0; transform: translateY(-14px); }
+  to   { opacity: 1; transform: translateY(0);     }
+}
+
+/* ─── Utility animation classes ─────────────────────────────── */
+.anim-fade-up    { animation: fadeUp      0.38s cubic-bezier(0.22,1,0.36,1) both; }
+.anim-fade-in    { animation: fadeIn      0.28s ease both; }
+.anim-scale-in   { animation: scaleIn     0.22s cubic-bezier(0.22,1,0.36,1) both; }
+.anim-slide-right{ animation: slideInRight 0.28s cubic-bezier(0.22,1,0.36,1) both; }
+
+/* Stagger helpers — apply via style={{ '--i': index }} */
+.anim-stagger    { animation-delay: calc(var(--i, 0) * 55ms); }
+
+/* Hover lift for interactive cards */
+.card-lift {
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+  cursor: pointer;
+}
+.card-lift:hover {
+  transform: translateY(-3px);
+}
+
+/* Button press */
+.btn-press:active {
+  transform: scale(0.96);
+  transition: transform 0.08s ease;
+}

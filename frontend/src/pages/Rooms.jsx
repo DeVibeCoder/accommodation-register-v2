@@ -341,7 +341,7 @@ function Rooms() {
           justifyContent: 'start',
         }}
       >
-        {sortedFilteredRooms.map(room => {
+        {sortedFilteredRooms.map((room, roomIndex) => {
           const occupied = room.occupiedBeds;
           const available = room.availableBeds;
           const percent = Math.round((occupied / room.totalBeds) * 100);
@@ -413,12 +413,16 @@ function Rooms() {
                 position: 'relative',
                 padding: '12px 12px 12px 12px',
                 outline: 'none',
-                transition: 'box-shadow 0.18s, transform 0.14s',
+                transition: 'transform 0.18s ease, box-shadow 0.18s ease',
                 boxSizing: 'border-box',
+                animation: 'fadeUp 0.38s cubic-bezier(0.22,1,0.36,1) both',
+                animationDelay: `${Math.min(roomIndex, 18) * 38}ms`,
               }}
               tabIndex={0}
               onClick={() => { setSelectedRoom(room); setIsModalOpen(true); }}
               onKeyPress={e => { if (e.key === 'Enter') { setSelectedRoom(room); setIsModalOpen(true); } }}
+              onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-3px)'; e.currentTarget.style.boxShadow = '0 12px 28px rgba(15,23,42,0.14)'; }}
+              onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = cardShadow; }}
             >
               {/* Edit button - absolutely positioned, never shifts layout */}
               {canEditAccommodation && (

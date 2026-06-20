@@ -187,8 +187,8 @@ function SwapModal({ open, onClose, occupant, allOccupants, onSwap }) {
   const selected = targetId != null ? others.find(o => o._id === targetId) : null;
 
   return (
-    <div onClick={onClose} style={{ position:'fixed',inset:0,zIndex:3000,background:'rgba(20,30,60,.55)',display:'flex',alignItems:'center',justifyContent:'center' }}>
-      <div onClick={e=>e.stopPropagation()} style={{ background:'#fff',borderRadius:18,padding:'28px 32px',maxWidth:560,width:'95%',boxShadow:'0 8px 40px rgba(30,50,120,.18)',position:'relative',display:'flex',flexDirection:'column',maxHeight:'88vh' }}>
+    <div onClick={onClose} style={{ position:'fixed',inset:0,zIndex:3000,background:'rgba(20,30,60,.55)',display:'flex',alignItems:'center',justifyContent:'center',animation:'fadeIn 0.18s ease both' }}>
+      <div onClick={e=>e.stopPropagation()} style={{ background:'#fff',borderRadius:18,padding:'28px 32px',maxWidth:560,width:'95%',boxShadow:'0 8px 40px rgba(30,50,120,.18)',position:'relative',display:'flex',flexDirection:'column',maxHeight:'88vh',animation:'scaleIn 0.22s cubic-bezier(0.22,1,0.36,1) both' }}>
         <button onClick={onClose} style={{ position:'absolute',top:14,right:18,fontSize:22,border:'none',background:'none',cursor:'pointer',color:'#64748b' }}>X</button>
         <h2 style={{ fontWeight:800,fontSize:'1.1rem',marginBottom:4,color:'#1e315f' }}>Swap Occupant</h2>
         <p style={{ fontSize:12,color:'#64748b',marginBottom:14 }}>
@@ -277,8 +277,8 @@ function MoveModal({ open, onClose, occupant, allRooms, onMove }) {
   const availBeds = selRoom ? selRoom.beds.filter(b=>!b.occupied) : [];
   const ready = targetRoom && targetBed;
   return (
-    <div onClick={onClose} style={{ position:'fixed',inset:0,zIndex:3000,background:'rgba(20,30,60,.55)',display:'flex',alignItems:'center',justifyContent:'center' }}>
-      <div onClick={e=>e.stopPropagation()} style={{ background:'#fff',borderRadius:18,padding:'32px 40px',maxWidth:520,width:'95%',boxShadow:'0 8px 40px rgba(30,50,120,.18)',position:'relative' }}>
+    <div onClick={onClose} style={{ position:'fixed',inset:0,zIndex:3000,background:'rgba(20,30,60,.55)',display:'flex',alignItems:'center',justifyContent:'center',animation:'fadeIn 0.18s ease both' }}>
+      <div onClick={e=>e.stopPropagation()} style={{ background:'#fff',borderRadius:18,padding:'32px 40px',maxWidth:520,width:'95%',boxShadow:'0 8px 40px rgba(30,50,120,.18)',position:'relative',animation:'scaleIn 0.22s cubic-bezier(0.22,1,0.36,1) both' }}>
         <button onClick={onClose} style={{ position:'absolute',top:16,right:20,fontSize:22,border:'none',background:'none',cursor:'pointer',color:'#64748b' }}>X</button>
         <h2 style={{ fontWeight:800,fontSize:'1.15rem',marginBottom:8,color:'#1e315f' }}>Move Occupant</h2>
         <p style={{ fontSize:13,color:'#64748b',marginBottom:20 }}>Moving <strong>{occupant.name}</strong> from {occupant.roomId} / Bed {occupant.bedNo}</p>
@@ -325,8 +325,8 @@ function EditOccupantModal({ open, onClose, occupant, onSave }) {
   const handle = e => setForm(f=>({...f,[e.target.name]:e.target.value}));
   const handleFasting = e => setForm(f=>({...f,fasting:e.target.value==='true'}));
   return (
-    <div onClick={onClose} style={{ position:'fixed',inset:0,zIndex:3000,background:'rgba(20,30,60,.55)',display:'flex',alignItems:'center',justifyContent:'center' }}>
-      <div onClick={e=>e.stopPropagation()} style={{ background:'#fff',borderRadius:18,padding:'40px',maxWidth:700,width:'95%',boxShadow:'0 8px 40px rgba(30,50,120,.18)',position:'relative' }}>
+    <div onClick={onClose} style={{ position:'fixed',inset:0,zIndex:3000,background:'rgba(20,30,60,.55)',display:'flex',alignItems:'center',justifyContent:'center',animation:'fadeIn 0.18s ease both' }}>
+      <div onClick={e=>e.stopPropagation()} style={{ background:'#fff',borderRadius:18,padding:'40px',maxWidth:700,width:'95%',boxShadow:'0 8px 40px rgba(30,50,120,.18)',position:'relative',animation:'scaleIn 0.22s cubic-bezier(0.22,1,0.36,1) both' }}>
         <button onClick={onClose} style={{ position:'absolute',top:16,right:20,fontSize:24,border:'none',background:'none',cursor:'pointer',color:'#94a3b8' }}>X</button>
         <h2 style={{ fontWeight:800,fontSize:'1.3rem',marginBottom:32,color:'#1e315f',letterSpacing:'-0.3px' }}>Edit Occupant</h2>
         <div style={{ display:'grid',gridTemplateColumns:'1fr 1fr',gap:'18px 24px',marginBottom:32 }}>
@@ -367,8 +367,8 @@ function EditOccupantModal({ open, onClose, occupant, onSave }) {
 function ConfirmModal({ open, onClose, onConfirm, title, message, confirmLabel='Confirm', confirmColor='#ef4444' }) {
   if (!open) return null;
   return (
-    <div onClick={onClose} style={{ position:'fixed',inset:0,zIndex:3000,background:'rgba(20,30,60,.55)',display:'flex',alignItems:'center',justifyContent:'center' }}>
-      <div onClick={e=>e.stopPropagation()} style={{ background:'#fff',borderRadius:18,padding:'32px 40px',maxWidth:420,width:'95%',boxShadow:'0 8px 40px rgba(30,50,120,.18)' }}>
+    <div onClick={onClose} style={{ position:'fixed',inset:0,zIndex:3000,background:'rgba(20,30,60,.55)',display:'flex',alignItems:'center',justifyContent:'center',animation:'fadeIn 0.18s ease both' }}>
+      <div onClick={e=>e.stopPropagation()} style={{ background:'#fff',borderRadius:18,padding:'32px 40px',maxWidth:420,width:'95%',boxShadow:'0 8px 40px rgba(30,50,120,.18)',animation:'scaleIn 0.22s cubic-bezier(0.22,1,0.36,1) both' }}>
         <h2 style={{ fontWeight:800,fontSize:'1.1rem',marginBottom:10,color:'#1e315f' }}>{title}</h2>
         <p style={{ fontSize:14,color:'#64748b',marginBottom:28 }}>{message}</p>
         <div style={{ display:'flex',justifyContent:'flex-end',gap:12 }}>
@@ -393,7 +393,7 @@ function ActionToast({ notice, onClose }) {
   const isError = notice.type === 'error';
   return (
     <div style={{ position:'fixed',right:20,bottom:20,zIndex:3100,pointerEvents:'none' }}>
-      <div style={{ width:'min(380px, calc(100vw - 32px))',background:isError ? 'linear-gradient(135deg, #7f1d1d 0%, #dc2626 100%)' : 'linear-gradient(135deg, #1d4ed8 0%, #0f766e 100%)',color:'#fff',borderRadius:16,padding:'14px 16px',boxShadow:'0 18px 40px rgba(15,23,42,.24)',animation:'fadeToastIn .22s ease-out',pointerEvents:'auto' }}>
+      <div style={{ width:'min(380px, calc(100vw - 32px))',background:isError ? 'linear-gradient(135deg, #7f1d1d 0%, #dc2626 100%)' : 'linear-gradient(135deg, #1d4ed8 0%, #0f766e 100%)',color:'#fff',borderRadius:16,padding:'14px 16px',boxShadow:'0 18px 40px rgba(15,23,42,.24)',animation:'slideInRight 0.28s cubic-bezier(0.22,1,0.36,1) both',pointerEvents:'auto' }}>
         <div style={{ display:'flex',alignItems:'flex-start',justifyContent:'space-between',gap:12 }}>
           <div>
             <div style={{ fontWeight:900,fontSize:14,marginBottom:4 }}>{notice.title || (isError ? 'Action Failed' : 'Action Completed')}</div>

@@ -116,8 +116,8 @@ function ExclusionModal({ open, onClose, occupants, canEdit, onSaved, editEntry 
 
   if (!open) return null;
   return (
-    <div style={{ position: 'fixed', inset: 0, background: 'rgba(15,23,42,0.5)', zIndex: 3000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
-      <div style={{ background: 'linear-gradient(180deg,#ffffff 0%,#f8fbff 100%)', borderRadius: 16, width: '100%', maxWidth: 560, boxShadow: '0 20px 60px rgba(0,0,0,0.2)', border: '1px solid #dbeafe', fontFamily: 'Inter,Segoe UI,Arial,sans-serif' }}>
+    <div style={{ position: 'fixed', inset: 0, background: 'rgba(15,23,42,0.5)', zIndex: 3000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16, animation: 'fadeIn 0.18s ease both' }}>
+      <div style={{ background: 'linear-gradient(180deg,#ffffff 0%,#f8fbff 100%)', borderRadius: 16, width: '100%', maxWidth: 560, boxShadow: '0 20px 60px rgba(0,0,0,0.2)', border: '1px solid #dbeafe', fontFamily: 'Inter,Segoe UI,Arial,sans-serif', animation: 'scaleIn 0.22s cubic-bezier(0.22,1,0.36,1) both' }}>
         <div style={{ padding: '18px 24px 15px', borderBottom: '1px solid #dbeafe', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'linear-gradient(130deg,#eff6ff 0%,#f8fbff 100%)', borderRadius: '16px 16px 0 0' }}>
           <div>
             <div style={{ fontWeight: 800, fontSize: '1.1rem', color: '#1e315f' }}>{isEditing ? 'Edit Meal Exclusion' : 'Add Meal Exclusion'}</div>
@@ -752,15 +752,15 @@ function MealExclusion() {
 
       {/* --- Stat cards + buttons --- */}
       <div style={{ display: 'flex', alignItems: 'stretch', gap: 12, marginBottom: 20, flexWrap: 'wrap' }}>
-        <div style={{ background: 'linear-gradient(135deg,#ffe9d6 0%,#ffe2bf 100%)', borderRadius: 14, border: '1px solid rgba(154,52,18,0.12)', padding: '14px 20px', flex: '1 1 170px', boxShadow: '0 8px 18px rgba(154,52,18,0.11)' }}>
+        <div style={{ background: 'linear-gradient(135deg,#ffe9d6 0%,#ffe2bf 100%)', borderRadius: 14, border: '1px solid rgba(154,52,18,0.12)', padding: '14px 20px', flex: '1 1 170px', boxShadow: '0 8px 18px rgba(154,52,18,0.11)', animation: 'fadeUp 0.38s cubic-bezier(0.22,1,0.36,1) both', animationDelay: '0ms' }}>
           <div style={{ fontSize: 11, color: '#9a3412', fontWeight: 800, textTransform: 'uppercase' }}>Active Exclusions</div>
           <div style={{ fontSize: 28, fontWeight: 900, color: '#7c2d12', marginTop: 4 }}>{activeCount}</div>
         </div>
-        <div style={{ background: 'linear-gradient(135deg,#e0ecff 0%,#d9f3ff 100%)', borderRadius: 14, border: '1px solid rgba(30,58,138,0.1)', padding: '14px 20px', flex: '1 1 170px', boxShadow: '0 8px 18px rgba(30,58,138,0.1)' }}>
+        <div style={{ background: 'linear-gradient(135deg,#e0ecff 0%,#d9f3ff 100%)', borderRadius: 14, border: '1px solid rgba(30,58,138,0.1)', padding: '14px 20px', flex: '1 1 170px', boxShadow: '0 8px 18px rgba(30,58,138,0.1)', animation: 'fadeUp 0.38s cubic-bezier(0.22,1,0.36,1) both', animationDelay: '65ms' }}>
           <div style={{ fontSize: 11, color: '#1e3a8a', fontWeight: 800, textTransform: 'uppercase' }}>Upcoming</div>
           <div style={{ fontSize: 28, fontWeight: 900, color: '#1e315f', marginTop: 4 }}>{upcomingCount}</div>
         </div>
-        <div style={{ background: 'linear-gradient(135deg,#f3e8ff 0%,#ede9fe 100%)', borderRadius: 14, border: '1px solid rgba(107,33,168,0.1)', padding: '14px 20px', flex: '1 1 170px', boxShadow: '0 8px 18px rgba(107,33,168,0.1)' }}>
+        <div style={{ background: 'linear-gradient(135deg,#f3e8ff 0%,#ede9fe 100%)', borderRadius: 14, border: '1px solid rgba(107,33,168,0.1)', padding: '14px 20px', flex: '1 1 170px', boxShadow: '0 8px 18px rgba(107,33,168,0.1)', animation: 'fadeUp 0.38s cubic-bezier(0.22,1,0.36,1) both', animationDelay: '130ms' }}>
           <div style={{ fontSize: 11, color: '#6b21a8', fontWeight: 800, textTransform: 'uppercase' }}>Meal Headcount</div>
           <div style={{ fontSize: 28, fontWeight: 900, color: '#581c87', marginTop: 4 }}>{mealHeadcount}</div>
         </div>

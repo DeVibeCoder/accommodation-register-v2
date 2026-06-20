@@ -1,7 +1,7 @@
 
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import Sidebar from './Sidebar';
-import { Outlet } from 'react-router-dom';
+import { Outlet, useLocation } from 'react-router-dom';
 import { fetchOccupants as fetchOccupantsFromApi } from '../services/occupancyService';
 import { fetchRooms as fetchRoomsFromApi } from '../services/roomsService';
 import { addStayHistory as addStayHistoryToApi, fetchStayHistory as fetchStayHistoryFromApi } from '../services/stayHistoryService';
@@ -37,6 +37,7 @@ function attachOccupantsToRooms(rooms, occupants) {
 }
 
 function Layout({ user, onLogout }) {
+  const location = useLocation();
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const uidRef = useRef(1000);
   const getNextUid = () => uidRef.current++;
@@ -81,7 +82,7 @@ function Layout({ user, onLogout }) {
   };
 
   const roomsState = useMemo(() => attachOccupantsToRooms(roomBaseState, occupants), [roomBaseState, occupants]);
-  const sidebarWidth = sidebarCollapsed ? 70 : 220;
+  const sidebarWidth = sidebarCollapsed ? 64 : 220;
   const role = user?.role || 'Viewer';
   const isAdmin = role === 'Admin';
   const canEditAccommodation = role === 'Admin' || role === 'Accommodation' || role === 'Supervisor';
@@ -281,7 +282,9 @@ function Layout({ user, onLogout }) {
                 <style>{`@keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }`}</style>
               </div>
             ) : (
-              <Outlet context={{ sidebarCollapsed, setSidebarCollapsed, occupants, setOccupants, roomsState, setRoomsState, getNextUid, stayHistory, setStayHistory, addStayHistory, prependStayHistoryEntry, mealExclusionSummary, setMealExclusionSummary, refreshMealExclusionSummary, user, role, isAdmin, canEditAccommodation, canEditMeals, canUseOccupancyBulkTools, canExportRooms }} />
+              <div key={location.pathname} style={{ animation: 'fadeIn 0.25s ease both' }}>
+                <Outlet context={{ sidebarCollapsed, setSidebarCollapsed, occupants, setOccupants, roomsState, setRoomsState, getNextUid, stayHistory, setStayHistory, addStayHistory, prependStayHistoryEntry, mealExclusionSummary, setMealExclusionSummary, refreshMealExclusionSummary, user, role, isAdmin, canEditAccommodation, canEditMeals, canUseOccupancyBulkTools, canExportRooms }} />
+              </div>
             )}
           </div>
         </main>

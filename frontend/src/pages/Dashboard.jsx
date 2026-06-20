@@ -198,6 +198,7 @@ function Dashboard() {
         padding:'24px 26px',
         boxShadow:'0 16px 32px rgba(15,23,42,.24)',
         marginBottom:16,
+        animation:'headerSlide 0.4s cubic-bezier(0.22,1,0.36,1) both',
       }}>
         <div style={{ fontSize:12, opacity:.92, letterSpacing:.5, textTransform:'uppercase', fontWeight:700 }}>Live Occupancy Snapshot</div>
         <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-end', gap:20, marginTop:8, flexWrap:'wrap' }}>
@@ -207,16 +208,16 @@ function Dashboard() {
       </div>
 
       <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit, minmax(210px, 1fr))', gap:14, marginBottom:14 }}>
-        {cards.map(card => (
-          <div key={card.title} style={{ background:card.bg, color:card.color, borderRadius:14, padding:'16px 16px', border:'1px solid rgba(30,58,138,.09)', boxShadow:'0 5px 14px rgba(15,23,42,.06)' }}>
+        {cards.map((card, i) => (
+          <div key={card.title} style={{ background:card.bg, color:card.color, borderRadius:14, padding:'16px 16px', border:'1px solid rgba(30,58,138,.09)', boxShadow:'0 5px 14px rgba(15,23,42,.06)', animation:'fadeUp 0.4s cubic-bezier(0.22,1,0.36,1) both', animationDelay:`${i * 65}ms` }}>
             <div style={{ fontSize:12, textTransform:'uppercase', fontWeight:700, letterSpacing:.5, opacity:.75 }}>{card.title}</div>
-            <div style={{ fontSize:'1.9rem', fontWeight:900, marginTop:6 }}>{card.value}</div>
+            <div style={{ fontSize:'1.9rem', fontWeight:900, marginTop:6, animation:'numberPop 0.5s cubic-bezier(0.22,1,0.36,1) both', animationDelay:`${i * 65 + 120}ms` }}>{card.value}</div>
           </div>
         ))}
       </div>
 
       <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit, minmax(280px, 1fr))', gap:14, marginBottom:14 }}>
-        <div style={{ background:'#fff', border:'1px solid #dfe6f2', borderRadius:16, padding:'20px 22px', boxShadow:'0 6px 16px rgba(15,23,42,.05)' }}>
+        <div style={{ background:'#fff', border:'1px solid #dfe6f2', borderRadius:16, padding:'20px 22px', boxShadow:'0 6px 16px rgba(15,23,42,.05)', animation:'fadeUp 0.4s cubic-bezier(0.22,1,0.36,1) both', animationDelay:'260ms' }}>
           <div style={{ fontWeight:800, color:'#1e315f', marginBottom:10 }}>Occupancy Overview</div>
           <div style={{ height:14, background:'#e7edf7', borderRadius:999, overflow:'hidden' }}>
             <div style={{ width:`${percent(metrics.occupied, metrics.totalBeds)}%`, height:'100%', borderRadius:999, background:'linear-gradient(90deg, #2563eb 0%, #0ea5e9 100%)' }} />
@@ -228,7 +229,7 @@ function Dashboard() {
           </div>
         </div>
 
-        <div style={{ background:'#fff', border:'1px solid #dfe6f2', borderRadius:16, padding:'20px 22px', boxShadow:'0 6px 16px rgba(15,23,42,.05)' }}>
+        <div style={{ background:'#fff', border:'1px solid #dfe6f2', borderRadius:16, padding:'20px 22px', boxShadow:'0 6px 16px rgba(15,23,42,.05)', animation:'fadeUp 0.4s cubic-bezier(0.22,1,0.36,1) both', animationDelay:'320ms' }}>
           <div style={{ fontWeight:800, color:'#1e315f', marginBottom:10 }}>Occupant Types</div>
           <div style={{ display:'flex', flexDirection:'column', gap:8 }}>
             {Object.entries(metrics.typeBreakdown).map(([k, v]) => (
@@ -241,7 +242,7 @@ function Dashboard() {
         </div>
       </div>
 
-      <div style={{ background:'#fff', border:'1px solid #dfe6f2', borderRadius:16, padding:'18px 20px', boxShadow:'0 6px 16px rgba(15,23,42,.05)', marginBottom:14 }}>
+      <div style={{ background:'#fff', border:'1px solid #dfe6f2', borderRadius:16, padding:'18px 20px', boxShadow:'0 6px 16px rgba(15,23,42,.05)', marginBottom:14, animation:'fadeUp 0.4s cubic-bezier(0.22,1,0.36,1) both', animationDelay:'380ms' }}>
         <div style={{ display:'flex', justifyContent:'space-between', alignItems:'baseline', marginBottom:14 }}>
           <div style={{ fontWeight:800, color:'#1e315f' }}>Building Breakdown</div>
           <div style={{ fontSize:12, color:'#64748b' }}>Live from current room and occupancy data</div>
@@ -280,10 +281,16 @@ function Dashboard() {
       </div>
 
       <div style={{ display:'grid', gridTemplateColumns: chartGridColumns, gap:14 }}>
-        <DonutCard title="Nationality Breakdown" data={metrics.nationalityBreakdown} subtitle="Occupants" />
-        <DonutCard title="Department Breakdown" data={metrics.departmentBreakdown} subtitle="Occupants" />
-        <DonutCard title="AC and Non-AC Breakdown" data={metrics.acBreakdown} subtitle="Rooms" />
-        <DonutCard title="Share Breakdown" data={metrics.shareBreakdown} subtitle="Room Types" />
+        {[
+          { title:'Nationality Breakdown',  data:metrics.nationalityBreakdown,  subtitle:'Occupants' },
+          { title:'Department Breakdown',   data:metrics.departmentBreakdown,   subtitle:'Occupants' },
+          { title:'AC and Non-AC Breakdown',data:metrics.acBreakdown,           subtitle:'Rooms'     },
+          { title:'Share Breakdown',        data:metrics.shareBreakdown,        subtitle:'Room Types' },
+        ].map((props, i) => (
+          <div key={props.title} style={{ animation:'fadeUp 0.45s cubic-bezier(0.22,1,0.36,1) both', animationDelay:`${460 + i * 70}ms` }}>
+            <DonutCard {...props} />
+          </div>
+        ))}
       </div>
     </div>
   );

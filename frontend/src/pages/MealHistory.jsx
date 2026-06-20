@@ -316,17 +316,17 @@ function MealHistory() {
       ) : null}
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 12, marginBottom: 16 }}>
-        <div style={{ border: '1px solid #d8e2f2', borderRadius: 14, background: 'linear-gradient(135deg, #ffffff 0%, #eef6ff 100%)', padding: '14px 16px', boxShadow: '0 12px 30px rgba(30,49,95,0.06)' }}>
+        <div style={{ border: '1px solid #d8e2f2', borderRadius: 14, background: 'linear-gradient(135deg, #ffffff 0%, #eef6ff 100%)', padding: '14px 16px', boxShadow: '0 12px 30px rgba(30,49,95,0.06)', animation: 'fadeUp 0.38s cubic-bezier(0.22,1,0.36,1) both', animationDelay: '0ms' }}>
           <div style={{ color: '#5b7090', fontSize: 11, fontWeight: 800, textTransform: 'uppercase' }}>Total Meals (Filtered)</div>
-          <div style={{ marginTop: 6, fontWeight: 900, color: '#0f172a', fontSize: 32 }}>{totalMeals}</div>
+          <div style={{ marginTop: 6, fontWeight: 900, color: '#0f172a', fontSize: 32, animation: 'numberPop 0.5s cubic-bezier(0.22,1,0.36,1) both', animationDelay: '120ms' }}>{totalMeals}</div>
         </div>
-        <div style={{ border: '1px solid #d8e2f2', borderRadius: 14, background: 'linear-gradient(135deg, #ffffff 0%, #eef6ff 100%)', padding: '14px 16px', boxShadow: '0 12px 30px rgba(30,49,95,0.06)' }}>
+        <div style={{ border: '1px solid #d8e2f2', borderRadius: 14, background: 'linear-gradient(135deg, #ffffff 0%, #eef6ff 100%)', padding: '14px 16px', boxShadow: '0 12px 30px rgba(30,49,95,0.06)', animation: 'fadeUp 0.38s cubic-bezier(0.22,1,0.36,1) both', animationDelay: '65ms' }}>
           <div style={{ color: '#5b7090', fontSize: 11, fontWeight: 800, textTransform: 'uppercase' }}>Average Per Day</div>
-          <div style={{ marginTop: 6, fontWeight: 900, color: '#0f172a', fontSize: 32 }}>{averageMeals.toFixed(1)}</div>
+          <div style={{ marginTop: 6, fontWeight: 900, color: '#0f172a', fontSize: 32, animation: 'numberPop 0.5s cubic-bezier(0.22,1,0.36,1) both', animationDelay: '185ms' }}>{averageMeals.toFixed(1)}</div>
         </div>
-        <div style={{ border: '1px solid #bfdbfe', borderRadius: 14, background: 'linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%)', padding: '14px 16px', boxShadow: '0 12px 30px rgba(30,49,95,0.06)' }}>
+        <div style={{ border: '1px solid #bfdbfe', borderRadius: 14, background: 'linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%)', padding: '14px 16px', boxShadow: '0 12px 30px rgba(30,49,95,0.06)', animation: 'fadeUp 0.38s cubic-bezier(0.22,1,0.36,1) both', animationDelay: '130ms' }}>
           <div style={{ color: '#1d4ed8', fontSize: 11, fontWeight: 800, textTransform: 'uppercase' }}>Today's Headcount</div>
-          <div style={{ marginTop: 6, fontWeight: 900, color: '#1e3a8a', fontSize: 32 }}>{todaysHeadcount}</div>
+          <div style={{ marginTop: 6, fontWeight: 900, color: '#1e3a8a', fontSize: 32, animation: 'numberPop 0.5s cubic-bezier(0.22,1,0.36,1) both', animationDelay: '250ms' }}>{todaysHeadcount}</div>
         </div>
       </div>
 
