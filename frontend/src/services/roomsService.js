@@ -1,4 +1,5 @@
 import { apiRequest } from './apiClient';
+import { buildingFrom, buildingCodeFrom, normalizeRoomType } from '../utils/building';
 
 function firstDefined(...values) {
   return values.find(value => value !== undefined && value !== null);
@@ -8,24 +9,6 @@ function toBool(value) {
   if (value === true || value === false) return value;
   const normalized = String(value ?? '').trim().toLowerCase();
   return normalized === 'true' || normalized === 'yes' || normalized === '1' || normalized === 'ac' || normalized === 'attached';
-}
-
-function buildingFrom(roomId = '') {
-  if (roomId.startsWith('OB-')) return 'OFFICE BUILDING';
-  if (roomId.startsWith('FB-')) return 'F&B BUILDING';
-  if (roomId.startsWith('VTV-')) return 'VTV BUILDING';
-  return 'UNKNOWN';
-}
-
-function buildingCodeFrom(roomId = '') {
-  if (roomId.startsWith('OB-')) return 'OB';
-  if (roomId.startsWith('FB-')) return 'FB';
-  if (roomId.startsWith('VTV-')) return 'VTV';
-  return '??';
-}
-
-function normalizeType(totalBeds) {
-  return totalBeds === 1 ? 'Single' : `${totalBeds} Share`;
 }
 
 export function normalizeRoomRecord(row = {}) {
@@ -39,7 +22,7 @@ export function normalizeRoomRecord(row = {}) {
     buildingCode: firstDefined(row.buildingCode, row.building_code, row.Building_Code, row['Building_Code'], buildingCodeFrom(id)),
     floor: String(firstDefined(row.floor, row.level, row.Floor, '') || ''),
     roomNo: String(firstDefined(row.roomNo, row.room_no, row.Room_No, '') || ''),
-    type: firstDefined(row.type, normalizeType(totalBeds)),
+    type: firstDefined(row.type, normalizeRoomType(totalBeds)),
     roomType: firstDefined(row.roomType, row.room_type, row.Room_Type, 'Internal'),
     ac: toBool(firstDefined(row.ac, row.is_ac, row['AC/Non-AC'], false)),
     attached: toBool(firstDefined(row.attached, row.has_attached, row.Toilet_Type, true)),

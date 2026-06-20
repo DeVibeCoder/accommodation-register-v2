@@ -1,11 +1,13 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useOutletContext } from 'react-router-dom';
 import { deleteManagedUser, fetchUsersForRoleManagement, sendPasswordResetForUser, updateProfileRole } from '../services/authService';
-import { clearAllOccupancyData } from '../services/occupancyService';
+import { clearAllOccupancyData, fetchOccupants } from '../services/occupancyService';
 import { fetchOccupancyHealth } from '../services/healthService';
 import { createManualBackup, fetchBackups, restoreBackup } from '../services/backupService';
-import { createRoom } from '../services/roomsService';
+import { createRoom, fetchRooms } from '../services/roomsService';
+import { fetchStayHistory } from '../services/stayHistoryService';
 import { formatDisplayDateTime } from '../utils/date';
+import { compareRoomIds, isCurrentRoomId } from '../utils/building';
 
 const roleDescriptions = [
   { role: 'Viewer', desc: 'Read-only access across the accommodation module.' },
@@ -25,10 +27,6 @@ const defaultRoomForm = {
   roomActive: 'Yes',
   totalBeds: '1',
 };
-
-function compareRoomIds(a, b) {
-  return a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' });
-}
 
 function formatDate(value) {
   if (!value) return 'Never';
@@ -102,7 +100,7 @@ function ResultDialog({ open, title, message, onClose }) {
 }
 
 function Settings({ user, setUser }) {
-  const { roomsState = [], setRoomsState, setOccupants, setStayHistory } = useOutletContext();
+  const { roomsState = [], setRoomsState, setOccupants, setStayHistory, refreshMealExclusionSummary } = useOutletContext();
   const [roomForm, setRoomForm] = useState(defaultRoomForm);
   const [isResetting, setIsResetting] = useState(false);
   const [isSavingRoom, setIsSavingRoom] = useState(false);
@@ -286,12 +284,22 @@ function Settings({ user, setUser }) {
     setIsResetting(true);
     setNotice('');
 
+    // Safety: create an automatic backup before wiping so data can be recovered
+    try {
+      await createManualBackup('Auto-backup before Clear Occupancy Data');
+      const refreshed = await fetchBackups(30);
+      if (Array.isArray(refreshed)) setBackups(refreshed);
+    } catch {
+      // Non-fatal — we still proceed with clear, but warn the user
+      setNotice('Warning: Auto-backup failed. Proceeding with clear anyway.');
+    }
+
     const result = await clearAllOccupancyData();
     if (result) {
       setOccupants([]);
       setStayHistory([]);
       localStorage.removeItem('tic_stay_history');
-      setNotice('Occupancy and stay history were cleared. Rooms were kept.');
+      setNotice('Occupancy and stay history cleared. A safety backup was created first. Rooms kept intact.');
     } else {
       setNotice('Unable to clear the live data.');
     }
@@ -392,7 +400,7 @@ function Settings({ user, setUser }) {
       open: true,
       variant: 'danger',
       title: 'Clear Live Data',
-      message: 'This will remove all live occupancy and stay history data while keeping the room master untouched.',
+      message: 'A safety backup will be created automatically before clearing. This will remove all live occupancy and stay history while keeping the room master untouched.',
       confirmLabel: 'Yes, Clear Data',
       action: runResetData,
     });
@@ -479,12 +487,43 @@ function Settings({ user, setUser }) {
       const payload = await restoreBackup(backup.id);
       const restored = payload?.result?.restored || null;
 
+      // Re-fetch all live data so the UI reflects the restored state immediately
+      // without requiring a manual page reload
+      try {
+        const [freshOccupants, freshRooms, freshHistory] = await Promise.all([
+          fetchOccupants(),
+          fetchRooms(),
+          fetchStayHistory(),
+        ]);
+
+        const liveOccupants = Array.isArray(freshOccupants)
+          ? freshOccupants.filter(o => isCurrentRoomId(o?.roomId || ''))
+          : [];
+
+        const liveRooms = Array.isArray(freshRooms)
+          ? freshRooms.filter(r => isCurrentRoomId(r?.id || ''))
+          : [];
+
+        const historyEntries = Array.isArray(freshHistory) ? freshHistory.slice(0, 500) : [];
+
+        setOccupants(liveOccupants);
+        setRoomsState(liveRooms);
+        setStayHistory(historyEntries);
+        try { localStorage.setItem('tic_stay_history', JSON.stringify(historyEntries)); } catch { /* ignore */ }
+
+        if (typeof refreshMealExclusionSummary === 'function') {
+          await refreshMealExclusionSummary();
+        }
+      } catch (refreshError) {
+        console.error('[Settings] Auto-refresh after restore failed:', refreshError?.message || refreshError);
+      }
+
       if (restored) {
         const occupantCount = Number(restored.occupancy || 0);
         const stayHistoryCount = Number(restored.stayHistory || 0);
-        setNotice(`Restore completed. Occupancy: ${occupantCount}, Stay history: ${stayHistoryCount}.`);
+        setNotice(`Restore completed and dashboard updated. Occupancy: ${occupantCount}, Stay history: ${stayHistoryCount}.`);
       } else {
-        setNotice('Restore completed. Please refresh occupancy and history pages.');
+        setNotice('Restore completed. Dashboard data has been refreshed.');
       }
     } catch (error) {
       setNotice(error?.message || 'Unable to restore backup.');

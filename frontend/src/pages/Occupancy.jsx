@@ -8,6 +8,7 @@ import {
   updateOccupant as updateOccupantRecord,
 } from '../services/occupancyService';
 import { updateRoom as updateRoomRecord } from '../services/roomsService';
+import { buildingFrom, buildingCodeFrom, compareRoomIds, normalizeRoomType, isCurrentRoomId } from '../utils/building';
 
 const BUILDING_ORDER = ['OFFICE BUILDING', 'F&B BUILDING', 'VTV BUILDING'];
 const BUILDING_LABELS = {
@@ -59,14 +60,6 @@ function parseDepartmentValue(value) {
   if (!/^other(\b|\s|[-_/(:])/i.test(raw)) return { selected: raw, other: '' };
   const other = raw.replace(/^other\s*[-:/()]*\s*/i, '').trim();
   return { selected: 'OTHER', other };
-}
-
-function compareRoomIds(a, b) {
-  return a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' });
-}
-
-function normalizeRoomType(totalBeds) {
-  return totalBeds === 1 ? 'Single' : `${totalBeds} Share`;
 }
 
 function normalizeImportedRoomId(value) {
@@ -427,19 +420,6 @@ const IconSwap=()=>(<svg width="14" height="14" viewBox="0 0 24 24" fill="none" 
 const IconMove=()=>(<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14"/><path d="M12 5l7 7-7 7"/></svg>);
 const IconCheckout=()=>(<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>);
 
-function buildingFrom(roomId) {
-  if (roomId.startsWith('OB-'))  return 'OFFICE BUILDING';
-  if (roomId.startsWith('FB-'))  return 'F&B BUILDING';
-  if (roomId.startsWith('VTV-')) return 'VTV BUILDING';
-  return 'UNKNOWN';
-}
-function buildingCodeFrom(roomId) {
-  if (roomId.startsWith('OB-'))  return 'OB';
-  if (roomId.startsWith('FB-'))  return 'FB';
-  if (roomId.startsWith('VTV-')) return 'VTV';
-  return '??';
-}
-
 function Occupancy() {
   const {
     occupants,
@@ -457,7 +437,7 @@ function Occupancy() {
   const refreshOccupantsFromBackend = async () => {
     const remote = await fetchOccupantsFromApi();
     const live = Array.isArray(remote)
-      ? remote.filter(item => /^(OB|FB|VTV)-/i.test(String(item?.roomId || '')))
+      ? remote.filter(item => isCurrentRoomId(item?.roomId || ''))
       : [];
 
     setOccupants(live.map(item => ({ ...item, _id: getNextUid() })));

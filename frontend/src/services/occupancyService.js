@@ -1,4 +1,5 @@
 import { apiRequest } from './apiClient';
+import { buildingFrom, buildingCodeFrom } from '../utils/building';
 
 function firstDefined(...values) {
   return values.find(value => value !== undefined && value !== null);
@@ -20,20 +21,6 @@ function toBool(value) {
   if (value === true || value === false) return value;
   const normalized = String(value ?? '').trim().toLowerCase();
   return normalized === 'true' || normalized === 'yes' || normalized === '1' || normalized === 'ac' || normalized === 'attached';
-}
-
-function buildingFrom(roomId = '') {
-  if (roomId.startsWith('OB-')) return 'OFFICE BUILDING';
-  if (roomId.startsWith('FB-')) return 'F&B BUILDING';
-  if (roomId.startsWith('VTV-')) return 'VTV BUILDING';
-  return 'UNKNOWN';
-}
-
-function buildingCodeFrom(roomId = '') {
-  if (roomId.startsWith('OB-')) return 'OB';
-  if (roomId.startsWith('FB-')) return 'FB';
-  if (roomId.startsWith('VTV-')) return 'VTV';
-  return '??';
 }
 
 export function normalizeOccupantRecord(row = {}) {

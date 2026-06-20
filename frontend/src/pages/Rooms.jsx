@@ -2,14 +2,10 @@
 import RoomModal from '../components/RoomModal';
 import { useOutletContext } from 'react-router-dom';
 import { fetchRooms as fetchRoomsFromApi, updateRoom as updateRoomRecord } from '../services/roomsService';
+import { BUILDING_ORDER, compareRoomIds, isCurrentRoomId, normalizeRoomType } from '../utils/building';
 
 const STATUS_OPTIONS = ['All', 'Partial', 'Vacant', 'Full'];
 const ROOM_TYPE_OPTIONS = ['Internal', 'Project', 'Quarantine'];
-const BUILDING_ORDER = ['OFFICE BUILDING', 'F&B BUILDING', 'VTV BUILDING'];
-
-function normalizeType(totalBeds) {
-  return totalBeds === 1 ? 'Single' : `${totalBeds} Share`;
-}
 
 function createBeds(totalBeds, existingBeds = []) {
   return Array.from({ length: totalBeds }, (_, index) => {
@@ -33,10 +29,6 @@ function deriveRooms(rooms) {
   });
 }
 
-function compareRoomIds(a, b) {
-  return a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' });
-}
-
 function escapeCsvValue(value) {
   const str = value == null ? '' : String(value);
   if (/[",\n]/.test(str)) return `"${str.replace(/"/g, '""')}"`;
@@ -57,10 +49,6 @@ function downloadCsv(filename, headers, rows) {
   link.click();
   document.body.removeChild(link);
   window.URL.revokeObjectURL(url);
-}
-
-function isCurrentRoomId(roomId = '') {
-  return /^(OB|FB|VTV)-/i.test(String(roomId));
 }
 
 function SaveToast({ notice, onClose }) {
@@ -200,7 +188,7 @@ function Rooms() {
       'Floor': room.floor || '',
       'Room No': room.roomNo && room.roomNo !== room.id ? room.roomNo : String(room.id || '').split('-').slice(-1)[0],
       'Room ID': room.id || '',
-      'Room Type': String(room.type || normalizeType(room.totalBeds)).replace(/\s+Share$/i, '-Share'),
+      'Room Type': String(room.type || normalizeRoomType(room.totalBeds)).replace(/\s+Share$/i, '-Share'),
       'AC / Non-AC': room.ac ? 'AC' : 'Non-AC',
       'Toilet Type': room.attached ? 'Attached' : 'Common',
       'Room Active': /^(yes|y)$/i.test(String(room.roomActive || 'Yes')) ? 'Y' : 'N',
@@ -246,7 +234,7 @@ function Rooms() {
     const updatedRoom = {
       ...current,
       totalBeds: nextTotalBeds,
-      type: normalizeType(nextTotalBeds),
+      type: normalizeRoomType(nextTotalBeds),
       roomType: editRoomType,
       ac: editAcType === 'AC',
       usedBeds: occupiedCount,
