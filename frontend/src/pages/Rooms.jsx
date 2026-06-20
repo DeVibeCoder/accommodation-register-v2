@@ -278,13 +278,10 @@ function Rooms() {
   return (
     <div
       className="page-container"
-      style={{ width: '100%', maxWidth: '100%', margin: 0, padding: '24px 32px 0 32px', background: 'none', fontFamily: 'Inter, Segoe UI, Arial, sans-serif', boxSizing: 'border-box' }}
+      style={{ width: '100%', maxWidth: '100%', margin: 0, padding: '16px 24px 0 24px', background: 'none', fontFamily: 'Inter, Segoe UI, Arial, sans-serif', boxSizing: 'border-box' }}
     >
       {/* Filters */}
-      <div style={{ marginBottom: 24, width: '100%' }}>
-        <h1 style={{ fontWeight: 900, fontSize: '2rem', margin: '0 0 16px 0', color: '#1e293b', letterSpacing: 0.5 }}>
-          Rooms <span style={{ fontWeight: 400, fontSize: '1.1rem', opacity: 0.7 }}>(Room Master)</span>
-        </h1>
+      <div style={{ marginBottom: 16, width: '100%' }}>
         <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'nowrap', width: '100%' }}>
           <select value={building} onChange={e => setBuilding(e.target.value)} style={{ padding: '10px 14px', borderRadius: 12, border: '1.5px solid #d0d7e2', fontWeight: 600, fontSize: 15, background: '#fff', minWidth: 150, flexShrink: 0 }}>
             {buildingOptions.map(opt => (

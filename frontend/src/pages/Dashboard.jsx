@@ -195,17 +195,15 @@ function Dashboard() {
         background:'linear-gradient(135deg, #1e1b4b 0%, #4f46e5 52%, #0891b2 100%)',
         color:'#fff',
         borderRadius:16,
-        padding:'22px 26px',
+        padding:'14px 20px',
         boxShadow:'0 12px 32px rgba(79,70,229,0.28)',
-        marginBottom:16,
+        marginBottom:14,
+        display:'flex', justifyContent:'space-between', alignItems:'center', gap:16, flexWrap:'wrap',
         animation:'headerSlide 0.4s cubic-bezier(0.22,1,0.36,1) both',
       }}>
         <div style={{ fontSize:11, opacity:.8, letterSpacing:1.2, textTransform:'uppercase', fontWeight:700 }}>Live Occupancy Snapshot</div>
-        <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-end', gap:20, marginTop:8, flexWrap:'wrap' }}>
-          <h1 style={{ margin:0, fontSize:'1.8rem', lineHeight:1.1, fontWeight:900, letterSpacing:'-0.3px' }}>Accommodation Dashboard</h1>
-          <div style={{ fontSize:14, background:'rgba(255,255,255,0.14)', padding:'6px 14px', borderRadius:999, fontWeight:700 }}>
-            Occupancy: <strong>{percent(metrics.occupied, metrics.totalBeds)}%</strong>
-          </div>
+        <div style={{ fontSize:14, background:'rgba(255,255,255,0.14)', padding:'6px 14px', borderRadius:999, fontWeight:700 }}>
+          Occupancy: <strong>{percent(metrics.occupied, metrics.totalBeds)}%</strong>
         </div>
       </div>
 

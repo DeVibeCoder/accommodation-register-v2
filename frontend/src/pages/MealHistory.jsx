@@ -292,12 +292,8 @@ function MealHistory() {
   };
 
   return (
-    <div className="page-container" style={{ width: '100%', maxWidth: '100%', margin: 0, padding: 'clamp(14px, 2.2vw, 24px) clamp(12px, 3vw, 32px) 30px', background: 'none', fontFamily: 'Inter, Segoe UI, Arial, sans-serif', boxSizing: 'border-box' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 16, marginBottom: 18, flexWrap: 'wrap' }}>
-        <div>
-          <h1 style={{ margin: 0, color: '#1e293b', fontWeight: 900, fontSize: '1.8rem' }}>Meal History</h1>
-          <p style={{ margin: '6px 0 0', color: '#64748b', fontWeight: 600 }}>Daily meal headcount snapshots by department with export.</p>
-        </div>
+    <div className="page-container" style={{ width: '100%', maxWidth: '100%', margin: 0, padding: '12px clamp(12px, 3vw, 32px) 30px', background: 'none', fontFamily: 'Inter, Segoe UI, Arial, sans-serif', boxSizing: 'border-box' }}>
+      <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: 16, marginBottom: 14, flexWrap: 'wrap' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', padding: 10, borderRadius: 16, background: 'linear-gradient(180deg, #ffffff 0%, #f8fbff 100%)', border: '1px solid #dbe4f0', boxShadow: '0 10px 28px rgba(15,23,42,0.06)' }}>
           <select value={selectedMonth} onChange={e => setSelectedMonth(e.target.value)} style={{ height: 36, minWidth: 150, border: '1px solid #cbd5e1', borderRadius: 8, padding: '0 10px', fontWeight: 600, color: '#334155' }}>
             {monthOptions.map(month => <option key={month} value={month}>{month}</option>)}

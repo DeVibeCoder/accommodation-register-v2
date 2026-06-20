@@ -228,9 +228,18 @@ function Layout({ user, onLogout }) {
               <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
             </svg>
           </button>
-          <div style={{ flex: 1, display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 10 }}>
-            <img src="/logo.png" alt="TIC" style={{ height: 34, width: 34, objectFit: 'cover', objectPosition: 'center', borderRadius: 6 }} />
-            <span style={{ fontWeight: 800, fontSize: 17, color: '#1e293b', letterSpacing: 0.2 }}>TIC Meals &amp; Stay</span>
+          <div style={{ flex: 1, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+            <span style={{ fontWeight: 700, fontSize: 17, color: '#1e293b', letterSpacing: '-0.2px' }}>
+              {{
+                '/': 'Dashboard',
+                '/rooms': 'Rooms',
+                '/occupancy': 'Occupancy',
+                '/stay-history': 'Stay History',
+                '/meal-exclusion': 'Meal Exclusion',
+                '/meal-history': 'Meal History',
+                '/settings': 'Settings',
+              }[location.pathname] ?? 'TIC Meals & Stay'}
+            </span>
           </div>
         </header>
 

@@ -1006,14 +1006,11 @@ function Occupancy() {
   const hasFilters = personTypeFilter!=='All'||buildingFilter!=='All'||!!sectionFilter||idNameSearch||roomSearch;
 
   return (
-    <div style={{ width:'100%',maxWidth:'100%',margin:0,padding:'clamp(14px, 2.3vw, 24px) clamp(12px, 3vw, 32px)',background:'none',fontFamily:'Inter,Segoe UI,Arial,sans-serif',boxSizing:'border-box',minHeight:'100vh' }}>
+    <div style={{ width:'100%',maxWidth:'100%',margin:0,padding:'12px clamp(12px, 3vw, 32px) clamp(14px, 2.3vw, 24px)',background:'none',fontFamily:'Inter,Segoe UI,Arial,sans-serif',boxSizing:'border-box',minHeight:'100vh' }}>
 
       {/* Header */}
-      <div style={{ display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:20,flexWrap:'wrap',gap:12 }}>
-        <div>
-          <h1 style={{ fontWeight:800,fontSize:'1.7rem',color:'#1e293b',margin:0,letterSpacing:'-0.5px' }}>Occupancy</h1>
-          <p style={{ margin:'4px 0 0',fontSize:13,color:'#94a3b8' }}>{filtered.length} of {occupants.length} active occupants</p>
-        </div>
+      <div style={{ display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:14,flexWrap:'wrap',gap:10 }}>
+        <p style={{ margin:0,fontSize:13,color:'#94a3b8',fontWeight:600 }}>{filtered.length} of {occupants.length} active occupants</p>
         <div style={{ display:'flex',gap:10,alignItems:'flex-start',flexWrap:'wrap' }}>
           {canEditAccommodation ? <button onClick={()=>setAddOpen(true)} style={{ padding:'11px 26px',borderRadius:12,border:'none',background:'#6366f1',color:'#fff',fontWeight:700,fontSize:15,cursor:'pointer',display:'flex',alignItems:'center',gap:8,boxShadow:'0 2px 8px rgba(59,130,246,.35)' }}>+ Add Occupant</button> : null}
           {canUseOccupancyBulkTools ? (

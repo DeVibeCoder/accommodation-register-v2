@@ -57,9 +57,9 @@ export default function SignIn({ onSignIn }) {
         <div style={{ position: 'absolute', top: '40%', right: -40, width: 160, height: 160, borderRadius: '50%', background: 'rgba(99,102,241,0.2)', zIndex: 0 }} />
 
         <div style={{ position: 'relative', zIndex: 1, width: '100%', maxWidth: 420 }}>
-          {/* Logo */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 18, marginBottom: 40 }}>
-            <img src="/logo.png" alt="TIC" style={{ width: 96, height: 96, objectFit: 'contain', borderRadius: 16, border: '1px solid rgba(255,255,255,0.18)', background: 'rgba(255,255,255,0.06)', flexShrink: 0 }} />
+          {/* Logo — stacked: image on top, title below */}
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 16, marginBottom: 36 }}>
+            <img src="/logo.png" alt="TIC" style={{ width: 100, height: 100, objectFit: 'contain', borderRadius: 16, border: '1px solid rgba(255,255,255,0.18)', background: 'rgba(255,255,255,0.06)' }} />
             <div style={{ fontWeight: 900, fontSize: 36, color: '#fff', lineHeight: 1.1, letterSpacing: '-0.5px' }}>
               TIC Meals &amp; Stay
             </div>

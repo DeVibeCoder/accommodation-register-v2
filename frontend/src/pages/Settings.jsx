@@ -598,7 +598,7 @@ function Settings({ user, setUser }) {
   const inputStyle = { fontSize: 14, padding: '10px 12px', borderRadius: 10, border: '1.5px solid #d0d7e2', fontWeight: 600, background: '#fff' };
 
   return (
-    <div className="page-container" style={{ width: '100%', maxWidth: '100%', margin: 0, padding: '24px 32px 24px 32px', background: 'none', fontFamily: 'Inter, Segoe UI, Arial, sans-serif', boxSizing: 'border-box' }}>
+    <div className="page-container" style={{ width: '100%', maxWidth: '100%', margin: 0, padding: '12px 32px 24px 32px', background: 'none', fontFamily: 'Inter, Segoe UI, Arial, sans-serif', boxSizing: 'border-box' }}>
       <div style={{ background: 'linear-gradient(135deg, #1e1b4b 0%, #4f46e5 52%, #0891b2 100%)', color: '#fff', borderRadius: 16, padding: '22px 26px', boxShadow: '0 12px 32px rgba(79,70,229,0.28)', marginBottom: 18 }}>
         <div style={{ fontSize: 12, opacity: 0.92, letterSpacing: 0.5, textTransform: 'uppercase', fontWeight: 700 }}>System Control Center</div>
         <div style={{ display: 'flex', justifyContent: 'space-between', gap: 16, alignItems: 'flex-end', flexWrap: 'wrap', marginTop: 8 }}>

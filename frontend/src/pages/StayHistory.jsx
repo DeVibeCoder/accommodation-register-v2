@@ -80,20 +80,17 @@ function StayHistory() {
   }, [enrichedHistory, activeFilter, search]);
 
   return (
-    <div style={{ width: '100%', maxWidth: '100%', margin: 0, padding: '24px 32px', background: 'none', fontFamily: 'Inter, Segoe UI, Arial, sans-serif', boxSizing: 'border-box', minHeight: '100vh' }}>
-      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 16, marginBottom: 20, flexWrap: 'wrap' }}>
-        <div>
-          <h1 style={{ fontWeight: 800, fontSize: '1.7rem', color: '#1e293b', margin: 0, letterSpacing: '-0.4px' }}>Stay History</h1>
-          <p style={{ margin: '6px 0 0', color: '#94a3b8', fontSize: 13 }}>
-            {filtered.length} of {stayHistory.length} recorded accommodation activities
-          </p>
-        </div>
+    <div style={{ width: '100%', maxWidth: '100%', margin: 0, padding: '12px 24px 24px', background: 'none', fontFamily: 'Inter, Segoe UI, Arial, sans-serif', boxSizing: 'border-box', minHeight: '100vh' }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, marginBottom: 14, flexWrap: 'wrap' }}>
+        <p style={{ margin: 0, color: '#94a3b8', fontSize: 13, fontWeight: 600 }}>
+          {filtered.length} of {stayHistory.length} recorded accommodation activities
+        </p>
         <input
           type="text"
           placeholder="Search name, room, action..."
           value={search}
           onChange={e => setSearch(e.target.value)}
-          style={{ padding: '10px 14px', borderRadius: 12, border: '1.5px solid #d0d7e2', minWidth: 280, fontSize: 14, background: '#fff' }}
+          style={{ padding: '9px 14px', borderRadius: 12, border: '1.5px solid #d0d7e2', minWidth: 260, fontSize: 14, background: '#fff' }}
         />
       </div>
 

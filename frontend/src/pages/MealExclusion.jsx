@@ -748,7 +748,7 @@ function MealExclusion() {
   };
 
   return (
-    <div style={{ width: '100%', maxWidth: '100%', margin: 0, padding: 'clamp(14px, 2.2vw, 24px) clamp(12px, 3vw, 32px)', background: 'none', fontFamily: 'Inter,Segoe UI,Arial,sans-serif', boxSizing: 'border-box' }}>
+    <div style={{ width: '100%', maxWidth: '100%', margin: 0, padding: '12px clamp(12px, 3vw, 32px) clamp(14px, 2.2vw, 24px)', background: 'none', fontFamily: 'Inter,Segoe UI,Arial,sans-serif', boxSizing: 'border-box' }}>
 
       {/* --- Stat cards + buttons --- */}
       <div style={{ display: 'flex', alignItems: 'stretch', gap: 12, marginBottom: 20, flexWrap: 'wrap' }}>
