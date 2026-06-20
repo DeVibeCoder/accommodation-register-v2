@@ -150,38 +150,25 @@ export default function Sidebar({ collapsed = false, setCollapsed, onLogout, use
         flexShrink: 0,
       }}>
         {collapsed ? (
-          /* Collapsed: show logo as a small square crop */
+          /* Collapsed: same logo size as expanded */
           <img
             src="/logo.png"
             alt="TIC"
-            style={{
-              width: 38,
-              height: 38,
-              objectFit: 'cover',
-              objectPosition: 'center',
-              borderRadius: 8,
-            }}
+            style={{ width: 42, height: 42, objectFit: 'contain', borderRadius: 8 }}
           />
         ) : (
-          /* Expanded: logo + name side by side */
+          /* Expanded: same logo + name */
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, minWidth: 0 }}>
             <img
               src="/logo.png"
               alt="TIC Meals and Stay"
-              style={{
-                height: 46,
-                width: 46,
-                objectFit: 'cover',
-                objectPosition: 'center',
-                borderRadius: 8,
-                flexShrink: 0,
-              }}
+              style={{ width: 42, height: 42, objectFit: 'contain', borderRadius: 8, flexShrink: 0 }}
             />
             <div style={{ minWidth: 0, overflow: 'hidden' }}>
               <div style={{ fontWeight: 900, fontSize: 14, color: '#e2e8f0', whiteSpace: 'nowrap', letterSpacing: 0.2 }}>
                 TIC Meals &amp; Stay
               </div>
-              <div style={{ fontSize: 10, color: 'rgba(148,163,184,0.6)', fontWeight: 600, letterSpacing: 0.5, textTransform: 'uppercase', marginTop: 1 }}>
+              <div style={{ fontSize: 10, color: 'rgba(148,163,184,0.55)', fontWeight: 600, letterSpacing: 0.5, textTransform: 'uppercase', marginTop: 1 }}>
                 Camp Management
               </div>
             </div>
@@ -277,17 +264,17 @@ export default function Sidebar({ collapsed = false, setCollapsed, onLogout, use
             alignItems: 'center',
             justifyContent: 'center',
             gap: collapsed ? 0 : 6,
-            background: 'rgba(99,102,241,0.15)',
-            color: '#a5b4fc',
-            border: '1px solid rgba(99,102,241,0.3)',
+            background: '#4338ca',
+            color: '#fff',
+            border: '1px solid rgba(165,180,252,0.4)',
             borderRadius: 7,
             fontWeight: 700,
             fontSize: 12.5,
             cursor: 'pointer',
-            transition: 'background 0.14s, color 0.14s',
+            transition: 'background 0.14s, border-color 0.14s',
           }}
-          onMouseEnter={e => { e.currentTarget.style.background = 'rgba(99,102,241,0.28)'; e.currentTarget.style.color = '#c7d2fe'; }}
-          onMouseLeave={e => { e.currentTarget.style.background = 'rgba(99,102,241,0.15)'; e.currentTarget.style.color = '#a5b4fc'; }}
+          onMouseEnter={e => { e.currentTarget.style.background = '#6366f1'; e.currentTarget.style.borderColor = 'rgba(165,180,252,0.7)'; }}
+          onMouseLeave={e => { e.currentTarget.style.background = '#4338ca'; e.currentTarget.style.borderColor = 'rgba(165,180,252,0.4)'; }}
         >
           <svg width="13" height="13" fill="none" viewBox="0 0 24 24">
             <path d="M16 17l5-5m0 0l-5-5m5 5H9" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
