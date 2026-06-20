@@ -104,7 +104,7 @@ function navLinkStyle(isActive, collapsed) {
   };
 }
 
-export default function Sidebar({ collapsed = false, setCollapsed, onLogout, user }) {
+export default function Sidebar({ collapsed = false, setCollapsed, onLogout, user, onNavClick }) {
   const sidebarWidth = collapsed ? 64 : 220;
   const role = user?.role || 'Viewer';
   const roleInitial = String(role).charAt(0).toUpperCase();
@@ -205,6 +205,7 @@ export default function Sidebar({ collapsed = false, setCollapsed, onLogout, use
                 end={item.to === '/'}
                 style={({ isActive }) => navLinkStyle(isActive, collapsed)}
                 title={collapsed ? item.label : undefined}
+                onClick={onNavClick}
               >
                 <span style={{ display: 'flex', alignItems: 'center', flexShrink: 0 }}>
                   {item.icon}
@@ -233,6 +234,7 @@ export default function Sidebar({ collapsed = false, setCollapsed, onLogout, use
                 to={item.to}
                 style={({ isActive }) => navLinkStyle(isActive, collapsed)}
                 title={collapsed ? item.label : undefined}
+                onClick={onNavClick}
               >
                 <span style={{ display: 'flex', alignItems: 'center', flexShrink: 0 }}>
                   {item.icon}

@@ -36,8 +36,22 @@ function attachOccupantsToRooms(rooms, occupants) {
   });
 }
 
+function useViewportWidth() {
+  const [w, setW] = React.useState(() => (typeof window !== 'undefined' ? window.innerWidth : 1200));
+  React.useEffect(() => {
+    const h = () => setW(window.innerWidth);
+    window.addEventListener('resize', h);
+    return () => window.removeEventListener('resize', h);
+  }, []);
+  return w;
+}
+
 function Layout({ user, onLogout }) {
   const location = useLocation();
+  const vw = useViewportWidth();
+  const isMobile = vw < 768;
+
+  // On mobile the sidebar defaults to collapsed/hidden
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const uidRef = useRef(1000);
   const getNextUid = () => uidRef.current++;
@@ -82,7 +96,11 @@ function Layout({ user, onLogout }) {
   };
 
   const roomsState = useMemo(() => attachOccupantsToRooms(roomBaseState, occupants), [roomBaseState, occupants]);
-  const sidebarWidth = sidebarCollapsed ? 64 : 220;
+
+  // On mobile: sidebar overlays content (width 0 push), on desktop it pushes
+  const sidebarWidth = isMobile ? 0 : (sidebarCollapsed ? 64 : 220);
+  // On mobile: sidebar shows as overlay when NOT collapsed
+  const sidebarVisible = isMobile ? !sidebarCollapsed : true;
   const role = user?.role || 'Viewer';
   const isAdmin = role === 'Admin';
   const canEditAccommodation = role === 'Admin' || role === 'Accommodation' || role === 'Supervisor';
@@ -176,8 +194,15 @@ function Layout({ user, onLogout }) {
   }, []);
 
   return (
-    <div style={{ minHeight: '100vh', overflow: 'hidden', background: '#f5f7fa' }}>
-      <Sidebar collapsed={sidebarCollapsed} setCollapsed={setSidebarCollapsed} onLogout={onLogout} user={user} />
+    <div style={{ minHeight: '100vh', overflow: 'hidden', background: '#f1f5f9' }}>
+      {/* Mobile backdrop: tap anywhere to close sidebar */}
+      {isMobile && !sidebarCollapsed && (
+        <div onClick={() => setSidebarCollapsed(true)} style={{ position: 'fixed', inset: 0, background: 'rgba(15,23,42,0.45)', zIndex: 199, animation: 'fadeIn 0.18s ease both' }} />
+      )}
+      {/* Sidebar: always shown on desktop, shown as overlay on mobile when open */}
+      {(!isMobile || !sidebarCollapsed) && (
+        <Sidebar collapsed={isMobile ? false : sidebarCollapsed} setCollapsed={setSidebarCollapsed} onLogout={onLogout} user={user} onNavClick={isMobile ? () => setSidebarCollapsed(true) : undefined} />
+      )}
 
       <div
         style={{
@@ -189,6 +214,7 @@ function Layout({ user, onLogout }) {
           flexDirection: 'column',
           overflow: 'hidden',
           boxSizing: 'border-box',
+          transition: 'margin-left 0.22s cubic-bezier(.4,0,.2,1), width 0.22s cubic-bezier(.4,0,.2,1)',
         }}
       >
         <header

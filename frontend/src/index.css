@@ -18,6 +18,12 @@ body {
   background: #f1f5f9;
 }
 
+/* ─── Mobile bottom-sheet slide up ──────────────────────────── */
+@keyframes slideUpSheet {
+  from { transform: translateY(100%); }
+  to   { transform: translateY(0);    }
+}
+
 /* ─── Login page circle drift animations ────────────────────── */
 @keyframes drift1 {
   0%,100% { transform: translate(0px,   0px)   scale(1);    }
