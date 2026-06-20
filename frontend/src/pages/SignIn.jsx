@@ -51,15 +51,17 @@ export default function SignIn({ onSignIn }) {
         position: 'relative', overflow: 'hidden',
         animation: 'fadeIn 0.5s ease both',
       }}>
-        {/* Decorative circles */}
-        <div style={{ position: 'absolute', top: -80, left: -80, width: 280, height: 280, borderRadius: '50%', background: 'rgba(255,255,255,0.05)', zIndex: 0 }} />
-        <div style={{ position: 'absolute', bottom: -60, right: -60, width: 220, height: 220, borderRadius: '50%', background: 'rgba(8,145,178,0.2)', zIndex: 0 }} />
-        <div style={{ position: 'absolute', top: '40%', right: -40, width: 160, height: 160, borderRadius: '50%', background: 'rgba(99,102,241,0.2)', zIndex: 0 }} />
+        {/* Decorative circles — slow drift */}
+        <div style={{ position: 'absolute', top: -80, left: -80, width: 300, height: 300, borderRadius: '50%', background: 'rgba(255,255,255,0.06)', zIndex: 0, animation: 'drift1 14s ease-in-out infinite' }} />
+        <div style={{ position: 'absolute', bottom: -60, right: -60, width: 240, height: 240, borderRadius: '50%', background: 'rgba(8,145,178,0.22)', zIndex: 0, animation: 'drift2 18s ease-in-out infinite' }} />
+        <div style={{ position: 'absolute', top: '38%', right: -50, width: 180, height: 180, borderRadius: '50%', background: 'rgba(99,102,241,0.22)', zIndex: 0, animation: 'drift3 11s ease-in-out infinite' }} />
+        <div style={{ position: 'absolute', top: '20%', left: '30%', width: 120, height: 120, borderRadius: '50%', background: 'rgba(255,255,255,0.04)', zIndex: 0, animation: 'drift2 20s ease-in-out infinite reverse' }} />
+        <div style={{ position: 'absolute', bottom: '20%', left: '10%', width: 90, height: 90, borderRadius: '50%', background: 'rgba(129,140,248,0.15)', zIndex: 0, animation: 'drift1 9s ease-in-out infinite reverse' }} />
 
         <div style={{ position: 'relative', zIndex: 1, width: '100%', maxWidth: 420 }}>
-          {/* Logo — stacked: image on top, title below */}
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 16, marginBottom: 36 }}>
-            <img src="/logo.png" alt="TIC" style={{ width: 100, height: 100, objectFit: 'contain', borderRadius: 16, border: '1px solid rgba(255,255,255,0.18)', background: 'rgba(255,255,255,0.06)' }} />
+          {/* Logo — centered, stacked: image on top, title below */}
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16, marginBottom: 36, textAlign: 'center' }}>
+            <img src="/logo.png" alt="TIC" style={{ width: 110, height: 110, objectFit: 'contain', borderRadius: 18, border: '1px solid rgba(255,255,255,0.18)', background: 'rgba(255,255,255,0.06)' }} />
             <div style={{ fontWeight: 900, fontSize: 36, color: '#fff', lineHeight: 1.1, letterSpacing: '-0.5px' }}>
               TIC Meals &amp; Stay
             </div>
