@@ -65,25 +65,40 @@ const navSections = [
   },
 ];
 
+/* ── nav link style: split cleanly so collapsed never inherits expanded margin ── */
 function navLinkStyle(isActive, collapsed) {
-  return {
+  const base = {
     display: 'flex',
     alignItems: 'center',
-    justifyContent: collapsed ? 'center' : 'flex-start',
-    gap: collapsed ? 0 : 10,
-    width: '100%',
-    boxSizing: 'border-box',
-    padding: collapsed ? '12px 0' : '9px 14px',
-    margin: '1px 8px',
-    width: collapsed ? '100%' : 'calc(100% - 16px)',
     color: isActive ? '#c7d2fe' : '#94a3b8',
     background: isActive ? 'rgba(129,140,248,0.14)' : 'transparent',
-    borderRadius: 8,
-    borderLeft: isActive && !collapsed ? '3px solid #818cf8' : '3px solid transparent',
+    borderLeft: isActive ? '3px solid #818cf8' : '3px solid transparent',
     fontWeight: isActive ? 700 : 500,
     fontSize: 13.5,
-    transition: 'all 0.14s ease',
+    transition: 'background 0.14s ease, color 0.14s ease',
     textDecoration: 'none',
+    boxSizing: 'border-box',
+  };
+
+  if (collapsed) {
+    return {
+      ...base,
+      justifyContent: 'center',
+      width: '100%',
+      padding: '11px 0',
+      margin: '1px 0',
+      borderRadius: 0,
+    };
+  }
+
+  return {
+    ...base,
+    justifyContent: 'flex-start',
+    gap: 10,
+    width: 'calc(100% - 16px)',
+    padding: '9px 13px',
+    margin: '1px 8px',
+    borderRadius: 8,
     whiteSpace: 'nowrap',
     overflow: 'hidden',
   };
@@ -118,36 +133,81 @@ export default function Sidebar({ collapsed = false, setCollapsed, onLogout, use
       left: 0, top: 0,
       zIndex: 200,
       overflow: 'hidden',
-      boxShadow: '4px 0 24px rgba(0,0,0,0.28)',
+      boxShadow: '4px 0 24px rgba(0,0,0,0.3)',
       userSelect: 'none',
-      transition: 'width 0.2s cubic-bezier(.4,0,.2,1)',
+      transition: 'width 0.22s cubic-bezier(.4,0,.2,1)',
     }}>
 
-      {/* ── Logo ── */}
+      {/* ── Logo / branding ── */}
       <div style={{
-        height: 64, minHeight: 64,
-        display: 'flex', alignItems: 'center',
+        height: 68, minHeight: 68,
+        display: 'flex',
+        alignItems: 'center',
         justifyContent: collapsed ? 'center' : 'flex-start',
-        padding: collapsed ? 0 : '0 20px',
+        padding: collapsed ? '0' : '0 14px',
         borderBottom: '1px solid rgba(255,255,255,0.07)',
-        marginBottom: 8, flexShrink: 0,
+        overflow: 'hidden',
+        flexShrink: 0,
       }}>
         {collapsed ? (
-          <div style={{ width: 32, height: 32, borderRadius: 8, background: 'linear-gradient(135deg,#6366f1,#818cf8)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900, fontSize: 14, color: '#fff' }}>T</div>
+          /* Collapsed: show logo as a small square crop */
+          <img
+            src="/logo.png"
+            alt="TIC"
+            style={{
+              width: 38,
+              height: 38,
+              objectFit: 'cover',
+              objectPosition: 'center',
+              borderRadius: 8,
+            }}
+          />
         ) : (
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <div style={{ width: 32, height: 32, borderRadius: 8, background: 'linear-gradient(135deg,#6366f1,#818cf8)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900, fontSize: 13, color: '#fff', flexShrink: 0 }}>TIC</div>
-            <span style={{ fontWeight: 800, fontSize: 15, color: '#e2e8f0', letterSpacing: 0.2 }}>Meals &amp; Stay</span>
+          /* Expanded: logo + name side by side */
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, minWidth: 0 }}>
+            <img
+              src="/logo.png"
+              alt="TIC Meals and Stay"
+              style={{
+                height: 46,
+                width: 46,
+                objectFit: 'cover',
+                objectPosition: 'center',
+                borderRadius: 8,
+                flexShrink: 0,
+              }}
+            />
+            <div style={{ minWidth: 0, overflow: 'hidden' }}>
+              <div style={{ fontWeight: 900, fontSize: 14, color: '#e2e8f0', whiteSpace: 'nowrap', letterSpacing: 0.2 }}>
+                TIC Meals &amp; Stay
+              </div>
+              <div style={{ fontSize: 10, color: 'rgba(148,163,184,0.6)', fontWeight: 600, letterSpacing: 0.5, textTransform: 'uppercase', marginTop: 1 }}>
+                Camp Management
+              </div>
+            </div>
           </div>
         )}
       </div>
 
-      {/* ── Nav ── */}
-      <nav style={{ flex: 1, display: 'flex', flexDirection: 'column', overflowY: 'auto', overflowX: 'hidden', paddingBottom: 8 }}>
+      {/* ── Navigation ── */}
+      <nav style={{
+        flex: 1,
+        display: 'flex',
+        flexDirection: 'column',
+        overflowY: 'auto',
+        overflowX: 'hidden',
+        paddingBottom: 8,
+        paddingTop: 6,
+      }}>
         {filteredSections.map(section => (
-          <div key={section.label} style={{ marginBottom: 6 }}>
+          <div key={section.label} style={{ marginBottom: 4 }}>
             {!collapsed && (
-              <div style={{ fontSize: 10, fontWeight: 700, color: 'rgba(148,163,184,0.55)', letterSpacing: 1.4, textTransform: 'uppercase', padding: '10px 22px 4px' }}>
+              <div style={{
+                fontSize: 10, fontWeight: 700,
+                color: 'rgba(148,163,184,0.5)',
+                letterSpacing: 1.4, textTransform: 'uppercase',
+                padding: '8px 20px 3px',
+              }}>
                 {section.label}
               </div>
             )}
@@ -159,7 +219,9 @@ export default function Sidebar({ collapsed = false, setCollapsed, onLogout, use
                 style={({ isActive }) => navLinkStyle(isActive, collapsed)}
                 title={collapsed ? item.label : undefined}
               >
-                <span style={{ display: 'flex', alignItems: 'center', flexShrink: 0 }}>{item.icon}</span>
+                <span style={{ display: 'flex', alignItems: 'center', flexShrink: 0 }}>
+                  {item.icon}
+                </span>
                 {!collapsed && <span>{item.label}</span>}
               </NavLink>
             ))}
@@ -167,9 +229,14 @@ export default function Sidebar({ collapsed = false, setCollapsed, onLogout, use
         ))}
 
         {showSystem && (
-          <div style={{ marginBottom: 6 }}>
+          <div style={{ marginBottom: 4 }}>
             {!collapsed && (
-              <div style={{ fontSize: 10, fontWeight: 700, color: 'rgba(148,163,184,0.55)', letterSpacing: 1.4, textTransform: 'uppercase', padding: '10px 22px 4px' }}>
+              <div style={{
+                fontSize: 10, fontWeight: 700,
+                color: 'rgba(148,163,184,0.5)',
+                letterSpacing: 1.4, textTransform: 'uppercase',
+                padding: '8px 20px 3px',
+              }}>
                 {systemSection.label}
               </div>
             )}
@@ -180,7 +247,9 @@ export default function Sidebar({ collapsed = false, setCollapsed, onLogout, use
                 style={({ isActive }) => navLinkStyle(isActive, collapsed)}
                 title={collapsed ? item.label : undefined}
               >
-                <span style={{ display: 'flex', alignItems: 'center', flexShrink: 0 }}>{item.icon}</span>
+                <span style={{ display: 'flex', alignItems: 'center', flexShrink: 0 }}>
+                  {item.icon}
+                </span>
                 {!collapsed && <span>{item.label}</span>}
               </NavLink>
             ))}
@@ -188,26 +257,32 @@ export default function Sidebar({ collapsed = false, setCollapsed, onLogout, use
         )}
       </nav>
 
-      {/* ── Footer ── */}
+      {/* ── Footer: logout + role ── */}
       <div style={{
         flexShrink: 0,
         borderTop: '1px solid rgba(255,255,255,0.07)',
-        padding: collapsed ? '12px 0' : '12px 12px',
-        display: 'flex', flexDirection: 'column',
-        alignItems: 'center', gap: 8,
+        padding: collapsed ? '10px 0' : '10px 12px',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        gap: 8,
       }}>
         <button
           onClick={onLogout}
           title="Logout"
           style={{
-            width: collapsed ? 36 : '100%', height: 34,
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            width: collapsed ? 36 : '100%',
+            height: 34,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
             gap: collapsed ? 0 : 6,
             background: 'rgba(99,102,241,0.15)',
             color: '#a5b4fc',
             border: '1px solid rgba(99,102,241,0.3)',
             borderRadius: 7,
-            fontWeight: 700, fontSize: 12.5,
+            fontWeight: 700,
+            fontSize: 12.5,
             cursor: 'pointer',
             transition: 'background 0.14s, color 0.14s',
           }}
@@ -221,9 +296,25 @@ export default function Sidebar({ collapsed = false, setCollapsed, onLogout, use
           {!collapsed && 'Logout'}
         </button>
 
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, color: 'rgba(148,163,184,0.6)', fontSize: 11 }}>
-          <div style={{ width: 20, height: 20, borderRadius: '50%', background: 'rgba(129,140,248,0.2)', border: '1px solid rgba(129,140,248,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 9, fontWeight: 800, color: '#a5b4fc', flexShrink: 0 }}>{roleInitial}</div>
-          {!collapsed && <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{role}</span>}
+        <div style={{
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          gap: 6, color: 'rgba(148,163,184,0.6)', fontSize: 11,
+          width: '100%',
+        }}>
+          <div style={{
+            width: 20, height: 20, borderRadius: '50%',
+            background: 'rgba(129,140,248,0.2)',
+            border: '1px solid rgba(129,140,248,0.4)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontSize: 9, fontWeight: 800, color: '#a5b4fc', flexShrink: 0,
+          }}>
+            {roleInitial}
+          </div>
+          {!collapsed && (
+            <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+              {role}
+            </span>
+          )}
         </div>
       </div>
     </aside>

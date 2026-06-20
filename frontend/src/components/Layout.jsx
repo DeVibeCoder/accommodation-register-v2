@@ -229,7 +229,7 @@ function Layout({ user, onLogout }) {
             </svg>
           </button>
           <div style={{ flex: 1, display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 10 }}>
-            <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#6366f1', animation: 'pulseDot 2s ease-in-out infinite' }} />
+            <img src="/logo.png" alt="TIC" style={{ height: 34, width: 34, objectFit: 'cover', objectPosition: 'center', borderRadius: 6 }} />
             <span style={{ fontWeight: 800, fontSize: 17, color: '#1e293b', letterSpacing: 0.2 }}>TIC Meals &amp; Stay</span>
           </div>
         </header>
