@@ -77,7 +77,10 @@ function AddOccupantModal({ open, onClose, rooms, onAdd }) {
     <div
       onClick={onClose}
       style={{
-        position: 'fixed', inset: 0, zIndex: 3000,
+        position: 'fixed',
+        top: 62,      /* sit below the 62px sticky header */
+        left: 0, right: 0, bottom: 0,
+        zIndex: 3000,
         background: 'rgba(15,23,42,0.5)',
         display: 'flex', alignItems: 'flex-start', justifyContent: 'center',
         overflowY: 'auto',

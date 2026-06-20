@@ -539,7 +539,7 @@ function Rooms() {
       {/* Edit Room Modal */}
       {isEditOpen && (
         <div
-          style={{ position: 'fixed', inset: 0, background: 'rgba(15,23,42,0.38)', display: 'grid', placeItems: 'center', zIndex: 1200, padding: 16 }}
+          style={{ position: 'fixed', top: 62, left: 0, right: 0, bottom: 0, background: 'rgba(15,23,42,0.38)', display: 'flex', alignItems: 'flex-start', justifyContent: 'center', zIndex: 1200, padding: 16, overflowY: 'auto' }}
           onClick={closeEditModal}
         >
           <div
