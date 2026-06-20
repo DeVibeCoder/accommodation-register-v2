@@ -5,6 +5,16 @@ import { deleteStayHistoryEntry } from '../services/stayHistoryService';
 
 const FILTERS = ['All', 'Check Out', 'Check In', 'Swap', 'Move', 'Edits'];
 
+/** Abbreviate a department name to its initials, e.g. "THILAFUSHI INDUSTRIAL COMPLEX" → "TIC" */
+function shortCode(value) {
+  if (!value) return '';
+  const cleaned = String(value).toUpperCase().replace(/[^A-Z0-9\s]/g, ' ').replace(/\s+/g, ' ').trim();
+  if (!cleaned) return '';
+  const parts = cleaned.split(' ').filter(Boolean);
+  if (parts.length === 1) return parts[0].slice(0, 4);
+  return parts.slice(0, 4).map(p => p[0]).join('');
+}
+
 const ACTION_STYLES = {
   'Check In': { bg: '#dcfce7', text: '#15803d' },
   'Check Out': { bg: '#fee2e2', text: '#dc2626' },
@@ -159,7 +169,7 @@ function StayHistory() {
                   {item.name || '-'}
                   {(item.section || item.department) ? (
                     <div style={{ fontSize: 11, color: '#94a3b8', fontWeight: 600, marginTop: 2 }}>
-                      {[item.section, item.department].filter(Boolean).join(' | ')}
+                      {[item.section, shortCode(item.department)].filter(Boolean).join(' | ')}
                     </div>
                   ) : null}
                 </div>
