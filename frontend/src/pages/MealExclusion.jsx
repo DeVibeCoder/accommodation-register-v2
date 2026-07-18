@@ -45,6 +45,7 @@ function normalizeDepartmentLabel(value) {
 
 // --- Add / Edit Modal -------------------------------------------------------
 function ExclusionModal({ open, onClose, occupants, canEdit, onSaved, editEntry = null }) {
+  const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
   const isEditing = Boolean(editEntry?.id);
   const [selectedOccupantId, setSelectedOccupantId] = useState('');
   const [occupantQuery, setOccupantQuery] = useState('');
@@ -118,7 +119,7 @@ function ExclusionModal({ open, onClose, occupants, canEdit, onSaved, editEntry 
 
   if (!open) return null;
   return (
-    <div style={{ position: 'fixed', top: 62, left: 0, right: 0, bottom: 0, background: 'rgba(15,23,42,0.5)', zIndex: 3000, display: 'flex', alignItems: 'flex-start', justifyContent: 'center', padding: 16, overflowY: 'auto', animation: 'fadeIn 0.18s ease both' }}>
+    <div style={{ position: 'fixed', top: isMobile ? 50 : 62, left: 0, right: 0, bottom: 0, background: 'rgba(15,23,42,0.5)', zIndex: 3000, display: 'flex', alignItems: 'flex-start', justifyContent: 'center', padding: 16, overflowY: 'auto', animation: 'fadeIn 0.18s ease both' }}>
       <div style={{ background: 'linear-gradient(180deg,#ffffff 0%,#f8fbff 100%)', borderRadius: 16, width: '100%', maxWidth: 560, boxShadow: '0 20px 60px rgba(0,0,0,0.2)', border: '1px solid #dbeafe', fontFamily: 'Inter,Segoe UI,Arial,sans-serif', animation: 'scaleIn 0.22s cubic-bezier(0.22,1,0.36,1) both' }}>
         <div style={{ padding: '18px 24px 15px', borderBottom: '1px solid #dbeafe', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'linear-gradient(130deg,#eff6ff 0%,#f8fbff 100%)', borderRadius: '16px 16px 0 0' }}>
           <div>
@@ -319,6 +320,7 @@ function parseMealExclusionCsv(text, occupants) {
 }
 
 function ImportModal({ open, onClose, occupants, onImported }) {
+  const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
   const fileRef = useRef(null);
   const [parsed, setParsed] = useState(null);
   const [parseError, setParseError] = useState('');
@@ -373,7 +375,7 @@ function ImportModal({ open, onClose, occupants, onImported }) {
   const invalidCount = parsed ? parsed.filter(r => !r.valid).length : 0;
 
   return (
-    <div style={{ position: 'fixed', top: 62, left: 0, right: 0, bottom: 0, background: 'rgba(15,23,42,0.5)', zIndex: 3000, display: 'flex', alignItems: 'flex-start', justifyContent: 'center', padding: 16, overflowY: 'auto' }}>
+    <div style={{ position: 'fixed', top: isMobile ? 50 : 62, left: 0, right: 0, bottom: 0, background: 'rgba(15,23,42,0.5)', zIndex: 3000, display: 'flex', alignItems: 'flex-start', justifyContent: 'center', padding: 16, overflowY: 'auto' }}>
       <div style={{ background: '#fff', borderRadius: 16, width: '100%', maxWidth: 860, maxHeight: '88vh', overflow: 'hidden', display: 'flex', flexDirection: 'column', boxShadow: '0 20px 60px rgba(0,0,0,0.2)', fontFamily: 'Inter,Segoe UI,Arial,sans-serif' }}>
         <div style={{ padding: '18px 22px', borderBottom: '1px solid #e2e8f0', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'linear-gradient(130deg,#f0fdf4 0%,#f8fbff 100%)', borderRadius: '16px 16px 0 0' }}>
           <div>
@@ -471,6 +473,7 @@ function ImportModal({ open, onClose, occupants, onImported }) {
 
 // --- History Modal ----------------------------------------------------------
 function ExclusionHistoryModal({ open, onClose }) {
+  const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [historyRows, setHistoryRows] = useState([]);
@@ -492,7 +495,7 @@ function ExclusionHistoryModal({ open, onClose }) {
 
   if (!open) return null;
   return (
-    <div style={{ position: 'fixed', top: 62, left: 0, right: 0, bottom: 0, background: 'rgba(15,23,42,0.5)', zIndex: 3000, display: 'flex', alignItems: 'flex-start', justifyContent: 'center', padding: 16, overflowY: 'auto' }}>
+    <div style={{ position: 'fixed', top: isMobile ? 50 : 62, left: 0, right: 0, bottom: 0, background: 'rgba(15,23,42,0.5)', zIndex: 3000, display: 'flex', alignItems: 'flex-start', justifyContent: 'center', padding: 16, overflowY: 'auto' }}>
       <div style={{ background: '#fff', borderRadius: 16, width: '100%', maxWidth: 980, boxShadow: '0 20px 60px rgba(0,0,0,0.2)', maxHeight: '84vh', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
         <div style={{ padding: '18px 22px', borderBottom: '1px solid #e2e8f0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div>

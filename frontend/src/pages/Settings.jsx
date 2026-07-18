@@ -35,11 +35,11 @@ function formatDate(value) {
 
 function ConfirmationDialog({ config, busy, onCancel, onConfirm }) {
   if (!config?.open) return null;
-
+  const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
   const isDanger = config.variant === 'danger';
 
   return (
-    <div style={{ position: 'fixed', top: 62, left: 0, right: 0, bottom: 0, background: 'rgba(15, 23, 42, 0.45)', display: 'flex', alignItems: 'flex-start', justifyContent: 'center', zIndex: 1000, padding: 16, overflowY: 'auto', animation: 'fadeIn 0.18s ease both' }}>
+    <div style={{ position: 'fixed', top: isMobile ? 50 : 62, left: 0, right: 0, bottom: 0, background: 'rgba(15, 23, 42, 0.45)', display: 'flex', alignItems: 'flex-start', justifyContent: 'center', zIndex: 1000, padding: 16, overflowY: 'auto', animation: 'fadeIn 0.18s ease both' }}>
       <div style={{ width: '100%', maxWidth: 460, background: '#fff', borderRadius: 20, boxShadow: '0 24px 60px rgba(15,23,42,.22)', border: '1px solid #dbe4f0', overflow: 'hidden', animation: 'scaleIn 0.22s cubic-bezier(0.22,1,0.36,1) both' }}>
         <div style={{ padding: '20px 22px', background: isDanger ? 'linear-gradient(135deg, #7f1d1d 0%, #dc2626 100%)' : 'linear-gradient(135deg, #1e3a8a 0%, #0ea5e9 100%)', color: '#fff' }}>
           <div style={{ fontSize: 12, fontWeight: 800, letterSpacing: 0.5, textTransform: 'uppercase', opacity: 0.9 }}>Please Confirm</div>
@@ -75,9 +75,9 @@ function ConfirmationDialog({ config, busy, onCancel, onConfirm }) {
 
 function ResultDialog({ open, title, message, onClose }) {
   if (!open) return null;
-
+  const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
   return (
-    <div style={{ position: 'fixed', top: 62, left: 0, right: 0, bottom: 0, background: 'rgba(15, 23, 42, 0.45)', display: 'flex', alignItems: 'flex-start', justifyContent: 'center', zIndex: 1001, padding: 16, overflowY: 'auto', animation: 'fadeIn 0.18s ease both' }}>
+    <div style={{ position: 'fixed', top: isMobile ? 50 : 62, left: 0, right: 0, bottom: 0, background: 'rgba(15, 23, 42, 0.45)', display: 'flex', alignItems: 'flex-start', justifyContent: 'center', zIndex: 1001, padding: 16, overflowY: 'auto', animation: 'fadeIn 0.18s ease both' }}>
       <div style={{ width: '100%', maxWidth: 420, background: '#fff', borderRadius: 18, boxShadow: '0 24px 60px rgba(15,23,42,.22)', border: '1px solid #dbe4f0', overflow: 'hidden', animation: 'scaleIn 0.22s cubic-bezier(0.22,1,0.36,1) both' }}>
         <div style={{ padding: '18px 20px', background: 'linear-gradient(135deg, #1e3a8a 0%, #0ea5e9 100%)', color: '#fff' }}>
           <div style={{ fontSize: 20, fontWeight: 900 }}>{title}</div>

@@ -359,8 +359,8 @@ function Layout({ user, onLogout }) {
         {/* ── Header ── */}
         <header
           style={{
-            height: 62,
-            minHeight: 62,
+            height: isMobile ? 50 : 62,
+            minHeight: isMobile ? 50 : 62,
             background: '#ffffff',
             borderBottom: '1px solid #e2e8f0',
             display: 'flex',
@@ -434,8 +434,8 @@ function Layout({ user, onLogout }) {
                   width: 34, height: 34,
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                   background: 'transparent',
-                  border: '1px solid #e2e8f0',
-                  color: '#64748b',
+                  border: '1px solid #fecaca',
+                  color: '#ef4444',
                   cursor: 'pointer',
                   borderRadius: 8,
                 }}

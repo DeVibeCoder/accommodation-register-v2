@@ -1,4 +1,4 @@
-import React, { useMemo, useRef, useState } from 'react';
+﻿import React, { useMemo, useRef, useState } from 'react';
 import { useOutletContext } from 'react-router-dom';
 import AddOccupantModal from '../components/AddOccupantModal';
 import {
@@ -187,7 +187,7 @@ function SwapModal({ open, onClose, occupant, allOccupants, onSwap }) {
   const selected = targetId != null ? others.find(o => o._id === targetId) : null;
 
   return (
-    <div onClick={onClose} style={{ position:'fixed',top:62,left:0,right:0,bottom:0,zIndex:3000,background:'rgba(20,30,60,.55)',display:'flex',alignItems:'center',justifyContent:'center',overflowY:'auto',animation:'fadeIn 0.18s ease both' }}>
+    <div onClick={onClose} style={{ position:'fixed',top:isMobile?50:62,left:0,right:0,bottom:0,zIndex:3000,background:'rgba(20,30,60,.55)',display:'flex',alignItems:'center',justifyContent:'center',overflowY:'auto',animation:'fadeIn 0.18s ease both' }}>
       <div onClick={e=>e.stopPropagation()} style={{ background:'#fff',borderRadius:18,padding:'28px 32px',maxWidth:560,width:'95%',boxShadow:'0 8px 40px rgba(30,50,120,.18)',position:'relative',display:'flex',flexDirection:'column',maxHeight:'88vh',animation:'scaleIn 0.22s cubic-bezier(0.22,1,0.36,1) both' }}>
         <button onClick={onClose} style={{ position:'absolute',top:14,right:18,fontSize:22,border:'none',background:'none',cursor:'pointer',color:'#64748b' }}>X</button>
         <h2 style={{ fontWeight:800,fontSize:'1.1rem',marginBottom:4,color:'#1e293b' }}>Swap Occupant</h2>
@@ -277,7 +277,7 @@ function MoveModal({ open, onClose, occupant, allRooms, onMove }) {
   const availBeds = selRoom ? selRoom.beds.filter(b=>!b.occupied) : [];
   const ready = targetRoom && targetBed;
   return (
-    <div onClick={onClose} style={{ position:'fixed',top:62,left:0,right:0,bottom:0,zIndex:3000,background:'rgba(20,30,60,.55)',display:'flex',alignItems:'center',justifyContent:'center',overflowY:'auto',animation:'fadeIn 0.18s ease both' }}>
+    <div onClick={onClose} style={{ position:'fixed',top:isMobile?50:62,left:0,right:0,bottom:0,zIndex:3000,background:'rgba(20,30,60,.55)',display:'flex',alignItems:'center',justifyContent:'center',overflowY:'auto',animation:'fadeIn 0.18s ease both' }}>
       <div onClick={e=>e.stopPropagation()} style={{ background:'#fff',borderRadius:18,padding:'32px 40px',maxWidth:520,width:'95%',boxShadow:'0 8px 40px rgba(30,50,120,.18)',position:'relative',animation:'scaleIn 0.22s cubic-bezier(0.22,1,0.36,1) both' }}>
         <button onClick={onClose} style={{ position:'absolute',top:16,right:20,fontSize:22,border:'none',background:'none',cursor:'pointer',color:'#64748b' }}>X</button>
         <h2 style={{ fontWeight:800,fontSize:'1.15rem',marginBottom:8,color:'#1e293b' }}>Move Occupant</h2>
@@ -325,7 +325,7 @@ function EditOccupantModal({ open, onClose, occupant, onSave }) {
   const handle = e => setForm(f=>({...f,[e.target.name]:e.target.value}));
   const handleFasting = e => setForm(f=>({...f,fasting:e.target.value==='true'}));
   return (
-    <div onClick={onClose} style={{ position:'fixed',top:62,left:0,right:0,bottom:0,zIndex:3000,background:'rgba(20,30,60,.55)',display:'flex',alignItems:'center',justifyContent:'center',overflowY:'auto',animation:'fadeIn 0.18s ease both' }}>
+    <div onClick={onClose} style={{ position:'fixed',top:isMobile?50:62,left:0,right:0,bottom:0,zIndex:3000,background:'rgba(20,30,60,.55)',display:'flex',alignItems:'center',justifyContent:'center',overflowY:'auto',animation:'fadeIn 0.18s ease both' }}>
       <div onClick={e=>e.stopPropagation()} style={{ background:'#fff',borderRadius:18,padding:'40px',maxWidth:700,width:'95%',boxShadow:'0 8px 40px rgba(30,50,120,.18)',position:'relative',animation:'scaleIn 0.22s cubic-bezier(0.22,1,0.36,1) both' }}>
         <button onClick={onClose} style={{ position:'absolute',top:16,right:20,fontSize:24,border:'none',background:'none',cursor:'pointer',color:'#94a3b8' }}>X</button>
         <h2 style={{ fontWeight:800,fontSize:'1.3rem',marginBottom:32,color:'#1e293b',letterSpacing:'-0.3px' }}>Edit Occupant</h2>
@@ -367,7 +367,7 @@ function EditOccupantModal({ open, onClose, occupant, onSave }) {
 function ConfirmModal({ open, onClose, onConfirm, title, message, confirmLabel='Confirm', confirmColor='#ef4444' }) {
   if (!open) return null;
   return (
-    <div onClick={onClose} style={{ position:'fixed',top:62,left:0,right:0,bottom:0,zIndex:3000,background:'rgba(20,30,60,.55)',display:'flex',alignItems:'center',justifyContent:'center',overflowY:'auto',animation:'fadeIn 0.18s ease both' }}>
+    <div onClick={onClose} style={{ position:'fixed',top:isMobile?50:62,left:0,right:0,bottom:0,zIndex:3000,background:'rgba(20,30,60,.55)',display:'flex',alignItems:'center',justifyContent:'center',overflowY:'auto',animation:'fadeIn 0.18s ease both' }}>
       <div onClick={e=>e.stopPropagation()} style={{ background:'#fff',borderRadius:18,padding:'32px 40px',maxWidth:420,width:'95%',boxShadow:'0 8px 40px rgba(30,50,120,.18)',animation:'scaleIn 0.22s cubic-bezier(0.22,1,0.36,1) both' }}>
         <h2 style={{ fontWeight:800,fontSize:'1.1rem',marginBottom:10,color:'#1e293b' }}>{title}</h2>
         <p style={{ fontSize:14,color:'#64748b',marginBottom:28 }}>{message}</p>
@@ -1102,7 +1102,7 @@ function Occupancy() {
         {hasFilters && (
           <button onClick={()=>{ setPersonTypeFilter('All'); setBuildingFilter('All'); setSectionFilter(''); setIdNameSearch(''); setRoomSearch(''); }}
             style={{ alignSelf:'flex-end',padding: isMobile ? '5px 8px' : '8px 16px',borderRadius:8,border:'1.5px solid #fca5a5',background:'#fff5f5',color:'#ef4444',fontSize: isMobile ? 11 : 13,fontWeight:600,cursor:'pointer' }}>
-            {isMobile ? '✕' : 'Clear'}
+            {isMobile ? 'âœ•' : 'Clear'}
           </button>
         )}
       </div>
@@ -1256,3 +1256,4 @@ function Occupancy() {
 }
 
 export default Occupancy;
+
