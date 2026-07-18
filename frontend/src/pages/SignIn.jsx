@@ -31,29 +31,59 @@ function Feature({ icon, title, desc }) {
   );
 }
 
-const inputStyle = (mobile) => ({
-  width: '100%',
-  boxSizing: 'border-box',
-  padding: mobile ? '15px 16px' : '11px 13px',
-  borderRadius: mobile ? 14 : 9,
-  border: '1.5px solid #e2e8f0',
-  fontSize: mobile ? 16 : 14,
-  fontWeight: 500,
-  color: '#1e293b',
-  background: mobile ? '#fff' : '#f8fafc',
-  outline: 'none',
-  WebkitAppearance: 'none',
-  fontFamily: 'inherit',
-});
+/* SVG icons used in inputs */
+const IconEmail = () => (
+  <svg width="18" height="18" fill="none" viewBox="0 0 24 24">
+    <rect x="2" y="4" width="20" height="16" rx="3" stroke="currentColor" strokeWidth="1.8"/>
+    <path d="M2 8l10 6 10-6" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/>
+  </svg>
+);
+const IconLock = () => (
+  <svg width="18" height="18" fill="none" viewBox="0 0 24 24">
+    <rect x="5" y="11" width="14" height="10" rx="2" stroke="currentColor" strokeWidth="1.8"/>
+    <path d="M8 11V7a4 4 0 0 1 8 0v4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/>
+  </svg>
+);
+const IconEye = ({ off }) => off ? (
+  <svg width="18" height="18" fill="none" viewBox="0 0 24 24">
+    <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19M6.53 6.53 17.47 17.47" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/>
+    <circle cx="12" cy="12" r="3" stroke="currentColor" strokeWidth="1.8"/>
+  </svg>
+) : (
+  <svg width="18" height="18" fill="none" viewBox="0 0 24 24">
+    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" stroke="currentColor" strokeWidth="1.8"/>
+    <circle cx="12" cy="12" r="3" stroke="currentColor" strokeWidth="1.8"/>
+  </svg>
+);
+const IconArrow = () => (
+  <svg width="18" height="18" fill="none" viewBox="0 0 24 24">
+    <path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"/>
+  </svg>
+);
+const IconSpinner = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" style={{ animation: 'loginSpin 0.75s linear infinite' }}>
+    <circle cx="12" cy="12" r="10" stroke="rgba(255,255,255,0.3)" strokeWidth="3"/>
+    <path d="M12 2a10 10 0 0 1 10 10" stroke="#fff" strokeWidth="3" strokeLinecap="round"/>
+  </svg>
+);
+
+const desktopInputStyle = {
+  width: '100%', boxSizing: 'border-box',
+  padding: '11px 13px', borderRadius: 9,
+  border: '1.5px solid #e2e8f0', fontSize: 14,
+  fontWeight: 500, color: '#1e293b', background: '#f8fafc',
+  outline: 'none', WebkitAppearance: 'none', fontFamily: 'inherit',
+};
 
 export default function SignIn({ onSignIn }) {
   const vw = useViewportWidth();
   const isMobile = vw < 768;
 
-  const [email, setEmail] = useState('');
+  const [email, setEmail]       = useState('');
   const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
+  const [showPwd, setShowPwd]   = useState(false);
+  const [error, setError]       = useState('');
+  const [loading, setLoading]   = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -65,154 +95,240 @@ export default function SignIn({ onSignIn }) {
     setLoading(false);
   };
 
-  /* ── Mobile layout ───────────────────────────────────────────── */
+  /* ── Mobile layout ─────────────────────────────────────────────── */
   if (isMobile) {
     return (
       <div style={{
         minHeight: '100vh',
-        background: 'linear-gradient(160deg, #1e1b4b 0%, #4338ca 55%, #0891b2 100%)',
-        display: 'flex',
-        flexDirection: 'column',
-        position: 'relative',
-        overflow: 'hidden',
+        background: 'linear-gradient(155deg, #0f0c29 0%, #302b63 40%, #24243e 70%, #0891b2 100%)',
+        display: 'flex', flexDirection: 'column',
+        position: 'relative', overflow: 'hidden',
         fontFamily: 'Inter, Segoe UI, Arial, sans-serif',
       }}>
-        {/* Decorative ambient circles */}
-        <div style={{ position: 'absolute', top: -70, left: -70, width: 240, height: 240, borderRadius: '50%', background: 'rgba(255,255,255,0.07)', pointerEvents: 'none', animation: 'drift1 14s ease-in-out infinite' }} />
-        <div style={{ position: 'absolute', top: '10%', right: -50, width: 190, height: 190, borderRadius: '50%', background: 'rgba(8,145,178,0.20)', pointerEvents: 'none', animation: 'drift2 18s ease-in-out infinite' }} />
-        <div style={{ position: 'absolute', top: '28%', left: '15%', width: 100, height: 100, borderRadius: '50%', background: 'rgba(99,102,241,0.18)', pointerEvents: 'none', animation: 'drift3 11s ease-in-out infinite' }} />
-        <div style={{ position: 'absolute', top: '5%', right: '25%', width: 60, height: 60, borderRadius: '50%', background: 'rgba(255,255,255,0.05)', pointerEvents: 'none', animation: 'drift1 20s ease-in-out infinite reverse' }} />
+        <style>{`
+          @keyframes loginSpin { to { transform: rotate(360deg); } }
+          @keyframes logoPulse {
+            0%,100% { box-shadow: 0 0 0 0 rgba(99,102,241,0.5), 0 0 0 8px rgba(99,102,241,0.15), 0 20px 48px rgba(15,23,42,0.5); }
+            50%      { box-shadow: 0 0 0 6px rgba(99,102,241,0.3), 0 0 0 16px rgba(99,102,241,0.08), 0 20px 48px rgba(15,23,42,0.5); }
+          }
+        `}</style>
 
-        {/* Top: branding */}
+        {/* Ambient blobs */}
+        <div style={{ position: 'absolute', top: -90, left: -90, width: 280, height: 280, borderRadius: '50%', background: 'radial-gradient(circle, rgba(99,102,241,0.35) 0%, transparent 70%)', pointerEvents: 'none', animation: 'drift1 16s ease-in-out infinite' }} />
+        <div style={{ position: 'absolute', top: '8%', right: -60, width: 220, height: 220, borderRadius: '50%', background: 'radial-gradient(circle, rgba(8,145,178,0.30) 0%, transparent 70%)', pointerEvents: 'none', animation: 'drift2 20s ease-in-out infinite' }} />
+        <div style={{ position: 'absolute', top: '32%', left: '5%', width: 140, height: 140, borderRadius: '50%', background: 'radial-gradient(circle, rgba(167,139,250,0.20) 0%, transparent 70%)', pointerEvents: 'none', animation: 'drift3 12s ease-in-out infinite' }} />
+
+        {/* ── Hero section ── */}
         <div style={{
           flex: '0 0 auto',
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'flex-end',
-          paddingTop: 60,
-          paddingBottom: 32,
-          gap: 12,
-          position: 'relative',
-          zIndex: 1,
-          animation: 'fadeIn 0.5s ease both',
+          display: 'flex', flexDirection: 'column',
+          alignItems: 'center', justifyContent: 'flex-end',
+          paddingTop: 56, paddingBottom: 30,
+          gap: 0,
+          position: 'relative', zIndex: 1,
+          animation: 'fadeIn 0.55s ease both',
         }}>
+          {/* Logo with pulsing glow rings */}
           <div style={{
-            width: 82, height: 82,
-            borderRadius: 20,
-            border: '1.5px solid rgba(255,255,255,0.25)',
-            background: 'rgba(255,255,255,0.10)',
+            width: 90, height: 90, borderRadius: 22,
+            background: 'linear-gradient(135deg, rgba(255,255,255,0.18) 0%, rgba(255,255,255,0.06) 100%)',
+            border: '1.5px solid rgba(255,255,255,0.30)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             overflow: 'hidden',
-            boxShadow: '0 8px 28px rgba(15,23,42,0.30)',
+            animation: 'logoPulse 3s ease-in-out infinite',
+            marginBottom: 16,
           }}>
-            <img src="/logo.png" alt="TIC" style={{ width: 72, height: 72, objectFit: 'contain' }} />
+            <img src="/logo.png" alt="TIC" style={{ width: 78, height: 78, objectFit: 'contain' }} />
           </div>
-          <div style={{ fontWeight: 900, fontSize: 24, color: '#fff', letterSpacing: '-0.4px', textAlign: 'center', lineHeight: 1.2 }}>
+
+          <div style={{ fontWeight: 900, fontSize: 26, color: '#fff', letterSpacing: '-0.5px', textAlign: 'center', lineHeight: 1.15, marginBottom: 6 }}>
             TIC Meals &amp; Stay
           </div>
-          <div style={{ fontSize: 13, color: 'rgba(199,210,254,0.82)', textAlign: 'center', lineHeight: 1.5, fontWeight: 400, maxWidth: 240 }}>
+          <div style={{ fontSize: 13, color: 'rgba(199,210,254,0.75)', textAlign: 'center', lineHeight: 1.5, fontWeight: 400, marginBottom: 18 }}>
             Camp management, simplified.
+          </div>
+
+          {/* Feature pills */}
+          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', justifyContent: 'center' }}>
+            {[
+              { icon: '🏠', label: 'Rooms' },
+              { icon: '🍽️', label: 'Meals' },
+              { icon: '👥', label: 'Staff' },
+            ].map(({ icon, label }) => (
+              <span key={label} style={{
+                display: 'inline-flex', alignItems: 'center', gap: 5,
+                background: 'rgba(255,255,255,0.10)',
+                border: '1px solid rgba(255,255,255,0.20)',
+                borderRadius: 999, padding: '5px 12px',
+                fontSize: 12, fontWeight: 600, color: 'rgba(255,255,255,0.88)',
+                backdropFilter: 'blur(6px)',
+              }}>
+                <span>{icon}</span>{label}
+              </span>
+            ))}
           </div>
         </div>
 
-        {/* Bottom: form card slides up */}
+        {/* ── Form card ── */}
         <div style={{
           flex: 1,
-          background: '#f8fafc',
-          borderRadius: '28px 28px 0 0',
-          padding: '10px 20px 48px',
-          position: 'relative',
-          zIndex: 1,
-          boxShadow: '0 -10px 40px rgba(15,23,42,0.28)',
-          animation: 'fadeUp 0.45s cubic-bezier(0.22,1,0.36,1) both',
-          animationDelay: '100ms',
-          display: 'flex',
-          flexDirection: 'column',
+          background: '#ffffff',
+          borderRadius: '32px 32px 0 0',
+          padding: '8px 22px 44px',
+          position: 'relative', zIndex: 1,
+          boxShadow: '0 -12px 48px rgba(15,23,42,0.32)',
+          animation: 'fadeUp 0.5s cubic-bezier(0.22,1,0.36,1) both',
+          animationDelay: '120ms',
+          display: 'flex', flexDirection: 'column',
         }}>
           {/* Drag handle */}
-          <div style={{ width: 38, height: 4, borderRadius: 2, background: '#d1d9e6', margin: '0 auto 22px' }} />
+          <div style={{ width: 40, height: 4, borderRadius: 2, background: 'linear-gradient(90deg, #a5b4fc, #818cf8)', margin: '0 auto 24px', opacity: 0.6 }} />
 
-          <div style={{ marginBottom: 22 }}>
-            <div style={{ fontSize: 11, fontWeight: 700, color: '#6366f1', letterSpacing: 1.3, textTransform: 'uppercase', marginBottom: 5 }}>
-              Welcome back
-            </div>
-            <div style={{ fontWeight: 900, fontSize: 23, color: '#1e293b', lineHeight: 1.2 }}>
-              Sign in to your account
-            </div>
-            <div style={{ marginTop: 6, fontSize: 13.5, color: '#64748b' }}>
-              Enter your credentials to continue.
-            </div>
+          {/* Welcome badge */}
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: '#ede9fe', border: '1px solid #c4b5fd', borderRadius: 999, padding: '5px 14px', marginBottom: 12, alignSelf: 'flex-start' }}>
+            <div style={{ width: 7, height: 7, borderRadius: '50%', background: '#6366f1', flexShrink: 0 }} />
+            <span style={{ fontSize: 12, fontWeight: 700, color: '#6366f1', letterSpacing: 0.4 }}>Welcome back</span>
+          </div>
+
+          <div style={{ fontWeight: 900, fontSize: 26, color: '#0f172a', lineHeight: 1.15, marginBottom: 24, letterSpacing: '-0.4px' }}>
+            Sign in to<br />your account
           </div>
 
           <form onSubmit={handleSubmit} style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
-            <div style={{ marginBottom: 16 }}>
-              <label style={{ display: 'block', fontWeight: 600, fontSize: 13, color: '#374151', marginBottom: 7 }}>
+
+            {/* Email field */}
+            <div style={{ marginBottom: 14 }}>
+              <label style={{ display: 'block', fontWeight: 600, fontSize: 13, color: '#374151', marginBottom: 8 }}>
                 Email address
               </label>
-              <input
-                type="email"
-                value={email}
-                onChange={e => setEmail(e.target.value)}
-                placeholder="you@company.com"
-                autoComplete="email"
-                inputMode="email"
-                style={inputStyle(true)}
-                onFocus={e => { e.target.style.borderColor = '#6366f1'; e.target.style.boxShadow = '0 0 0 3px rgba(99,102,241,0.12)'; }}
-                onBlur={e => { e.target.style.borderColor = '#e2e8f0'; e.target.style.boxShadow = 'none'; }}
-              />
+              <div style={{ position: 'relative' }}>
+                <div style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', color: '#94a3b8', pointerEvents: 'none', display: 'flex' }}>
+                  <IconEmail />
+                </div>
+                <input
+                  type="email"
+                  value={email}
+                  onChange={e => setEmail(e.target.value)}
+                  placeholder="you@company.com"
+                  autoComplete="email"
+                  inputMode="email"
+                  style={{
+                    width: '100%', boxSizing: 'border-box',
+                    padding: '15px 16px 15px 46px',
+                    borderRadius: 14, border: '1.5px solid #e2e8f0',
+                    fontSize: 16, fontWeight: 500, color: '#1e293b',
+                    background: '#f8fafc', outline: 'none',
+                    WebkitAppearance: 'none', fontFamily: 'inherit',
+                    transition: 'border-color 0.15s, box-shadow 0.15s, background 0.15s',
+                  }}
+                  onFocus={e => { e.target.style.borderColor = '#6366f1'; e.target.style.boxShadow = '0 0 0 3px rgba(99,102,241,0.12)'; e.target.style.background = '#fff'; }}
+                  onBlur={e => { e.target.style.borderColor = '#e2e8f0'; e.target.style.boxShadow = 'none'; e.target.style.background = '#f8fafc'; }}
+                />
+              </div>
             </div>
 
-            <div style={{ marginBottom: 8 }}>
-              <label style={{ display: 'block', fontWeight: 600, fontSize: 13, color: '#374151', marginBottom: 7 }}>
+            {/* Password field */}
+            <div style={{ marginBottom: 6 }}>
+              <label style={{ display: 'block', fontWeight: 600, fontSize: 13, color: '#374151', marginBottom: 8 }}>
                 Password
               </label>
-              <input
-                type="password"
-                value={password}
-                onChange={e => setPassword(e.target.value)}
-                placeholder="••••••••"
-                autoComplete="current-password"
-                style={inputStyle(true)}
-                onFocus={e => { e.target.style.borderColor = '#6366f1'; e.target.style.boxShadow = '0 0 0 3px rgba(99,102,241,0.12)'; }}
-                onBlur={e => { e.target.style.borderColor = '#e2e8f0'; e.target.style.boxShadow = 'none'; }}
-              />
+              <div style={{ position: 'relative' }}>
+                <div style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', color: '#94a3b8', pointerEvents: 'none', display: 'flex' }}>
+                  <IconLock />
+                </div>
+                <input
+                  type={showPwd ? 'text' : 'password'}
+                  value={password}
+                  onChange={e => setPassword(e.target.value)}
+                  placeholder="••••••••"
+                  autoComplete="current-password"
+                  style={{
+                    width: '100%', boxSizing: 'border-box',
+                    padding: '15px 50px 15px 46px',
+                    borderRadius: 14, border: '1.5px solid #e2e8f0',
+                    fontSize: 16, fontWeight: 500, color: '#1e293b',
+                    background: '#f8fafc', outline: 'none',
+                    WebkitAppearance: 'none', fontFamily: 'inherit',
+                    transition: 'border-color 0.15s, box-shadow 0.15s, background 0.15s',
+                  }}
+                  onFocus={e => { e.target.style.borderColor = '#6366f1'; e.target.style.boxShadow = '0 0 0 3px rgba(99,102,241,0.12)'; e.target.style.background = '#fff'; }}
+                  onBlur={e => { e.target.style.borderColor = '#e2e8f0'; e.target.style.boxShadow = 'none'; e.target.style.background = '#f8fafc'; }}
+                />
+                {/* Eye toggle */}
+                <button
+                  type="button"
+                  onClick={() => setShowPwd(v => !v)}
+                  style={{
+                    position: 'absolute', right: 14, top: '50%', transform: 'translateY(-50%)',
+                    background: 'none', border: 'none', padding: 4, cursor: 'pointer',
+                    color: showPwd ? '#6366f1' : '#94a3b8',
+                    display: 'flex', alignItems: 'center',
+                    WebkitTapHighlightColor: 'transparent',
+                    transition: 'color 0.15s',
+                  }}
+                  tabIndex={-1}
+                  aria-label={showPwd ? 'Hide password' : 'Show password'}
+                >
+                  <IconEye off={showPwd} />
+                </button>
+              </div>
             </div>
 
+            {/* Error */}
             {error ? (
-              <div style={{ marginTop: 10, padding: '11px 14px', borderRadius: 12, background: '#fef2f2', border: '1px solid #fecaca', color: '#dc2626', fontSize: 13.5, fontWeight: 600, lineHeight: 1.4 }}>
+              <div style={{
+                marginTop: 12, padding: '11px 14px', borderRadius: 12,
+                background: '#fef2f2', border: '1px solid #fecaca',
+                color: '#dc2626', fontSize: 13.5, fontWeight: 600,
+                display: 'flex', alignItems: 'center', gap: 8,
+              }}>
+                <svg width="16" height="16" fill="none" viewBox="0 0 24 24" style={{ flexShrink: 0 }}>
+                  <circle cx="12" cy="12" r="10" stroke="#dc2626" strokeWidth="2"/>
+                  <path d="M12 8v4M12 16h.01" stroke="#dc2626" strokeWidth="2" strokeLinecap="round"/>
+                </svg>
                 {error}
               </div>
             ) : null}
 
+            {/* Sign In button */}
             <button
               type="submit"
               disabled={loading}
               style={{
-                width: '100%',
-                marginTop: 22,
-                padding: '16px',
-                borderRadius: 14,
+                width: '100%', marginTop: 22,
+                padding: '16px', borderRadius: 14,
                 border: 'none',
-                background: loading ? '#a5b4fc' : 'linear-gradient(135deg, #4f46e5 0%, #6366f1 100%)',
-                color: '#fff',
-                fontWeight: 700,
-                fontSize: 16,
+                background: loading
+                  ? 'linear-gradient(135deg, #818cf8 0%, #a5b4fc 100%)'
+                  : 'linear-gradient(135deg, #4338ca 0%, #6366f1 50%, #7c3aed 100%)',
+                backgroundSize: '200% 100%',
+                color: '#fff', fontWeight: 700, fontSize: 16,
                 cursor: loading ? 'not-allowed' : 'pointer',
-                boxShadow: loading ? 'none' : '0 6px 18px rgba(99,102,241,0.40)',
+                boxShadow: loading ? 'none' : '0 8px 24px rgba(99,102,241,0.45)',
                 WebkitTapHighlightColor: 'transparent',
-                letterSpacing: 0.2,
                 fontFamily: 'inherit',
-                transition: 'opacity 0.15s',
+                transition: 'opacity 0.15s, transform 0.1s, box-shadow 0.15s',
+                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
               }}
-              onTouchStart={e => { if (!loading) e.currentTarget.style.opacity = '0.88'; }}
-              onTouchEnd={e => { e.currentTarget.style.opacity = '1'; }}
+              onTouchStart={e => { if (!loading) { e.currentTarget.style.transform = 'scale(0.97)'; e.currentTarget.style.boxShadow = '0 4px 12px rgba(99,102,241,0.3)'; }}}
+              onTouchEnd={e => { e.currentTarget.style.transform = 'scale(1)'; e.currentTarget.style.boxShadow = '0 8px 24px rgba(99,102,241,0.45)'; }}
             >
-              {loading ? 'Signing in…' : 'Sign In'}
+              {loading ? (
+                <><IconSpinner /> Signing in…</>
+              ) : (
+                <>Sign In <IconArrow /></>
+              )}
             </button>
 
-            <div style={{ marginTop: 'auto', paddingTop: 28, textAlign: 'center', fontSize: 12, color: '#94a3b8', lineHeight: 1.6 }}>
-              Contact your administrator if you need access.
+            {/* Footer */}
+            <div style={{ marginTop: 'auto', paddingTop: 26, textAlign: 'center' }}>
+              <div style={{ fontSize: 12, color: '#cbd5e1', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
+                <svg width="12" height="12" fill="none" viewBox="0 0 24 24">
+                  <rect x="5" y="11" width="14" height="10" rx="2" stroke="currentColor" strokeWidth="2"/>
+                  <path d="M8 11V7a4 4 0 0 1 8 0v4" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+                </svg>
+                Contact your administrator for access
+              </div>
             </div>
           </form>
         </div>
@@ -220,7 +336,7 @@ export default function SignIn({ onSignIn }) {
     );
   }
 
-  /* ── Desktop layout ──────────────────────────────────────────── */
+  /* ── Desktop layout (unchanged) ─────────────────────────────────── */
   return (
     <div style={{ display: 'flex', minHeight: '100vh', background: '#f1f5f9' }}>
 
@@ -248,14 +364,12 @@ export default function SignIn({ onSignIn }) {
               TIC Meals &amp; Stay
             </div>
           </div>
-
           <h1 style={{ margin: '0 0 12px', fontWeight: 900, fontSize: 38, lineHeight: 1.1, color: '#fff' }}>
             Camp management,<br />simplified.
           </h1>
           <p style={{ margin: '0 0 36px', fontSize: 15, color: 'rgba(199,210,254,0.8)', lineHeight: 1.6 }}>
             Real-time visibility across accommodation, meals, and staff — all in one place.
           </p>
-
           <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
             <Feature icon={<FaBed size={20} />} title="Accommodation" desc="Track beds, rooms, and occupancy in real time." />
             <Feature icon={<FaUtensils size={20} />} title="Meals" desc="Plan, exclude, and monitor meal services easily." />
@@ -278,17 +392,13 @@ export default function SignIn({ onSignIn }) {
             <h2 style={{ margin: 0, fontWeight: 900, fontSize: 28, color: '#1e293b' }}>Sign in to your account</h2>
             <p style={{ margin: '8px 0 0', color: '#64748b', fontSize: 14 }}>Enter your credentials to continue.</p>
           </div>
-
           <form onSubmit={handleSubmit} style={{ background: '#fff', borderRadius: 16, boxShadow: '0 4px 24px rgba(99,102,241,0.08), 0 1px 3px rgba(0,0,0,0.06)', padding: '28px 28px 24px', border: '1px solid #e2e8f0' }}>
             <div style={{ marginBottom: 18 }}>
               <label style={{ display: 'block', fontWeight: 600, fontSize: 13, color: '#374151', marginBottom: 6 }}>Email address</label>
               <input
-                type="email"
-                value={email}
-                onChange={e => setEmail(e.target.value)}
-                placeholder="you@company.com"
-                autoFocus
-                style={inputStyle(false)}
+                type="email" value={email} onChange={e => setEmail(e.target.value)}
+                placeholder="you@company.com" autoFocus
+                style={desktopInputStyle}
                 onFocus={e => { e.target.style.borderColor = '#6366f1'; e.target.style.background = '#fff'; }}
                 onBlur={e => { e.target.style.borderColor = '#e2e8f0'; e.target.style.background = '#f8fafc'; }}
               />
@@ -296,25 +406,20 @@ export default function SignIn({ onSignIn }) {
             <div style={{ marginBottom: 6 }}>
               <label style={{ display: 'block', fontWeight: 600, fontSize: 13, color: '#374151', marginBottom: 6 }}>Password</label>
               <input
-                type="password"
-                value={password}
-                onChange={e => setPassword(e.target.value)}
+                type="password" value={password} onChange={e => setPassword(e.target.value)}
                 placeholder="••••••••"
-                style={inputStyle(false)}
+                style={desktopInputStyle}
                 onFocus={e => { e.target.style.borderColor = '#6366f1'; e.target.style.background = '#fff'; }}
                 onBlur={e => { e.target.style.borderColor = '#e2e8f0'; e.target.style.background = '#f8fafc'; }}
               />
             </div>
-
             {error ? (
               <div style={{ marginTop: 14, padding: '10px 12px', borderRadius: 8, background: '#fef2f2', border: '1px solid #fecaca', color: '#dc2626', fontSize: 13, fontWeight: 600 }}>
                 {error}
               </div>
             ) : null}
-
             <button
-              type="submit"
-              disabled={loading}
+              type="submit" disabled={loading}
               style={{
                 width: '100%', marginTop: 20, padding: '12px', borderRadius: 9,
                 border: 'none',
