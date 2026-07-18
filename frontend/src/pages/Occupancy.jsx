@@ -162,7 +162,7 @@ function parseCsvText(text) {
 }
 
 /* -- Swap Modal -- */
-function SwapModal({ open, onClose, occupant, allOccupants, onSwap }) {
+function SwapModal({ open, onClose, occupant, allOccupants, onSwap, isMobile = false }) {
   const [search, setSearch] = useState('');
   const [targetId, setTargetId] = useState(null);
   const searchRef = useRef(null);
@@ -268,7 +268,7 @@ function SwapModal({ open, onClose, occupant, allOccupants, onSwap }) {
 }
 
 /* -- Move Modal -- */
-function MoveModal({ open, onClose, occupant, allRooms, onMove }) {
+function MoveModal({ open, onClose, occupant, allRooms, onMove, isMobile = false }) {
   const [targetRoom, setTargetRoom] = useState('');
   const [targetBed, setTargetBed] = useState('');
   if (!open || !occupant) return null;
@@ -308,7 +308,7 @@ function MoveModal({ open, onClose, occupant, allRooms, onMove }) {
 }
 
 /* -- Edit Modal -- */
-function EditOccupantModal({ open, onClose, occupant, onSave }) {
+function EditOccupantModal({ open, onClose, occupant, onSave, isMobile = false }) {
   const [form, setForm] = useState(null);
   React.useEffect(()=>{
     if (!occupant) return;
@@ -364,7 +364,7 @@ function EditOccupantModal({ open, onClose, occupant, onSave }) {
 }
 
 /* -- Confirm Modal -- */
-function ConfirmModal({ open, onClose, onConfirm, title, message, confirmLabel='Confirm', confirmColor='#ef4444' }) {
+function ConfirmModal({ open, onClose, onConfirm, title, message, confirmLabel='Confirm', confirmColor='#ef4444', isMobile = false }) {
   if (!open) return null;
   return (
     <div onClick={onClose} style={{ position:'fixed',top:isMobile?50:62,left:0,right:0,bottom:0,zIndex:3000,background:'rgba(20,30,60,.55)',display:'flex',alignItems:'center',justifyContent:'center',overflowY:'auto',animation:'fadeIn 0.18s ease both' }}>
@@ -380,7 +380,7 @@ function ConfirmModal({ open, onClose, onConfirm, title, message, confirmLabel='
   );
 }
 
-function ActionToast({ notice, onClose }) {
+function ActionToast({ notice, onClose, isMobile = false }) {
   React.useEffect(() => {
     if (!notice?.open) return undefined;
     const timeoutId = window.setTimeout(() => {
@@ -392,7 +392,7 @@ function ActionToast({ notice, onClose }) {
   if (!notice?.open) return null;
   const isError = notice.type === 'error';
   return (
-    <div style={{ position:'fixed',right:20,bottom:20,zIndex:3100,pointerEvents:'none' }}>
+    <div style={{ position:'fixed',right:20,bottom: isMobile ? 66 : 20,zIndex:3100,pointerEvents:'none' }}>
       <div style={{ width:'min(380px, calc(100vw - 32px))',background:isError ? 'linear-gradient(135deg, #7f1d1d 0%, #dc2626 100%)' : 'linear-gradient(135deg, #4338ca 0%, #0891b2 100%)',color:'#fff',borderRadius:16,padding:'14px 16px',boxShadow:'0 18px 40px rgba(15,23,42,.24)',animation:'slideInRight 0.28s cubic-bezier(0.22,1,0.36,1) both',pointerEvents:'auto' }}>
         <div style={{ display:'flex',alignItems:'flex-start',justifyContent:'space-between',gap:12 }}>
           <div>
@@ -1007,7 +1007,7 @@ function Occupancy() {
   const hasFilters = personTypeFilter!=='All'||buildingFilter!=='All'||!!sectionFilter||idNameSearch||roomSearch;
 
   return (
-    <div style={{ width:'100%',maxWidth:'100%',margin:0,padding:'12px clamp(12px, 3vw, 32px) clamp(14px, 2.3vw, 24px)',background:'none',fontFamily:'Inter,Segoe UI,Arial,sans-serif',boxSizing:'border-box',minHeight:'100vh' }}>
+    <div style={{ width:'100%',maxWidth:'100%',margin:0,padding:'12px clamp(12px, 3vw, 32px) clamp(14px, 2.3vw, 24px)',background:'none',fontFamily:'Inter,Segoe UI,Arial,sans-serif',boxSizing:'border-box',minHeight: isMobile ? 'calc(100vh - 96px)' : '100vh' }}>
 
       {/* Header */}
       <div style={{ display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:isMobile ? 8 : 14,flexWrap:'wrap',gap: isMobile ? 5 : 10 }}>
@@ -1244,13 +1244,13 @@ function Occupancy() {
       )}
 
       <AddOccupantModal open={canEditAccommodation && addOpen} onClose={()=>setAddOpen(false)} rooms={roomsState} onAdd={handleAdd} />
-      <EditOccupantModal open={!!editTarget} onClose={()=>setEditTarget(null)} occupant={editTarget} onSave={handleEdit} />
-      <SwapModal open={!!swapTarget} onClose={()=>setSwapTarget(null)} occupant={swapTarget} allOccupants={occupants} onSwap={handleSwap} />
-      <MoveModal open={!!moveTarget} onClose={()=>setMoveTarget(null)} occupant={moveTarget} allRooms={roomsState} onMove={handleMove} />
-      <ConfirmModal open={!!checkoutTarget} onClose={()=>setCheckoutTarget(null)} onConfirm={()=>handleCheckout(checkoutTarget)} title="Check Out Occupant" message={`Check out ${checkoutTarget?.name} from ${checkoutTarget?.roomId}? They will be removed from the active list.`} confirmLabel="Check Out" confirmColor="#f59e0b" />
-      <ConfirmModal open={!!deleteTarget} onClose={()=>setDeleteTarget(null)} onConfirm={()=>handleDelete(deleteTarget)} title="Delete Occupant" message={`Permanently delete ${deleteTarget?.name}? This cannot be undone.`} confirmLabel="Delete" confirmColor="#ef4444" />
+      <EditOccupantModal open={!!editTarget} onClose={()=>setEditTarget(null)} occupant={editTarget} onSave={handleEdit} isMobile={isMobile} />
+      <SwapModal open={!!swapTarget} onClose={()=>setSwapTarget(null)} occupant={swapTarget} allOccupants={occupants} onSwap={handleSwap} isMobile={isMobile} />
+      <MoveModal open={!!moveTarget} onClose={()=>setMoveTarget(null)} occupant={moveTarget} allRooms={roomsState} onMove={handleMove} isMobile={isMobile} />
+      <ConfirmModal open={!!checkoutTarget} onClose={()=>setCheckoutTarget(null)} onConfirm={()=>handleCheckout(checkoutTarget)} title="Check Out Occupant" message={`Check out ${checkoutTarget?.name} from ${checkoutTarget?.roomId}? They will be removed from the active list.`} confirmLabel="Check Out" confirmColor="#f59e0b" isMobile={isMobile} />
+      <ConfirmModal open={!!deleteTarget} onClose={()=>setDeleteTarget(null)} onConfirm={()=>handleDelete(deleteTarget)} title="Delete Occupant" message={`Permanently delete ${deleteTarget?.name}? This cannot be undone.`} confirmLabel="Delete" confirmColor="#ef4444" isMobile={isMobile} />
       <style>{`@keyframes fadeToastIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }`}</style>
-      <ActionToast notice={actionNotice} onClose={() => setActionNotice({ open: false, type: 'success', title: '', message: '' })} />
+      <ActionToast notice={actionNotice} onClose={() => setActionNotice({ open: false, type: 'success', title: '', message: '' })} isMobile={isMobile} />
     </div>
   );
 }

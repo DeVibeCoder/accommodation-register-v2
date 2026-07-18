@@ -51,7 +51,7 @@ function downloadCsv(filename, headers, rows) {
   window.URL.revokeObjectURL(url);
 }
 
-function SaveToast({ notice, onClose }) {
+function SaveToast({ notice, onClose, isMobile = false }) {
   React.useEffect(() => {
     if (!notice?.open) return undefined;
     const timer = window.setTimeout(onClose, 2800);
@@ -62,7 +62,7 @@ function SaveToast({ notice, onClose }) {
   const isError = notice.type === 'error';
 
   return (
-    <div style={{ position: 'fixed', right: 18, bottom: 18, zIndex: 3200 }}>
+    <div style={{ position: 'fixed', right: 18, bottom: isMobile ? 64 : 18, zIndex: 3200 }}>
       <div
         style={{
           minWidth: 260,
@@ -594,6 +594,7 @@ function Rooms() {
       <SaveToast
         notice={saveNotice}
         onClose={() => setSaveNotice({ open: false, type: 'success', title: '', message: '' })}
+        isMobile={isMobile}
       />
     </div>
   );

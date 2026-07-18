@@ -38,8 +38,8 @@ function useViewportWidth() {
 
 function AddOccupantModal({ open, onClose, rooms, onAdd }) {
   const vw = useViewportWidth();
-  const isMobile = vw < 600;
-  const isTablet = vw >= 600 && vw < 1024;
+  const isMobile = vw < 768;
+  const isTablet = vw >= 768 && vw < 1024;
 
   const [form, setForm] = useState({
     personType: '', staffId: '', fullName: '', section: '',

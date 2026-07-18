@@ -100,7 +100,7 @@ function ResultDialog({ open, title, message, onClose }) {
 }
 
 function Settings({ user, setUser }) {
-  const { roomsState = [], setRoomsState, setOccupants, setStayHistory, refreshMealExclusionSummary } = useOutletContext();
+  const { roomsState = [], setRoomsState, setOccupants, setStayHistory, refreshMealExclusionSummary, isMobile = false } = useOutletContext();
   const [roomForm, setRoomForm] = useState(defaultRoomForm);
   const [isResetting, setIsResetting] = useState(false);
   const [isSavingRoom, setIsSavingRoom] = useState(false);
@@ -598,7 +598,7 @@ function Settings({ user, setUser }) {
   const inputStyle = { fontSize: 14, padding: '10px 12px', borderRadius: 10, border: '1.5px solid #d0d7e2', fontWeight: 600, background: '#fff' };
 
   return (
-    <div className="page-container" style={{ width: '100%', maxWidth: '100%', margin: 0, padding: '12px 32px 24px 32px', background: 'none', fontFamily: 'Inter, Segoe UI, Arial, sans-serif', boxSizing: 'border-box' }}>
+    <div className="page-container" style={{ width: '100%', maxWidth: '100%', margin: 0, padding: isMobile ? '10px 12px 16px' : '12px 32px 24px 32px', background: 'none', fontFamily: 'Inter, Segoe UI, Arial, sans-serif', boxSizing: 'border-box' }}>
       <div style={{ background: 'linear-gradient(135deg, #1e1b4b 0%, #4f46e5 52%, #0891b2 100%)', color: '#fff', borderRadius: 16, padding: '22px 26px', boxShadow: '0 12px 32px rgba(79,70,229,0.28)', marginBottom: 18 }}>
         <div style={{ fontSize: 12, opacity: 0.92, letterSpacing: 0.5, textTransform: 'uppercase', fontWeight: 700 }}>System Control Center</div>
         <div style={{ display: 'flex', justifyContent: 'space-between', gap: 16, alignItems: 'flex-end', flexWrap: 'wrap', marginTop: 8 }}>
@@ -676,7 +676,7 @@ function Settings({ user, setUser }) {
                   const canDeleteUserRow = item.id !== user?.id && !(item.role === 'Admin' && roleCounts.Admin <= 1);
 
                   return (
-                    <div key={item.id} style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1.4fr) 120px 120px minmax(320px, 1.2fr)', gap: 12, alignItems: 'center', border: '1px solid #e2e8f0', borderRadius: 14, padding: '12px 14px', background: '#fff' }}>
+                    <div key={item.id} style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'minmax(0, 1.4fr) 120px 120px minmax(320px, 1.2fr)', gap: isMobile ? 8 : 12, alignItems: 'center', border: '1px solid #e2e8f0', borderRadius: 14, padding: '12px 14px', background: '#fff' }}>
                       <div style={{ minWidth: 0 }}>
                         <div style={{ fontWeight: 800, color: '#1e293b', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.email || 'No email'}</div>
                         <div style={{ fontSize: 12, color: '#64748b', marginTop: 3 }}>Created: {formatDate(item.createdAt)}</div>

@@ -190,7 +190,7 @@ function Dashboard() {
       : '1fr';
 
   return (
-    <div style={{ width:'100%', padding:'clamp(12px, 2vw, 24px) clamp(12px, 2.6vw, 28px) 20px', boxSizing:'border-box', minHeight:'100vh', background:'linear-gradient(180deg, #f4f7fb 0%, #eef3f9 100%)', overflowX:'hidden' }}>
+    <div style={{ width:'100%', padding:'clamp(12px, 2vw, 24px) clamp(12px, 2.6vw, 28px) 20px', boxSizing:'border-box', minHeight: isMobile ? 'calc(100vh - 96px)' : '100vh', background:'linear-gradient(180deg, #f4f7fb 0%, #eef3f9 100%)', overflowX:'hidden' }}>
       <div style={{
         background:'linear-gradient(135deg, #1e1b4b 0%, #4f46e5 52%, #0891b2 100%)',
         color:'#fff',

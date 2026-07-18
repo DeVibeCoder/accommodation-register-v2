@@ -74,7 +74,7 @@ const tableRowStyle = (index) => ({
 
 function RoomModal({ open, onClose, room }) {
   const vw = useViewportWidth();
-  const isMobile = vw < 600;
+  const isMobile = vw < 768;
   if (!open || !room) return null;
 
   const statusLabel = room.occupiedBeds === 0 ? 'Vacant' : room.occupiedBeds === room.totalBeds ? 'Full' : 'Partial';
