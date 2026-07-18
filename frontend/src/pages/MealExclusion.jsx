@@ -810,8 +810,8 @@ function MealExclusion() {
       <div style={{ background: '#fff', border: '1px solid #dbe4f0', borderRadius: 16, overflow: 'hidden', boxShadow: '0 18px 40px rgba(15,23,42,0.06)' }}>
         {/* Tab bar */}
         <div style={{ display: 'flex', borderBottom: '1px solid #e2e8f0', background: 'linear-gradient(180deg, #f8fafc 0%, #f3f7fd 100%)', overflowX: 'auto' }}>
-          {tabBtn('Active Exclusions', 'active', activeCount, '#ea580c')}
-          {tabBtn('Upcoming Exclusions', 'upcoming', upcomingCount, '#6366f1')}
+          {tabBtn(isMobile ? 'Active' : 'Active Exclusions', 'active', activeCount, '#ea580c')}
+          {tabBtn(isMobile ? 'Upcoming' : 'Upcoming Exclusions', 'upcoming', upcomingCount, '#6366f1')}
         </div>
         {/* Tab content */}
         <div style={{ minHeight: 420 }}>
