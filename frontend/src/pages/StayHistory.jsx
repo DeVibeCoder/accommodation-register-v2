@@ -28,7 +28,7 @@ function formatTime(value) {
 }
 
 function StayHistory() {
-  const { stayHistory = [], setStayHistory, isAdmin, occupants = [] } = useOutletContext();
+  const { stayHistory = [], setStayHistory, isAdmin, occupants = [], isMobile = false } = useOutletContext();
   const [activeFilter, setActiveFilter] = useState('All');
   const [search, setSearch] = useState('');
   const [deletingId, setDeletingId] = useState(null);
@@ -128,81 +128,132 @@ function StayHistory() {
         })}
       </div>
 
-      <div style={{ background: '#fff', borderRadius: 18, boxShadow: '0 8px 26px rgba(30,49,95,.08)', border: '1px solid #dfe6f1', overflow: 'hidden' }}>
-        <div style={{ display: 'grid', gridTemplateColumns: isAdmin ? '1.2fr 0.9fr 1fr 1.8fr 1fr auto' : '1.2fr 0.9fr 1fr 1.8fr 1fr', padding: '0 20px', height: 46, alignItems: 'center', background: 'linear-gradient(180deg, #f8fbff 0%, #f3f7fd 100%)', borderBottom: '1px solid #dfe6f1', gap: 12 }}>
-          {[...['Action', 'Person', 'Room', 'Details', 'Time'], ...(isAdmin ? [''] : [])].map(label => (
-            <span key={label} style={{ fontSize: 10.5, fontWeight: 700, color: '#7f93b3', textTransform: 'uppercase', letterSpacing: 0.6 }}>
-              {label}
-            </span>
-          ))}
-        </div>
-
-        {filtered.length === 0 ? (
-          <div style={{ padding: '56px 20px', textAlign: 'center', color: '#94a3b8' }}>
-            No stay activity has been recorded yet for this filter.
-          </div>
-        ) : (
-          filtered.map((item, index) => {
-            const tone = ACTION_STYLES[item.type] || ACTION_STYLES.Edit;
-            const rowBg = index % 2 === 0 ? '#ffffff' : '#f8fbff';
-
-            return (
-              <div
-                key={item.id || index}
-                style={{
-                  display: 'grid',
-                  gridTemplateColumns: isAdmin ? '1.2fr 0.9fr 1fr 1.8fr 1fr auto' : '1.2fr 0.9fr 1fr 1.8fr 1fr',
-                  gap: 12,
-                  alignItems: 'center',
-                  padding: '14px 20px',
-                  borderBottom: '1px solid #e8eef6',
-                  background: rowBg,
-                }}
-              >
-                <div>
-                  <span style={{ display: 'inline-flex', alignItems: 'center', padding: '5px 10px', borderRadius: 999, background: tone.bg, color: tone.text, fontWeight: 800, fontSize: 12 }}>
-                    {item.type === 'Edit' ? 'Edit' : item.type}
-                  </span>
-                </div>
-
-                <div style={{ fontWeight: 700, color: '#1e293b', fontSize: 13.5 }}>
-                  {item.name || '-'}
+      {/* ── Mobile card view ── */}
+      {isMobile ? (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+          {filtered.length === 0 ? (
+            <div style={{ padding: '40px 16px', textAlign: 'center', color: '#94a3b8', background: '#fff', borderRadius: 16 }}>
+              No stay activity has been recorded yet for this filter.
+            </div>
+          ) : (
+            filtered.map((item, index) => {
+              const tone = ACTION_STYLES[item.type] || ACTION_STYLES.Edit;
+              return (
+                <div
+                  key={item.id || index}
+                  style={{
+                    background: '#fff',
+                    borderRadius: 14,
+                    padding: '12px 14px',
+                    boxShadow: '0 2px 8px rgba(30,49,95,0.06)',
+                    border: '1px solid #e8eef6',
+                    animation: 'fadeUp 0.3s ease both',
+                    animationDelay: `${Math.min(index, 10) * 25}ms`,
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+                    <span style={{ display: 'inline-flex', alignItems: 'center', padding: '4px 10px', borderRadius: 999, background: tone.bg, color: tone.text, fontWeight: 800, fontSize: 11 }}>
+                      {item.type === 'Edit' ? 'Edit' : item.type}
+                    </span>
+                    <span style={{ fontSize: 11, color: '#94a3b8', fontWeight: 600 }}>{formatTime(item.timestamp)}</span>
+                  </div>
+                  <div style={{ fontWeight: 700, color: '#1e293b', fontSize: 14, marginBottom: 2 }}>{item.name || '-'}</div>
                   {(item.section || item.department) ? (
-                    <div style={{ fontSize: 11, color: '#94a3b8', fontWeight: 600, marginTop: 2 }}>
+                    <div style={{ fontSize: 11, color: '#94a3b8', fontWeight: 600, marginBottom: 6 }}>
                       {[item.section, shortCode(item.department)].filter(Boolean).join(' | ')}
                     </div>
-                  ) : null}
-                </div>
-
-                <div style={{ color: '#6366f1', fontWeight: 800, fontSize: 13 }}>
-                  {item.roomId || '-'}
-                  {item.bedNo ? <div style={{ color: '#94a3b8', fontWeight: 600, fontSize: 11, marginTop: 2 }}>Bed {item.bedNo}</div> : null}
-                </div>
-
-                <div style={{ color: '#475569', fontWeight: 600, fontSize: 13, lineHeight: 1.4 }}>
-                  {item.details || '-'}
-                </div>
-
-                <div style={{ color: '#64748b', fontSize: 12.5, fontWeight: 600 }}>
-                  {formatTime(item.timestamp)}
-                </div>
-                {isAdmin && (
-                  <div>
-                    <button
-                      onClick={() => handleDeleteEntry(item.id)}
-                      disabled={deletingId === item.id}
-                      title="Delete this entry"
-                      style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#dc2626', opacity: deletingId === item.id ? 0.4 : 0.6, fontSize: 16, padding: '2px 4px', lineHeight: 1 }}
-                    >
-                      ✕
-                    </button>
+                  ) : <div style={{ marginBottom: 6 }} />}
+                  <div style={{ display: 'flex', alignItems: 'baseline', gap: 6, flexWrap: 'wrap' }}>
+                    <span style={{ color: '#6366f1', fontWeight: 800, fontSize: 12 }}>{item.roomId || '-'}</span>
+                    {item.bedNo ? <span style={{ color: '#94a3b8', fontSize: 11, fontWeight: 600 }}>Bed {item.bedNo}</span> : null}
+                    {item.details ? <span style={{ color: '#475569', fontSize: 12, fontWeight: 500 }}>— {item.details}</span> : null}
                   </div>
-                )}
-              </div>
-            );
-          })
-        )}
-      </div>
+                  {isAdmin && (
+                    <div style={{ marginTop: 8, display: 'flex', justifyContent: 'flex-end' }}>
+                      <button
+                        onClick={() => handleDeleteEntry(item.id)}
+                        disabled={deletingId === item.id}
+                        title="Delete this entry"
+                        style={{ background: '#fff1f2', border: '1px solid #fca5a5', cursor: 'pointer', color: '#dc2626', opacity: deletingId === item.id ? 0.4 : 1, fontSize: 12, fontWeight: 700, padding: '4px 10px', borderRadius: 7, lineHeight: 1 }}
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  )}
+                </div>
+              );
+            })
+          )}
+        </div>
+      ) : (
+        /* ── Desktop table view ── */
+        <div style={{ background: '#fff', borderRadius: 18, boxShadow: '0 8px 26px rgba(30,49,95,.08)', border: '1px solid #dfe6f1', overflow: 'hidden' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: isAdmin ? '1.2fr 0.9fr 1fr 1.8fr 1fr auto' : '1.2fr 0.9fr 1fr 1.8fr 1fr', padding: '0 20px', height: 46, alignItems: 'center', background: 'linear-gradient(180deg, #f8fbff 0%, #f3f7fd 100%)', borderBottom: '1px solid #dfe6f1', gap: 12 }}>
+            {[...['Action', 'Person', 'Room', 'Details', 'Time'], ...(isAdmin ? [''] : [])].map(label => (
+              <span key={label} style={{ fontSize: 10.5, fontWeight: 700, color: '#7f93b3', textTransform: 'uppercase', letterSpacing: 0.6 }}>
+                {label}
+              </span>
+            ))}
+          </div>
+
+          {filtered.length === 0 ? (
+            <div style={{ padding: '56px 20px', textAlign: 'center', color: '#94a3b8' }}>
+              No stay activity has been recorded yet for this filter.
+            </div>
+          ) : (
+            filtered.map((item, index) => {
+              const tone = ACTION_STYLES[item.type] || ACTION_STYLES.Edit;
+              const rowBg = index % 2 === 0 ? '#ffffff' : '#f8fbff';
+              return (
+                <div
+                  key={item.id || index}
+                  style={{
+                    display: 'grid',
+                    gridTemplateColumns: isAdmin ? '1.2fr 0.9fr 1fr 1.8fr 1fr auto' : '1.2fr 0.9fr 1fr 1.8fr 1fr',
+                    gap: 12,
+                    alignItems: 'center',
+                    padding: '14px 20px',
+                    borderBottom: '1px solid #e8eef6',
+                    background: rowBg,
+                  }}
+                >
+                  <div>
+                    <span style={{ display: 'inline-flex', alignItems: 'center', padding: '5px 10px', borderRadius: 999, background: tone.bg, color: tone.text, fontWeight: 800, fontSize: 12 }}>
+                      {item.type === 'Edit' ? 'Edit' : item.type}
+                    </span>
+                  </div>
+                  <div style={{ fontWeight: 700, color: '#1e293b', fontSize: 13.5 }}>
+                    {item.name || '-'}
+                    {(item.section || item.department) ? (
+                      <div style={{ fontSize: 11, color: '#94a3b8', fontWeight: 600, marginTop: 2 }}>
+                        {[item.section, shortCode(item.department)].filter(Boolean).join(' | ')}
+                      </div>
+                    ) : null}
+                  </div>
+                  <div style={{ color: '#6366f1', fontWeight: 800, fontSize: 13 }}>
+                    {item.roomId || '-'}
+                    {item.bedNo ? <div style={{ color: '#94a3b8', fontWeight: 600, fontSize: 11, marginTop: 2 }}>Bed {item.bedNo}</div> : null}
+                  </div>
+                  <div style={{ color: '#475569', fontWeight: 600, fontSize: 13, lineHeight: 1.4 }}>{item.details || '-'}</div>
+                  <div style={{ color: '#64748b', fontSize: 12.5, fontWeight: 600 }}>{formatTime(item.timestamp)}</div>
+                  {isAdmin && (
+                    <div>
+                      <button
+                        onClick={() => handleDeleteEntry(item.id)}
+                        disabled={deletingId === item.id}
+                        title="Delete this entry"
+                        style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#dc2626', opacity: deletingId === item.id ? 0.4 : 0.6, fontSize: 16, padding: '2px 4px', lineHeight: 1 }}
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  )}
+                </div>
+              );
+            })
+          )}
+        </div>
+      )}
     </div>
   );
 }

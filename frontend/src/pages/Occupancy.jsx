@@ -436,6 +436,7 @@ function Occupancy() {
     refreshMealExclusionSummary,
     canEditAccommodation = true,
     canUseOccupancyBulkTools = true,
+    isMobile = false,
   } = useOutletContext();
   const importInputRef = useRef(null);
 
@@ -1106,72 +1107,141 @@ function Occupancy() {
         )}
       </div>
 
-      {/* Table */}
-      <div style={{ background:'#fff',borderRadius:18,boxShadow:'0 8px 26px rgba(30,49,95,.08)',border:'1px solid #dfe6f1',overflowX:'auto' }}>
-        <div style={{ minWidth:960 }}>
-        <div style={{ display:'grid',gridTemplateColumns:'2.9fr 1.1fr 1.9fr 138px',padding:'0 20px',height:42,alignItems:'center',background:'linear-gradient(180deg, #f8fbff 0%, #f3f7fd 100%)',borderBottom:'1px solid #dfe6f1',gap:10 }}>
-          {['Name / Person Type','Room','Section / Department | Nat','Actions'].map(h=>(
-            <span key={h} style={{ fontSize:10.5,fontWeight:700,color:'#7f93b3',textTransform:'uppercase',letterSpacing:.6 }}>{h}</span>
-          ))}
-        </div>
-
-        {grouped.length===0 && (
-          <div style={{ padding:'48px 20px',textAlign:'center',color:'#94a3b8',fontSize:15 }}>No occupants match the current filters.</div>
-        )}
-
-        {grouped.map((item,idx)=>{
-          if(item.type==='building'){
-            return(
-              <div key={`b-${item.name}-${idx}`} style={{ padding:'12px 20px 6px',background:'#f1f5f9',borderTop:idx===0?'none':'2px solid #e2e8f0',borderBottom:'1px solid #e2e8f0' }}>
-                <span style={{ fontSize:11.5,fontWeight:800,color:'#475569',textTransform:'uppercase',letterSpacing:1.2 }}>{item.label}</span>
+      {/* Mobile card list */}
+      {isMobile ? (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+          {grouped.length === 0 && (
+            <div style={{ padding: '40px 16px', textAlign: 'center', color: '#94a3b8', fontSize: 14, background: '#fff', borderRadius: 14 }}>No occupants match the current filters.</div>
+          )}
+          {grouped.map((item, idx) => {
+            if (item.type === 'building') {
+              return (
+                <div key={`b-${item.name}-${idx}`} style={{ padding: '7px 12px', background: '#e2e8f0', borderRadius: 10, marginTop: idx === 0 ? 0 : 4 }}>
+                  <span style={{ fontSize: 10.5, fontWeight: 800, color: '#475569', textTransform: 'uppercase', letterSpacing: 1.2 }}>{item.label}</span>
+                </div>
+              );
+            }
+            const o = item.occ;
+            const tc = PERSON_TYPE_COLORS[o.personType] || { bg: '#f1f5f9', text: '#475569' };
+            const deptCode = shortCode(o.department);
+            const natCode = shortCode(o.nationality);
+            return (
+              <div
+                key={o._id}
+                style={{
+                  background: '#fff',
+                  borderRadius: 14,
+                  padding: '12px 14px',
+                  borderLeft: `4px solid ${tc.text}`,
+                  border: `1px solid #e8eef6`,
+                  borderLeftWidth: 4,
+                  borderLeftColor: tc.text,
+                  boxShadow: '0 2px 8px rgba(30,49,95,0.06)',
+                  animation: 'fadeUp 0.3s ease both',
+                  animationDelay: `${Math.min(item.rowIndex || idx, 10) * 28}ms`,
+                }}
+              >
+                {/* Top: badges + room */}
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 7 }}>
+                  <div style={{ display: 'flex', gap: 5, flexWrap: 'wrap' }}>
+                    <span style={{ fontSize: 10, fontWeight: 700, padding: '3px 8px', borderRadius: 999, background: tc.bg, color: tc.text, textTransform: 'uppercase', border: `1px solid ${tc.text}22` }}>{o.personType}</span>
+                    <span style={{ fontSize: 10, fontWeight: 700, padding: '3px 8px', borderRadius: 999, background: '#eef2ff', color: '#4f46e5', border: '1px solid #cfd8ff' }}>ID {o.staffId || '-'}</span>
+                  </div>
+                  <div style={{ textAlign: 'right', flexShrink: 0, marginLeft: 8 }}>
+                    <div style={{ fontSize: 12, fontWeight: 800, padding: '2px 8px', borderRadius: 6, background: '#e0e7ff', color: '#6366f1', display: 'inline-block' }}>{o.roomId}</div>
+                    <div style={{ fontSize: 10, color: '#94a3b8', fontWeight: 600, marginTop: 2 }}>Bed {o.bedNo}</div>
+                  </div>
+                </div>
+                {/* Name */}
+                <div style={{ fontWeight: 700, fontSize: 14.5, color: '#1e293b', marginBottom: 3 }}>{o.name}</div>
+                {/* Section / dept / nat */}
+                <div style={{ fontSize: 11, color: '#64748b', fontWeight: 600, marginBottom: 10 }}>
+                  {[o.section || null, deptCode || null, natCode || null].filter(Boolean).join(' | ') || '-'}
+                </div>
+                {/* Actions */}
+                <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+                  {canEditAccommodation ? (
+                    <>
+                      <ActionBtn title="Edit"      onClick={() => setEditTarget(o)}     color="#3b82f6" bgGradient="linear-gradient(135deg,#dbeafe 0%,#eff6ff 100%)"><IconEdit /></ActionBtn>
+                      <ActionBtn title="Swap"      onClick={() => setSwapTarget(o)}     color="#8b5cf6" bgGradient="linear-gradient(135deg,#ede9fe 0%,#f3e8ff 100%)"><IconSwap /></ActionBtn>
+                      <ActionBtn title="Move"      onClick={() => setMoveTarget(o)}     color="#10b981" bgGradient="linear-gradient(135deg,#d1fae5 0%,#ecfdf5 100%)"><IconMove /></ActionBtn>
+                      <ActionBtn title="Check Out" onClick={() => setCheckoutTarget(o)} color="#f59e0b" bgGradient="linear-gradient(135deg,#fed7aa 0%,#fffbeb 100%)"><IconCheckout /></ActionBtn>
+                      <ActionBtn title="Delete"    onClick={() => setDeleteTarget(o)}   color="#ef4444" bgGradient="linear-gradient(135deg,#fecaca 0%,#fee2e2 100%)" hoverColor="#b91c1c"><IconDelete /></ActionBtn>
+                    </>
+                  ) : <span style={{ fontSize: 11, fontWeight: 700, color: '#64748b' }}>View only</span>}
+                </div>
               </div>
             );
-          }
-          const o=item.occ;
-          const tc=PERSON_TYPE_COLORS[o.personType]||{bg:'#f1f5f9',text:'#475569'};
-          const deptCode = shortCode(o.department);
-          const natCode = shortCode(o.nationality);
-          const rowBg = item.rowIndex % 2 === 0 ? '#ffffff' : '#f4f7fb';
-          return(
-            <div key={o._id}
-              style={{ display:'grid',gridTemplateColumns:'2.9fr 1.1fr 1.9fr 140px',padding:'0 20px',minHeight:90,alignItems:'center',paddingTop:8,paddingBottom:8,borderBottom:'1px solid #e1e8f2',borderLeft:`3px solid ${tc.text}1f`,gap:10,transition:'background .12s, border-left-color .12s',cursor:'default',background:rowBg }}
-              onMouseEnter={e=>{e.currentTarget.style.background='#ebf2ff'; e.currentTarget.style.borderLeftColor=tc.text;}}
-              onMouseLeave={e=>{e.currentTarget.style.background=rowBg; e.currentTarget.style.borderLeftColor=`${tc.text}1f`;}}
-            >
-              <div style={{ display:'flex',flexDirection:'column',gap:5,minWidth:0,alignSelf:'flex-start',paddingTop:2 }}>
-                <div style={{ display:'flex',alignItems:'center',gap:6,minWidth:0,flexWrap:'wrap' }}>
-                  <span style={{ fontSize:10.5,fontWeight:600,padding:'3px 10px',borderRadius:999,background:tc.bg,color:tc.text,letterSpacing:.2,display:'inline-block',whiteSpace:'nowrap',textTransform:'uppercase',border:`1px solid ${tc.text}22` }}>{o.personType}</span>
-                  <span style={{ fontSize:10.5,fontWeight:700,padding:'3px 10px',borderRadius:999,background:'#eef2ff',color:'#4f46e5',letterSpacing:.2,display:'inline-block',whiteSpace:'nowrap',border:'1px solid #cfd8ff' }}>ID {o.staffId || '-'}</span>
-                </div>
-                <span style={{ fontWeight:700,fontSize:13.5,color:'#1e293b',lineHeight:1.5,overflowWrap:'break-word',wordBreak:'break-word' }}>{o.name}</span>
-              </div>
-
-              <div style={{ display:'flex',flexDirection:'column',gap:5,minWidth:0,justifyContent:'center' }}>
-                <span style={{ fontSize:13,fontWeight:800,padding:'2px 10px',borderRadius:6,background:'#e0e7ff',color:'#6366f1',display:'inline-block',width:'fit-content',whiteSpace:'nowrap',letterSpacing:'0.5px' }}>{o.roomId}</span>
-                <span style={{ fontSize:11,color:'#94a3b8',whiteSpace:'nowrap',marginLeft:20 }}>Bed {o.bedNo}</span>
-              </div>
-
-              <div style={{ display:'flex',flexDirection:'column',gap:4,minWidth:0,justifyContent:'center' }}>
-                <div style={{ fontSize:12,color:'#1e293b',fontWeight:700,lineHeight:1.2,whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis' }}>{o.section||'-'}</div>
-                <div style={{ fontSize:11,color:'#94a3b8',fontWeight:600,letterSpacing:.2,whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis' }}>{deptCode} | {natCode}</div>
-              </div>
-
-              <div style={{ display:'flex',gap:4,alignItems:'center',background:'rgba(255,255,255,.76)',padding:'4px 6px',borderRadius:11,overflow:'visible',flexWrap:'nowrap',justifyContent:'center',border:'1px solid #dbe4f0' }}>
-                {canEditAccommodation ? (
-                  <>
-                    <ActionBtn title="Edit"      onClick={()=>setEditTarget(o)}     color="#3b82f6" bgGradient="linear-gradient(135deg, #dbeafe 0%, #eff6ff 100%)"><IconEdit /></ActionBtn>
-                    <ActionBtn title="Swap"      onClick={()=>setSwapTarget(o)}     color="#8b5cf6" bgGradient="linear-gradient(135deg, #ede9fe 0%, #f3e8ff 100%)"><IconSwap /></ActionBtn>
-                    <ActionBtn title="Move"      onClick={()=>setMoveTarget(o)}     color="#10b981" bgGradient="linear-gradient(135deg, #d1fae5 0%, #ecfdf5 100%)"><IconMove /></ActionBtn>
-                    <ActionBtn title="Check Out" onClick={()=>setCheckoutTarget(o)} color="#f59e0b" bgGradient="linear-gradient(135deg, #fed7aa 0%, #fffbeb 100%)"><IconCheckout /></ActionBtn>
-                    <ActionBtn title="Delete"    onClick={()=>setDeleteTarget(o)}   color="#ef4444" bgGradient="linear-gradient(135deg, #fecaca 0%, #fee2e2 100%)" hoverColor="#b91c1c"><IconDelete /></ActionBtn>
-                  </>
-                ) : <span style={{ fontSize: 11, fontWeight: 700, color:'#64748b', padding:'4px 8px' }}>View only</span>}
-              </div>
-            </div>
-          );
-        })}
+          })}
         </div>
-      </div>
+      ) : (
+        /* Desktop grid table */
+        <div style={{ background:'#fff',borderRadius:18,boxShadow:'0 8px 26px rgba(30,49,95,.08)',border:'1px solid #dfe6f1',overflowX:'auto' }}>
+          <div style={{ minWidth:960 }}>
+          <div style={{ display:'grid',gridTemplateColumns:'2.9fr 1.1fr 1.9fr 138px',padding:'0 20px',height:42,alignItems:'center',background:'linear-gradient(180deg, #f8fbff 0%, #f3f7fd 100%)',borderBottom:'1px solid #dfe6f1',gap:10 }}>
+            {['Name / Person Type','Room','Section / Department | Nat','Actions'].map(h=>(
+              <span key={h} style={{ fontSize:10.5,fontWeight:700,color:'#7f93b3',textTransform:'uppercase',letterSpacing:.6 }}>{h}</span>
+            ))}
+          </div>
+
+          {grouped.length===0 && (
+            <div style={{ padding:'48px 20px',textAlign:'center',color:'#94a3b8',fontSize:15 }}>No occupants match the current filters.</div>
+          )}
+
+          {grouped.map((item,idx)=>{
+            if(item.type==='building'){
+              return(
+                <div key={`b-${item.name}-${idx}`} style={{ padding:'12px 20px 6px',background:'#f1f5f9',borderTop:idx===0?'none':'2px solid #e2e8f0',borderBottom:'1px solid #e2e8f0' }}>
+                  <span style={{ fontSize:11.5,fontWeight:800,color:'#475569',textTransform:'uppercase',letterSpacing:1.2 }}>{item.label}</span>
+                </div>
+              );
+            }
+            const o=item.occ;
+            const tc=PERSON_TYPE_COLORS[o.personType]||{bg:'#f1f5f9',text:'#475569'};
+            const deptCode = shortCode(o.department);
+            const natCode = shortCode(o.nationality);
+            const rowBg = item.rowIndex % 2 === 0 ? '#ffffff' : '#f4f7fb';
+            return(
+              <div key={o._id}
+                style={{ display:'grid',gridTemplateColumns:'2.9fr 1.1fr 1.9fr 140px',padding:'0 20px',minHeight:90,alignItems:'center',paddingTop:8,paddingBottom:8,borderBottom:'1px solid #e1e8f2',borderLeft:`3px solid ${tc.text}1f`,gap:10,transition:'background .12s, border-left-color .12s',cursor:'default',background:rowBg }}
+                onMouseEnter={e=>{e.currentTarget.style.background='#ebf2ff'; e.currentTarget.style.borderLeftColor=tc.text;}}
+                onMouseLeave={e=>{e.currentTarget.style.background=rowBg; e.currentTarget.style.borderLeftColor=`${tc.text}1f`;}}
+              >
+                <div style={{ display:'flex',flexDirection:'column',gap:5,minWidth:0,alignSelf:'flex-start',paddingTop:2 }}>
+                  <div style={{ display:'flex',alignItems:'center',gap:6,minWidth:0,flexWrap:'wrap' }}>
+                    <span style={{ fontSize:10.5,fontWeight:600,padding:'3px 10px',borderRadius:999,background:tc.bg,color:tc.text,letterSpacing:.2,display:'inline-block',whiteSpace:'nowrap',textTransform:'uppercase',border:`1px solid ${tc.text}22` }}>{o.personType}</span>
+                    <span style={{ fontSize:10.5,fontWeight:700,padding:'3px 10px',borderRadius:999,background:'#eef2ff',color:'#4f46e5',letterSpacing:.2,display:'inline-block',whiteSpace:'nowrap',border:'1px solid #cfd8ff' }}>ID {o.staffId || '-'}</span>
+                  </div>
+                  <span style={{ fontWeight:700,fontSize:13.5,color:'#1e293b',lineHeight:1.5,overflowWrap:'break-word',wordBreak:'break-word' }}>{o.name}</span>
+                </div>
+
+                <div style={{ display:'flex',flexDirection:'column',gap:5,minWidth:0,justifyContent:'center' }}>
+                  <span style={{ fontSize:13,fontWeight:800,padding:'2px 10px',borderRadius:6,background:'#e0e7ff',color:'#6366f1',display:'inline-block',width:'fit-content',whiteSpace:'nowrap',letterSpacing:'0.5px' }}>{o.roomId}</span>
+                  <span style={{ fontSize:11,color:'#94a3b8',whiteSpace:'nowrap',marginLeft:20 }}>Bed {o.bedNo}</span>
+                </div>
+
+                <div style={{ display:'flex',flexDirection:'column',gap:4,minWidth:0,justifyContent:'center' }}>
+                  <div style={{ fontSize:12,color:'#1e293b',fontWeight:700,lineHeight:1.2,whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis' }}>{o.section||'-'}</div>
+                  <div style={{ fontSize:11,color:'#94a3b8',fontWeight:600,letterSpacing:.2,whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis' }}>{deptCode} | {natCode}</div>
+                </div>
+
+                <div style={{ display:'flex',gap:4,alignItems:'center',background:'rgba(255,255,255,.76)',padding:'4px 6px',borderRadius:11,overflow:'visible',flexWrap:'nowrap',justifyContent:'center',border:'1px solid #dbe4f0' }}>
+                  {canEditAccommodation ? (
+                    <>
+                      <ActionBtn title="Edit"      onClick={()=>setEditTarget(o)}     color="#3b82f6" bgGradient="linear-gradient(135deg, #dbeafe 0%, #eff6ff 100%)"><IconEdit /></ActionBtn>
+                      <ActionBtn title="Swap"      onClick={()=>setSwapTarget(o)}     color="#8b5cf6" bgGradient="linear-gradient(135deg, #ede9fe 0%, #f3e8ff 100%)"><IconSwap /></ActionBtn>
+                      <ActionBtn title="Move"      onClick={()=>setMoveTarget(o)}     color="#10b981" bgGradient="linear-gradient(135deg, #d1fae5 0%, #ecfdf5 100%)"><IconMove /></ActionBtn>
+                      <ActionBtn title="Check Out" onClick={()=>setCheckoutTarget(o)} color="#f59e0b" bgGradient="linear-gradient(135deg, #fed7aa 0%, #fffbeb 100%)"><IconCheckout /></ActionBtn>
+                      <ActionBtn title="Delete"    onClick={()=>setDeleteTarget(o)}   color="#ef4444" bgGradient="linear-gradient(135deg, #fecaca 0%, #fee2e2 100%)" hoverColor="#b91c1c"><IconDelete /></ActionBtn>
+                    </>
+                  ) : <span style={{ fontSize: 11, fontWeight: 700, color:'#64748b', padding:'4px 8px' }}>View only</span>}
+                </div>
+              </div>
+            );
+          })}
+          </div>
+        </div>
+      )}
 
       <AddOccupantModal open={canEditAccommodation && addOpen} onClose={()=>setAddOpen(false)} rooms={roomsState} onAdd={handleAdd} />
       <EditOccupantModal open={!!editTarget} onClose={()=>setEditTarget(null)} occupant={editTarget} onSave={handleEdit} />
