@@ -122,7 +122,7 @@ function DonutCard({ title, data, subtitle }) {
 }
 
 function Dashboard() {
-  const { occupants, roomsState, mealExclusionSummary } = useOutletContext();
+  const { occupants, roomsState, mealExclusionSummary, isMobile = false } = useOutletContext();
   const viewportWidth = useViewportWidth();
 
   const metrics = useMemo(() => {
@@ -207,11 +207,11 @@ function Dashboard() {
         </div>
       </div>
 
-      <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit, minmax(210px, 1fr))', gap:14, marginBottom:14 }}>
+      <div style={{ display:'grid', gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(auto-fit, minmax(200px, 1fr))', gap: isMobile ? 10 : 14, marginBottom:14 }}>
         {cards.map((card, i) => (
-          <div key={card.title} style={{ background:card.bg, color:card.color, borderRadius:14, padding:'16px 16px', border:'1px solid rgba(30,58,138,.09)', boxShadow:'0 5px 14px rgba(15,23,42,.06)', animation:'fadeUp 0.4s cubic-bezier(0.22,1,0.36,1) both', animationDelay:`${i * 65}ms` }}>
-            <div style={{ fontSize:12, textTransform:'uppercase', fontWeight:700, letterSpacing:.5, opacity:.75 }}>{card.title}</div>
-            <div style={{ fontSize:'1.9rem', fontWeight:900, marginTop:6, animation:'numberPop 0.5s cubic-bezier(0.22,1,0.36,1) both', animationDelay:`${i * 65 + 120}ms` }}>{card.value}</div>
+          <div key={card.title} style={{ background:card.bg, color:card.color, borderRadius:12, padding: isMobile ? '10px 12px' : '16px 16px', border:'1px solid rgba(30,58,138,.09)', boxShadow:'0 5px 14px rgba(15,23,42,.06)', animation:'fadeUp 0.4s cubic-bezier(0.22,1,0.36,1) both', animationDelay:`${i * 65}ms` }}>
+            <div style={{ fontSize: isMobile ? 10 : 12, textTransform:'uppercase', fontWeight:700, letterSpacing:.5, opacity:.75 }}>{card.title}</div>
+            <div style={{ fontSize: isMobile ? '1.5rem' : '1.9rem', fontWeight:900, marginTop: isMobile ? 4 : 6, animation:'numberPop 0.5s cubic-bezier(0.22,1,0.36,1) both', animationDelay:`${i * 65 + 120}ms` }}>{card.value}</div>
           </div>
         ))}
       </div>

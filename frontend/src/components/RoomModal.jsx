@@ -1,11 +1,20 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 
-const overlayStyle = {
+function useViewportWidth() {
+  const [w, setW] = useState(() => (typeof window !== 'undefined' ? window.innerWidth : 1200));
+  useEffect(() => {
+    const h = () => setW(window.innerWidth);
+    window.addEventListener('resize', h);
+    return () => window.removeEventListener('resize', h);
+  }, []);
+  return w;
+}
+
+const overlayBase = {
   position: 'fixed',
-  top: 0,
   left: 0,
-  width: '100vw',
-  height: '100vh',
+  right: 0,
+  bottom: 0,
   background: 'rgba(30,40,60,0.55)',
   zIndex: 2000,
   display: 'flex',
@@ -64,6 +73,8 @@ const tableRowStyle = (index) => ({
 
 
 function RoomModal({ open, onClose, room }) {
+  const vw = useViewportWidth();
+  const isMobile = vw < 600;
   if (!open || !room) return null;
 
   const statusLabel = room.occupiedBeds === 0 ? 'Vacant' : room.occupiedBeds === room.totalBeds ? 'Full' : 'Partial';
@@ -78,15 +89,15 @@ function RoomModal({ open, onClose, room }) {
   ];
 
   return (
-    <div style={overlayStyle} onClick={onClose}>
+    <div style={{ ...overlayBase, top: isMobile ? 62 : 0 }} onClick={onClose}>
       <div
         className="modal"
         style={{
           ...modalStyle,
           background: '#fff',
           borderRadius: 18,
-          width: 'min(1100px, 94vw)',
-          height: 'min(680px, 88vh)',
+          width: 'min(1100px, 96vw)',
+          height: isMobile ? 'calc(100vh - 94px)' : 'min(680px, 88vh)',
           boxShadow: '0 20px 60px rgba(15,23,42,.28)',
           overflow: 'hidden',
           display: 'flex',
@@ -111,34 +122,57 @@ function RoomModal({ open, onClose, room }) {
           </div>
 
           <div style={{ border: '1px solid #dfe6f1', borderRadius: 14, overflow: 'hidden', background: '#fff', flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
-            <div style={tableHeaderStyle}>
-              {['#', 'ID', 'Name', 'Department', 'Type', 'Nationality'].map(label => (
-                <div key={label} style={{ fontSize: 10.5, fontWeight: 800, color: '#7f93b3', textTransform: 'uppercase', letterSpacing: 0.6 }}>
-                  {label}
-                </div>
-              ))}
-            </div>
-
-            <div style={{ flex: 1, minHeight: 0, overflowY: 'auto' }}>
-              {activeOccupants.length === 0 ? (
-                <div style={{ padding: '22px 16px', color: '#7a869a', fontStyle: 'italic', fontSize: 14.5 }}>No occupants in this room.</div>
-              ) : (
-                activeOccupants.map((bed, idx) => (
-                  <div key={idx} style={tableRowStyle(idx)}>
-                    <div style={{ fontWeight: 800, color: '#1e315f' }}>{idx + 1}</div>
-                    <div style={{ color: '#64748b', fontWeight: 700 }}>{bed.occupant.staffId || '-'}</div>
-                    <div style={{ color: '#1e293b', fontWeight: 800, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{bed.occupant.name}</div>
-                    <div style={{ color: '#475569', fontWeight: 600, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{bed.occupant.department || '-'}</div>
-                    <div>
-                      <span style={{ background: '#e3eafc', color: '#1e315f', borderRadius: 999, padding: '4px 10px', fontWeight: 700, fontSize: 12 }}>
+            {activeOccupants.length === 0 ? (
+              <div style={{ padding: '22px 16px', color: '#7a869a', fontStyle: 'italic', fontSize: 14.5 }}>No occupants in this room.</div>
+            ) : isMobile ? (
+              /* Mobile: card per occupant */
+              <div style={{ flex: 1, minHeight: 0, overflowY: 'auto', padding: '10px 12px', display: 'flex', flexDirection: 'column', gap: 8 }}>
+                {activeOccupants.map((bed, idx) => (
+                  <div key={idx} style={{ background: idx % 2 === 0 ? '#f8faff' : '#fff', border: '1px solid #e3eafc', borderRadius: 10, padding: '10px 12px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 5 }}>
+                      <span style={{ fontSize: 10, fontWeight: 700, color: '#7f93b3', textTransform: 'uppercase' }}>Bed {idx + 1}</span>
+                      <span style={{ background: '#e3eafc', color: '#1e315f', borderRadius: 999, padding: '3px 9px', fontWeight: 700, fontSize: 11 }}>
                         {bed.occupant.personType || 'Occupant'}
                       </span>
                     </div>
-                    <div style={{ color: '#475569', fontWeight: 600 }}>{bed.occupant.nationality || '-'}</div>
+                    <div style={{ fontWeight: 800, fontSize: 14, color: '#1e293b', marginBottom: 3 }}>{bed.occupant.name}</div>
+                    <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', fontSize: 12, color: '#475569', fontWeight: 600 }}>
+                      <span>ID: {bed.occupant.staffId || '-'}</span>
+                      <span style={{ color: '#94a3b8' }}>·</span>
+                      <span>{bed.occupant.nationality || '-'}</span>
+                    </div>
+                    <div style={{ marginTop: 4, fontSize: 12, color: '#64748b', fontWeight: 600 }}>{bed.occupant.department || '-'}</div>
                   </div>
-                ))
-              )}
-            </div>
+                ))}
+              </div>
+            ) : (
+              /* Desktop: grid table */
+              <>
+                <div style={tableHeaderStyle}>
+                  {['#', 'ID', 'Name', 'Department', 'Type', 'Nationality'].map(label => (
+                    <div key={label} style={{ fontSize: 10.5, fontWeight: 800, color: '#7f93b3', textTransform: 'uppercase', letterSpacing: 0.6 }}>
+                      {label}
+                    </div>
+                  ))}
+                </div>
+                <div style={{ flex: 1, minHeight: 0, overflowY: 'auto' }}>
+                  {activeOccupants.map((bed, idx) => (
+                    <div key={idx} style={tableRowStyle(idx)}>
+                      <div style={{ fontWeight: 800, color: '#1e315f' }}>{idx + 1}</div>
+                      <div style={{ color: '#64748b', fontWeight: 700 }}>{bed.occupant.staffId || '-'}</div>
+                      <div style={{ color: '#1e293b', fontWeight: 800, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{bed.occupant.name}</div>
+                      <div style={{ color: '#475569', fontWeight: 600, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{bed.occupant.department || '-'}</div>
+                      <div>
+                        <span style={{ background: '#e3eafc', color: '#1e315f', borderRadius: 999, padding: '4px 10px', fontWeight: 700, fontSize: 12 }}>
+                          {bed.occupant.personType || 'Occupant'}
+                        </span>
+                      </div>
+                      <div style={{ color: '#475569', fontWeight: 600 }}>{bed.occupant.nationality || '-'}</div>
+                    </div>
+                  ))}
+                </div>
+              </>
+            )}
           </div>
         </div>
 

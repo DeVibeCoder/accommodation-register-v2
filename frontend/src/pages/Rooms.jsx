@@ -109,7 +109,7 @@ function Rooms() {
   const [editRoomType, setEditRoomType] = useState('Internal');
   const [editAcType, setEditAcType] = useState('Non-AC');
   const [saveNotice, setSaveNotice] = useState({ open: false, type: 'success', title: '', message: '' });
-  const { sidebarCollapsed, roomsState, occupants = [], setRoomsState, canEditAccommodation = true, canExportRooms = true } = useOutletContext();
+  const { sidebarCollapsed, roomsState, occupants = [], setRoomsState, canEditAccommodation = true, canExportRooms = true, isMobile = false } = useOutletContext();
 
   const rooms = useMemo(() => deriveRooms(roomsState), [roomsState]);
 
@@ -333,8 +333,8 @@ function Rooms() {
         className="rooms-grid"
         style={{
           display: 'grid',
-          gridTemplateColumns: `repeat(auto-fit, minmax(${sidebarCollapsed ? 230 : 250}px, 290px))`,
-          gap: 16,
+          gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : `repeat(auto-fit, minmax(${sidebarCollapsed ? 230 : 250}px, 290px))`,
+          gap: isMobile ? 10 : 16,
           justifyContent: 'start',
         }}
       >
@@ -408,7 +408,7 @@ function Rooms() {
                 minWidth: 0,
                 cursor: 'pointer',
                 position: 'relative',
-                padding: '12px 12px 12px 12px',
+                padding: isMobile ? '8px 8px' : '12px 12px',
                 outline: 'none',
                 transition: 'transform 0.18s ease, box-shadow 0.18s ease',
                 boxSizing: 'border-box',
@@ -451,7 +451,7 @@ function Rooms() {
 
               {/* Row 1: Room ID + Status badge (padded right to clear the absolute edit button) */}
               <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 7, paddingRight: 34 }}>
-                <div style={{ fontWeight: 900, fontSize: '1rem', color: cardText, letterSpacing: 0.2, flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                <div style={{ fontWeight: 900, fontSize: isMobile ? '0.82rem' : '1rem', color: cardText, letterSpacing: 0.2, flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                   {room.id}
                 </div>
                 <span style={{
@@ -505,19 +505,19 @@ function Rooms() {
 
               {/* Occupied / Available tiles */}
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 7, marginBottom: 6 }}>
-                <div style={{ borderRadius: 9, padding: '9px 8px', background: isSpecialType ? 'rgba(255,255,255,0.9)' : '#fff7ed', border: isSpecialType ? '1px solid rgba(255,255,255,0.6)' : '1px solid #ffbd78', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 2, minHeight: 78 }}>
-                  <div style={{ color: '#cc7a00', fontSize: '1.72rem', fontWeight: 900, lineHeight: 1 }}>{occupied}</div>
-                  <div style={{ color: '#ff9800', fontSize: '0.7rem', fontWeight: 700 }}>Occupied</div>
+                <div style={{ borderRadius: 9, padding: isMobile ? '6px 6px' : '9px 8px', background: isSpecialType ? 'rgba(255,255,255,0.9)' : '#fff7ed', border: isSpecialType ? '1px solid rgba(255,255,255,0.6)' : '1px solid #ffbd78', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 2, minHeight: isMobile ? 52 : 78 }}>
+                  <div style={{ color: '#cc7a00', fontSize: isMobile ? '1.2rem' : '1.72rem', fontWeight: 900, lineHeight: 1 }}>{occupied}</div>
+                  <div style={{ color: '#ff9800', fontSize: '0.65rem', fontWeight: 700 }}>Occupied</div>
                 </div>
-                <div style={{ borderRadius: 9, padding: '9px 8px', background: isSpecialType ? 'rgba(255,255,255,0.9)' : '#edfff7', border: isSpecialType ? '1px solid rgba(255,255,255,0.6)' : '1px solid #8fe3ba', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 2, minHeight: 78 }}>
-                  <div style={{ color: '#1d8f54', fontSize: '1.72rem', fontWeight: 900, lineHeight: 1 }}>{available}</div>
-                  <div style={{ color: '#2aa464', fontSize: '0.7rem', fontWeight: 700 }}>Available</div>
+                <div style={{ borderRadius: 9, padding: isMobile ? '6px 6px' : '9px 8px', background: isSpecialType ? 'rgba(255,255,255,0.9)' : '#edfff7', border: isSpecialType ? '1px solid rgba(255,255,255,0.6)' : '1px solid #8fe3ba', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 2, minHeight: isMobile ? 52 : 78 }}>
+                  <div style={{ color: '#1d8f54', fontSize: isMobile ? '1.2rem' : '1.72rem', fontWeight: 900, lineHeight: 1 }}>{available}</div>
+                  <div style={{ color: '#2aa464', fontSize: '0.65rem', fontWeight: 700 }}>Available</div>
                 </div>
               </div>
 
               {/* Occupancy bar */}
               <div style={{ marginTop: 'auto' }}>
-                <div style={{ height: 50, borderRadius: 9, background: isSpecialType ? 'rgba(255,255,255,0.15)' : '#fff1f1', overflow: 'hidden', border: `1px solid ${isSpecialType ? '#ffffff44' : '#efb3b3'}`, position: 'relative' }}>
+                <div style={{ height: isMobile ? 36 : 50, borderRadius: 9, background: isSpecialType ? 'rgba(255,255,255,0.15)' : '#fff1f1', overflow: 'hidden', border: `1px solid ${isSpecialType ? '#ffffff44' : '#efb3b3'}`, position: 'relative' }}>
                   <div style={{
                     height: '100%',
                     width: `${percent}%`,
