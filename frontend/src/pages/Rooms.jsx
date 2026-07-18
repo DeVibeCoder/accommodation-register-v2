@@ -450,16 +450,16 @@ function Rooms() {
               )}
 
               {/* Row 1: Room ID + Status badge (padded right to clear the absolute edit button) */}
-              <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 7, paddingRight: 34 }}>
-                <div style={{ fontWeight: 900, fontSize: isMobile ? '0.82rem' : '1rem', color: cardText, letterSpacing: 0.2, flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginBottom: isMobile ? 4 : 7, paddingRight: 30 }}>
+                <div style={{ fontWeight: 900, fontSize: isMobile ? '0.74rem' : '1rem', color: cardText, letterSpacing: 0.2, flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                   {room.id}
                 </div>
                 <span style={{
                   background: isSpecialType ? 'rgba(255,255,255,0.20)' : `${statusColor}22`,
                   color: isSpecialType ? '#ffffff' : statusColor,
                   borderRadius: 999,
-                  padding: '3px 8px',
-                  fontSize: '0.72rem',
+                  padding: isMobile ? '2px 6px' : '3px 8px',
+                  fontSize: isMobile ? '0.60rem' : '0.72rem',
                   fontWeight: 800,
                   whiteSpace: 'nowrap',
                   flexShrink: 0,
@@ -469,7 +469,7 @@ function Rooms() {
               </div>
 
               {/* Chips row - equal 3-column grid so all bubbles are same width */}
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 5, marginBottom: 8 }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: isMobile ? 3 : 5, marginBottom: isMobile ? 4 : 8 }}>
                 {[
                   { label: room.type, bg: isSpecialType ? 'rgba(255,255,255,0.18)' : '#e3eafc', color: isSpecialType ? '#f0f7ff' : '#40527b' },
                   { label: room.ac ? 'AC' : 'Non-AC', bg: isSpecialType ? 'rgba(255,255,255,0.14)' : '#f3e3fa', color: isSpecialType ? '#f0f7ff' : '#6c3a7c' },
@@ -481,8 +481,8 @@ function Rooms() {
                       background: chip.bg,
                       color: chip.color,
                       borderRadius: 999,
-                      padding: '3px 2px',
-                      fontSize: '0.71rem',
+                      padding: isMobile ? '2px 1px' : '3px 2px',
+                      fontSize: isMobile ? '0.60rem' : '0.71rem',
                       fontWeight: 700,
                       textAlign: 'center',
                       overflow: 'hidden',
@@ -497,27 +497,27 @@ function Rooms() {
               </div>
 
               {/* Building + Floor */}
-              <div style={{ marginBottom: 8 }}>
-                <div style={{ textTransform: 'uppercase', color: mutedText, fontWeight: 700, fontSize: '0.76rem', letterSpacing: 0.32, lineHeight: 1.3 }}>
-                  {`${room.building} | FLOOR ${room.floor}`}
+              <div style={{ marginBottom: isMobile ? 4 : 8 }}>
+                <div style={{ textTransform: 'uppercase', color: mutedText, fontWeight: 700, fontSize: isMobile ? '0.60rem' : '0.76rem', letterSpacing: 0.32, lineHeight: 1.3, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  {`${room.building} | FL ${room.floor}`}
                 </div>
               </div>
 
               {/* Occupied / Available tiles */}
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 7, marginBottom: 6 }}>
-                <div style={{ borderRadius: 9, padding: isMobile ? '6px 6px' : '9px 8px', background: isSpecialType ? 'rgba(255,255,255,0.9)' : '#fff7ed', border: isSpecialType ? '1px solid rgba(255,255,255,0.6)' : '1px solid #ffbd78', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 2, minHeight: isMobile ? 52 : 78 }}>
-                  <div style={{ color: '#cc7a00', fontSize: isMobile ? '1.2rem' : '1.72rem', fontWeight: 900, lineHeight: 1 }}>{occupied}</div>
-                  <div style={{ color: '#ff9800', fontSize: '0.65rem', fontWeight: 700 }}>Occupied</div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: isMobile ? 4 : 7, marginBottom: isMobile ? 4 : 6 }}>
+                <div style={{ borderRadius: 9, padding: isMobile ? '4px 4px' : '9px 8px', background: isSpecialType ? 'rgba(255,255,255,0.9)' : '#fff7ed', border: isSpecialType ? '1px solid rgba(255,255,255,0.6)' : '1px solid #ffbd78', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 1, minHeight: isMobile ? 44 : 78 }}>
+                  <div style={{ color: '#cc7a00', fontSize: isMobile ? '1.05rem' : '1.72rem', fontWeight: 900, lineHeight: 1 }}>{occupied}</div>
+                  <div style={{ color: '#ff9800', fontSize: isMobile ? '0.56rem' : '0.65rem', fontWeight: 700 }}>Occupied</div>
                 </div>
-                <div style={{ borderRadius: 9, padding: isMobile ? '6px 6px' : '9px 8px', background: isSpecialType ? 'rgba(255,255,255,0.9)' : '#edfff7', border: isSpecialType ? '1px solid rgba(255,255,255,0.6)' : '1px solid #8fe3ba', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 2, minHeight: isMobile ? 52 : 78 }}>
-                  <div style={{ color: '#1d8f54', fontSize: isMobile ? '1.2rem' : '1.72rem', fontWeight: 900, lineHeight: 1 }}>{available}</div>
-                  <div style={{ color: '#2aa464', fontSize: '0.65rem', fontWeight: 700 }}>Available</div>
+                <div style={{ borderRadius: 9, padding: isMobile ? '4px 4px' : '9px 8px', background: isSpecialType ? 'rgba(255,255,255,0.9)' : '#edfff7', border: isSpecialType ? '1px solid rgba(255,255,255,0.6)' : '1px solid #8fe3ba', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 1, minHeight: isMobile ? 44 : 78 }}>
+                  <div style={{ color: '#1d8f54', fontSize: isMobile ? '1.05rem' : '1.72rem', fontWeight: 900, lineHeight: 1 }}>{available}</div>
+                  <div style={{ color: '#2aa464', fontSize: isMobile ? '0.56rem' : '0.65rem', fontWeight: 700 }}>Available</div>
                 </div>
               </div>
 
               {/* Occupancy bar */}
               <div style={{ marginTop: 'auto' }}>
-                <div style={{ height: isMobile ? 36 : 50, borderRadius: 9, background: isSpecialType ? 'rgba(255,255,255,0.15)' : '#fff1f1', overflow: 'hidden', border: `1px solid ${isSpecialType ? '#ffffff44' : '#efb3b3'}`, position: 'relative' }}>
+                <div style={{ height: isMobile ? 30 : 50, borderRadius: 9, background: isSpecialType ? 'rgba(255,255,255,0.15)' : '#fff1f1', overflow: 'hidden', border: `1px solid ${isSpecialType ? '#ffffff44' : '#efb3b3'}`, position: 'relative' }}>
                   <div style={{
                     height: '100%',
                     width: `${percent}%`,
@@ -526,8 +526,8 @@ function Rooms() {
                     transition: 'width 0.35s ease',
                   }} />
                   <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', pointerEvents: 'none' }}>
-                    <span style={{ fontSize: '1.2rem', fontWeight: 900, color: isSpecialType ? '#ffffff' : occupancyTextColor, lineHeight: 1, textShadow: percent >= 55 ? '0 1px 1px rgba(0,0,0,0.18)' : 'none' }}>{percent}%</span>
-                    <span style={{ fontSize: '0.68rem', fontWeight: 700, color: isSpecialType ? '#e0eaff' : occupancyLabelColor, marginTop: 2, textShadow: percent >= 55 ? '0 1px 1px rgba(0,0,0,0.15)' : 'none' }}>Occupied</span>
+                    <span style={{ fontSize: isMobile ? '0.9rem' : '1.2rem', fontWeight: 900, color: isSpecialType ? '#ffffff' : occupancyTextColor, lineHeight: 1, textShadow: percent >= 55 ? '0 1px 1px rgba(0,0,0,0.18)' : 'none' }}>{percent}%</span>
+                    <span style={{ fontSize: isMobile ? '0.56rem' : '0.68rem', fontWeight: 700, color: isSpecialType ? '#e0eaff' : occupancyLabelColor, marginTop: 2, textShadow: percent >= 55 ? '0 1px 1px rgba(0,0,0,0.15)' : 'none' }}>Occupied</span>
                   </div>
                 </div>
               </div>

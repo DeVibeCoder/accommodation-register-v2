@@ -132,7 +132,7 @@ function BottomNav({ role, pathname }) {
       display: 'flex',
       alignItems: 'stretch',
       boxShadow: '0 -2px 16px rgba(15,23,42,0.10)',
-      height: 60,
+      height: 50,
       fontFamily: 'Inter, Segoe UI, Arial, sans-serif',
     }}>
       {items.map(item => {
@@ -445,7 +445,7 @@ function Layout({ user, onLogout }) {
         </header>
 
         {/* ── Main content ── */}
-        <main style={{ flex: 1, overflowY: 'auto', overflowX: 'hidden', paddingBottom: isMobile ? 60 : 0 }}>
+        <main style={{ flex: 1, overflowY: 'auto', overflowX: 'hidden', paddingBottom: isMobile ? 50 : 0 }}>
           <div style={{ width: '100%', maxWidth: '100%', margin: 0, padding: 0 }}>
 
             {/* Error banner */}
