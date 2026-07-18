@@ -90,21 +90,21 @@ function StayHistory() {
   }, [enrichedHistory, activeFilter, search]);
 
   return (
-    <div style={{ width: '100%', maxWidth: '100%', margin: 0, padding: '12px 24px 24px', background: 'none', fontFamily: 'Inter, Segoe UI, Arial, sans-serif', boxSizing: 'border-box', minHeight: '100vh' }}>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, marginBottom: 14, flexWrap: 'wrap' }}>
-        <p style={{ margin: 0, color: '#94a3b8', fontSize: 13, fontWeight: 600 }}>
-          {filtered.length} of {stayHistory.length} recorded accommodation activities
+    <div style={{ width: '100%', maxWidth: '100%', margin: 0, padding: isMobile ? '10px 12px 16px' : '12px 24px 24px', background: 'none', fontFamily: 'Inter, Segoe UI, Arial, sans-serif', boxSizing: 'border-box', minHeight: '100vh' }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: isMobile ? 8 : 16, marginBottom: isMobile ? 8 : 14, flexWrap: isMobile ? 'nowrap' : 'wrap' }}>
+        <p style={{ margin: 0, color: '#94a3b8', fontSize: isMobile ? 10 : 13, fontWeight: 600, flexShrink: 0 }}>
+          {filtered.length} of {stayHistory.length} {isMobile ? 'activities' : 'recorded accommodation activities'}
         </p>
         <input
           type="text"
-          placeholder="Search name, room, action..."
+          placeholder={isMobile ? 'Search...' : 'Search name, room, action...'}
           value={search}
           onChange={e => setSearch(e.target.value)}
-          style={{ padding: '9px 14px', borderRadius: 12, border: '1.5px solid #d0d7e2', minWidth: 260, fontSize: 14, background: '#fff' }}
+          style={{ padding: isMobile ? '6px 10px' : '9px 14px', borderRadius: 10, border: '1.5px solid #d0d7e2', minWidth: isMobile ? 0 : 260, width: isMobile ? '100%' : 'auto', fontSize: isMobile ? 12 : 14, background: '#fff' }}
         />
       </div>
 
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, marginBottom: 18 }}>
+      <div style={{ display: 'flex', flexWrap: isMobile ? 'nowrap' : 'wrap', gap: isMobile ? 4 : 10, marginBottom: isMobile ? 10 : 18, overflowX: isMobile ? 'auto' : 'visible', scrollbarWidth: 'none' }}>
         {FILTERS.map(filter => {
           const isActive = activeFilter === filter;
           return (
@@ -112,14 +112,16 @@ function StayHistory() {
               key={filter}
               onClick={() => setActiveFilter(filter)}
               style={{
-                padding: '9px 16px',
+                padding: isMobile ? '4px 9px' : '9px 16px',
                 borderRadius: 999,
                 border: isActive ? '1px solid #2563eb' : '1px solid #d7e1ef',
                 background: isActive ? '#dbeafe' : '#fff',
                 color: isActive ? '#4338ca' : '#475569',
                 fontWeight: 700,
-                fontSize: 13,
+                fontSize: isMobile ? 10 : 13,
                 cursor: 'pointer',
+                flexShrink: 0,
+                whiteSpace: 'nowrap',
               }}
             >
               {filter}

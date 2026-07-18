@@ -1,4 +1,14 @@
 import React, { useEffect, useMemo, useState } from 'react';
+
+function useViewportWidth() {
+  const [w, setW] = useState(() => (typeof window !== 'undefined' ? window.innerWidth : 1200));
+  useEffect(() => {
+    const h = () => setW(window.innerWidth);
+    window.addEventListener('resize', h);
+    return () => window.removeEventListener('resize', h);
+  }, []);
+  return w;
+}
 import { fetchMealHistory } from '../services/mealService';
 import { formatDisplayDate, toIsoDate } from '../utils/date';
 
@@ -124,6 +134,8 @@ function MealDayDetailModal({ row, departments, onClose }) {
 }
 
 function MealHistory() {
+  const vw = useViewportWidth();
+  const isMobile = vw < 768;
   const [history, setHistory] = useState([]);
   const [departments, setDepartments] = useState([]);
   const [selectedMonth, setSelectedMonth] = useState(new Date().toISOString().slice(0, 7));
@@ -292,16 +304,16 @@ function MealHistory() {
   };
 
   return (
-    <div className="page-container" style={{ width: '100%', maxWidth: '100%', margin: 0, padding: '12px clamp(12px, 3vw, 32px) 30px', background: 'none', fontFamily: 'Inter, Segoe UI, Arial, sans-serif', boxSizing: 'border-box' }}>
-      <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: 16, marginBottom: 14, flexWrap: 'wrap' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', padding: 10, borderRadius: 16, background: 'linear-gradient(180deg, #ffffff 0%, #f8fbff 100%)', border: '1px solid #dbe4f0', boxShadow: '0 10px 28px rgba(15,23,42,0.06)' }}>
-          <select value={selectedMonth} onChange={e => setSelectedMonth(e.target.value)} style={{ height: 36, minWidth: 150, border: '1px solid #cbd5e1', borderRadius: 8, padding: '0 10px', fontWeight: 600, color: '#334155' }}>
+    <div className="page-container" style={{ width: '100%', maxWidth: '100%', margin: 0, padding: isMobile ? '10px 12px 20px' : '12px clamp(12px, 3vw, 32px) 30px', background: 'none', fontFamily: 'Inter, Segoe UI, Arial, sans-serif', boxSizing: 'border-box' }}>
+      <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: isMobile ? 6 : 16, marginBottom: isMobile ? 8 : 14, flexWrap: 'wrap' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: isMobile ? 4 : 8, flexWrap: 'wrap', padding: isMobile ? 7 : 10, borderRadius: isMobile ? 12 : 16, background: 'linear-gradient(180deg, #ffffff 0%, #f8fbff 100%)', border: '1px solid #dbe4f0', boxShadow: '0 10px 28px rgba(15,23,42,0.06)', width: isMobile ? '100%' : 'auto' }}>
+          <select value={selectedMonth} onChange={e => setSelectedMonth(e.target.value)} style={{ height: isMobile ? 28 : 36, minWidth: isMobile ? 0 : 150, flex: isMobile ? '1 1 0' : 'none', border: '1px solid #cbd5e1', borderRadius: 8, padding: '0 6px', fontWeight: 600, color: '#334155', fontSize: isMobile ? 11 : 14 }}>
             {monthOptions.map(month => <option key={month} value={month}>{month}</option>)}
           </select>
-          <input type="date" value={fromDate} onChange={e => setFromDate(e.target.value)} style={{ height: 36, border: '1px solid #cbd5e1', borderRadius: 8, padding: '0 10px', fontWeight: 600, color: '#334155' }} />
-          <input type="date" value={toDate} onChange={e => setToDate(e.target.value)} style={{ height: 36, border: '1px solid #cbd5e1', borderRadius: 8, padding: '0 10px', fontWeight: 600, color: '#334155' }} />
-          <button onClick={handleExport} disabled={filteredRows.length === 0} style={{ height: 36, padding: '0 14px', borderRadius: 8, border: '1px solid #94a3b8', background: filteredRows.length === 0 ? '#e2e8f0' : '#dbe4ef', color: '#1e293b', fontWeight: 800, cursor: filteredRows.length === 0 ? 'not-allowed' : 'pointer' }}>Export CSV</button>
-          <button onClick={loadHistory} disabled={loading} style={{ height: 36, padding: '0 14px', borderRadius: 8, border: 'none', background: loading ? '#cbd5e1' : '#6366f1', color: '#fff', fontWeight: 800, cursor: loading ? 'not-allowed' : 'pointer' }}>{loading ? 'Refreshing...' : 'Refresh'}</button>
+          <input type="date" value={fromDate} onChange={e => setFromDate(e.target.value)} style={{ height: isMobile ? 28 : 36, flex: isMobile ? '1 1 0' : 'none', border: '1px solid #cbd5e1', borderRadius: 8, padding: '0 6px', fontWeight: 600, color: '#334155', fontSize: isMobile ? 11 : 14, minWidth: 0 }} />
+          <input type="date" value={toDate} onChange={e => setToDate(e.target.value)} style={{ height: isMobile ? 28 : 36, flex: isMobile ? '1 1 0' : 'none', border: '1px solid #cbd5e1', borderRadius: 8, padding: '0 6px', fontWeight: 600, color: '#334155', fontSize: isMobile ? 11 : 14, minWidth: 0 }} />
+          <button onClick={handleExport} disabled={filteredRows.length === 0} style={{ height: isMobile ? 28 : 36, padding: isMobile ? '0 8px' : '0 14px', borderRadius: 8, border: '1px solid #94a3b8', background: filteredRows.length === 0 ? '#e2e8f0' : '#dbe4ef', color: '#1e293b', fontWeight: 800, cursor: filteredRows.length === 0 ? 'not-allowed' : 'pointer', fontSize: isMobile ? 11 : 14, whiteSpace: 'nowrap' }}>{isMobile ? 'CSV' : 'Export CSV'}</button>
+          <button onClick={loadHistory} disabled={loading} style={{ height: isMobile ? 28 : 36, padding: isMobile ? '0 8px' : '0 14px', borderRadius: 8, border: 'none', background: loading ? '#cbd5e1' : '#6366f1', color: '#fff', fontWeight: 800, cursor: loading ? 'not-allowed' : 'pointer', fontSize: isMobile ? 11 : 14, whiteSpace: 'nowrap' }}>{loading ? (isMobile ? '...' : 'Refreshing...') : 'Refresh'}</button>
         </div>
       </div>
 
@@ -311,18 +323,18 @@ function MealHistory() {
         </div>
       ) : null}
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 12, marginBottom: 16 }}>
-        <div style={{ border: '1px solid #d8e2f2', borderRadius: 14, background: 'linear-gradient(135deg, #ffffff 0%, #eef6ff 100%)', padding: '14px 16px', boxShadow: '0 12px 30px rgba(30,49,95,0.06)', animation: 'fadeUp 0.38s cubic-bezier(0.22,1,0.36,1) both', animationDelay: '0ms' }}>
-          <div style={{ color: '#5b7090', fontSize: 11, fontWeight: 800, textTransform: 'uppercase' }}>Total Meals (Filtered)</div>
-          <div style={{ marginTop: 6, fontWeight: 900, color: '#0f172a', fontSize: 32, animation: 'numberPop 0.5s cubic-bezier(0.22,1,0.36,1) both', animationDelay: '120ms' }}>{totalMeals}</div>
+      <div style={{ display: 'grid', gridTemplateColumns: isMobile ? 'repeat(3, 1fr)' : 'repeat(auto-fit, minmax(220px, 1fr))', gap: isMobile ? 6 : 12, marginBottom: isMobile ? 10 : 16 }}>
+        <div style={{ border: '1px solid #d8e2f2', borderRadius: isMobile ? 10 : 14, background: 'linear-gradient(135deg, #ffffff 0%, #eef6ff 100%)', padding: isMobile ? '9px 10px' : '14px 16px', boxShadow: '0 12px 30px rgba(30,49,95,0.06)', animation: 'fadeUp 0.38s cubic-bezier(0.22,1,0.36,1) both', animationDelay: '0ms' }}>
+          <div style={{ color: '#5b7090', fontSize: isMobile ? 9 : 11, fontWeight: 800, textTransform: 'uppercase' }}>{isMobile ? 'Total' : 'Total Meals (Filtered)'}</div>
+          <div style={{ marginTop: isMobile ? 2 : 6, fontWeight: 900, color: '#0f172a', fontSize: isMobile ? 20 : 32, animation: 'numberPop 0.5s cubic-bezier(0.22,1,0.36,1) both', animationDelay: '120ms' }}>{totalMeals}</div>
         </div>
-        <div style={{ border: '1px solid #d8e2f2', borderRadius: 14, background: 'linear-gradient(135deg, #ffffff 0%, #eef6ff 100%)', padding: '14px 16px', boxShadow: '0 12px 30px rgba(30,49,95,0.06)', animation: 'fadeUp 0.38s cubic-bezier(0.22,1,0.36,1) both', animationDelay: '65ms' }}>
-          <div style={{ color: '#5b7090', fontSize: 11, fontWeight: 800, textTransform: 'uppercase' }}>Average Per Day</div>
-          <div style={{ marginTop: 6, fontWeight: 900, color: '#0f172a', fontSize: 32, animation: 'numberPop 0.5s cubic-bezier(0.22,1,0.36,1) both', animationDelay: '185ms' }}>{averageMeals.toFixed(1)}</div>
+        <div style={{ border: '1px solid #d8e2f2', borderRadius: isMobile ? 10 : 14, background: 'linear-gradient(135deg, #ffffff 0%, #eef6ff 100%)', padding: isMobile ? '9px 10px' : '14px 16px', boxShadow: '0 12px 30px rgba(30,49,95,0.06)', animation: 'fadeUp 0.38s cubic-bezier(0.22,1,0.36,1) both', animationDelay: '65ms' }}>
+          <div style={{ color: '#5b7090', fontSize: isMobile ? 9 : 11, fontWeight: 800, textTransform: 'uppercase' }}>{isMobile ? 'Avg/Day' : 'Average Per Day'}</div>
+          <div style={{ marginTop: isMobile ? 2 : 6, fontWeight: 900, color: '#0f172a', fontSize: isMobile ? 20 : 32, animation: 'numberPop 0.5s cubic-bezier(0.22,1,0.36,1) both', animationDelay: '185ms' }}>{averageMeals.toFixed(1)}</div>
         </div>
-        <div style={{ border: '1px solid #bfdbfe', borderRadius: 14, background: 'linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%)', padding: '14px 16px', boxShadow: '0 12px 30px rgba(30,49,95,0.06)', animation: 'fadeUp 0.38s cubic-bezier(0.22,1,0.36,1) both', animationDelay: '130ms' }}>
-          <div style={{ color: '#6366f1', fontSize: 11, fontWeight: 800, textTransform: 'uppercase' }}>Today's Headcount</div>
-          <div style={{ marginTop: 6, fontWeight: 900, color: '#3730a3', fontSize: 32, animation: 'numberPop 0.5s cubic-bezier(0.22,1,0.36,1) both', animationDelay: '250ms' }}>{todaysHeadcount}</div>
+        <div style={{ border: '1px solid #bfdbfe', borderRadius: isMobile ? 10 : 14, background: 'linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%)', padding: isMobile ? '9px 10px' : '14px 16px', boxShadow: '0 12px 30px rgba(30,49,95,0.06)', animation: 'fadeUp 0.38s cubic-bezier(0.22,1,0.36,1) both', animationDelay: '130ms' }}>
+          <div style={{ color: '#6366f1', fontSize: isMobile ? 9 : 11, fontWeight: 800, textTransform: 'uppercase' }}>{isMobile ? 'Today' : "Today's Headcount"}</div>
+          <div style={{ marginTop: isMobile ? 2 : 6, fontWeight: 900, color: '#3730a3', fontSize: isMobile ? 20 : 32, animation: 'numberPop 0.5s cubic-bezier(0.22,1,0.36,1) both', animationDelay: '250ms' }}>{todaysHeadcount}</div>
         </div>
       </div>
 
@@ -335,11 +347,11 @@ function MealHistory() {
             <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: 600 }}>
               <thead>
                 <tr>
-                  <th style={{ textAlign: 'left', padding: '14px 16px', fontSize: 12, color: '#475569', textTransform: 'uppercase', letterSpacing: '.06em', borderBottom: '1px solid #dbe4f0', background: '#f8fafc' }}>Date</th>
+                  <th style={{ textAlign: 'left', padding: isMobile ? '8px 8px' : '14px 16px', fontSize: isMobile ? 10 : 12, color: '#475569', textTransform: 'uppercase', letterSpacing: '.06em', borderBottom: '1px solid #dbe4f0', background: '#f8fafc' }}>Date</th>
                   {departments.map(dept => (
-                    <th key={dept} title={dept} style={{ textAlign: 'center', padding: '14px 10px', fontSize: 12, color: '#475569', textTransform: 'uppercase', letterSpacing: '.06em', borderBottom: '1px solid #dbe4f0', background: '#f8fafc', whiteSpace: 'nowrap' }}>{shortCode(dept)}</th>
+                    <th key={dept} title={dept} style={{ textAlign: 'center', padding: isMobile ? '8px 6px' : '14px 10px', fontSize: isMobile ? 10 : 12, color: '#475569', textTransform: 'uppercase', letterSpacing: '.06em', borderBottom: '1px solid #dbe4f0', background: '#f8fafc', whiteSpace: 'nowrap' }}>{shortCode(dept)}</th>
                   ))}
-                  <th style={{ textAlign: 'center', padding: '14px 12px', fontSize: 12, color: '#475569', textTransform: 'uppercase', letterSpacing: '.06em', borderBottom: '1px solid #dbe4f0', background: '#f8fafc' }}>Total</th>
+                  <th style={{ textAlign: 'center', padding: isMobile ? '8px 6px' : '14px 12px', fontSize: isMobile ? 10 : 12, color: '#475569', textTransform: 'uppercase', letterSpacing: '.06em', borderBottom: '1px solid #dbe4f0', background: '#f8fafc' }}>Total</th>
                 </tr>
               </thead>
               <tbody>
@@ -347,13 +359,13 @@ function MealHistory() {
                   const baseBg = row.date === todayIso ? '#e0f2fe' : (index % 2 === 0 ? '#fff' : '#fbfdff');
                   return (
                   <tr key={row.date} style={{ cursor: 'pointer', borderBottom: '1px solid #edf2f7', background: baseBg, transition: 'background .15s ease' }} onClick={() => setSelectedRow(row)} onMouseEnter={e => { e.currentTarget.style.background = '#eef6ff'; }} onMouseLeave={e => { e.currentTarget.style.background = baseBg; }}>
-                    <td style={{ padding: '13px 16px', color: '#1f2937', fontWeight: 700 }}>
+                    <td style={{ padding: isMobile ? '8px 8px' : '13px 16px', color: '#1f2937', fontWeight: 700, fontSize: isMobile ? 11 : 14 }}>
                       {formatDateForUi(row.date)}
                     </td>
                     {departments.map(dept => (
-                      <td key={`${row.date}-${dept}`} style={{ textAlign: 'center', padding: '13px 10px', color: '#3730a3', fontWeight: 700 }}>{row.counts?.[dept] || 0}</td>
+                      <td key={`${row.date}-${dept}`} style={{ textAlign: 'center', padding: isMobile ? '8px 6px' : '13px 10px', color: '#3730a3', fontWeight: 700, fontSize: isMobile ? 11 : 14 }}>{row.counts?.[dept] || 0}</td>
                     ))}
-                    <td style={{ textAlign: 'center', padding: '13px 12px', color: '#0f172a', fontWeight: 900 }}>{row.total || 0}</td>
+                    <td style={{ textAlign: 'center', padding: isMobile ? '8px 6px' : '13px 12px', color: '#0f172a', fontWeight: 900, fontSize: isMobile ? 11 : 14 }}>{row.total || 0}</td>
                   </tr>
                   );
                 })}

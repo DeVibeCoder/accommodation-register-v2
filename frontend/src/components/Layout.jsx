@@ -56,7 +56,7 @@ function BottomNav({ role, pathname }) {
       to: '/',
       end: true,
       icon: (
-        <svg width="20" height="20" fill="none" viewBox="0 0 24 24">
+        <svg width="16" height="16" fill="none" viewBox="0 0 24 24">
           <rect x="3" y="3" width="7" height="7" rx="2" fill="currentColor"/>
           <rect x="14" y="3" width="7" height="7" rx="2" fill="currentColor"/>
           <rect x="14" y="14" width="7" height="7" rx="2" fill="currentColor"/>
@@ -68,7 +68,7 @@ function BottomNav({ role, pathname }) {
       label: 'Rooms',
       to: '/rooms',
       icon: (
-        <svg width="20" height="20" fill="none" viewBox="0 0 24 24">
+        <svg width="16" height="16" fill="none" viewBox="0 0 24 24">
           <rect x="3" y="7" width="18" height="10" rx="2" fill="currentColor"/>
           <rect x="7" y="11" width="2" height="2" rx="1" fill="#fff"/>
           <rect x="15" y="11" width="2" height="2" rx="1" fill="#fff"/>
@@ -79,7 +79,7 @@ function BottomNav({ role, pathname }) {
       label: 'Occupancy',
       to: '/occupancy',
       icon: (
-        <svg width="20" height="20" fill="none" viewBox="0 0 24 24">
+        <svg width="16" height="16" fill="none" viewBox="0 0 24 24">
           <circle cx="12" cy="8" r="4" fill="currentColor"/>
           <rect x="4" y="16" width="16" height="4" rx="2" fill="currentColor"/>
         </svg>
@@ -89,7 +89,7 @@ function BottomNav({ role, pathname }) {
       label: 'Stay',
       to: '/stay-history',
       icon: (
-        <svg width="20" height="20" fill="none" viewBox="0 0 24 24">
+        <svg width="16" height="16" fill="none" viewBox="0 0 24 24">
           <path d="M12 8v5l4 2" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
           <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2"/>
         </svg>
@@ -99,7 +99,7 @@ function BottomNav({ role, pathname }) {
       label: 'Excl.',
       to: '/meal-exclusion',
       icon: (
-        <svg width="20" height="20" fill="none" viewBox="0 0 24 24">
+        <svg width="16" height="16" fill="none" viewBox="0 0 24 24">
           <path d="M18 8h1a4 4 0 0 1 0 8h-1" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
           <path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z" stroke="currentColor" strokeWidth="2"/>
           <line x1="6" y1="1" x2="6" y2="4" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
@@ -112,7 +112,7 @@ function BottomNav({ role, pathname }) {
       label: 'Meals',
       to: '/meal-history',
       icon: (
-        <svg width="20" height="20" fill="none" viewBox="0 0 24 24">
+        <svg width="16" height="16" fill="none" viewBox="0 0 24 24">
           <rect x="3" y="4" width="18" height="18" rx="2" stroke="currentColor" strokeWidth="2" fill="none"/>
           <line x1="16" y1="2" x2="16" y2="6" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
           <line x1="8" y1="2" x2="8" y2="6" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
@@ -132,7 +132,7 @@ function BottomNav({ role, pathname }) {
       display: 'flex',
       alignItems: 'stretch',
       boxShadow: '0 -2px 16px rgba(15,23,42,0.10)',
-      height: 50,
+      height: 46,
       fontFamily: 'Inter, Segoe UI, Arial, sans-serif',
     }}>
       {items.map(item => {
@@ -148,24 +148,29 @@ function BottomNav({ role, pathname }) {
               flexDirection: 'column',
               alignItems: 'center',
               justifyContent: 'center',
-              gap: 2,
+              gap: 1,
               color: isActive ? '#6366f1' : '#94a3b8',
               textDecoration: 'none',
-              fontSize: 9,
+              fontSize: 8.5,
               fontWeight: isActive ? 700 : 500,
-              borderTop: isActive ? '2.5px solid #6366f1' : '2.5px solid transparent',
+              borderTop: isActive ? '2px solid #6366f1' : '2px solid transparent',
               background: isActive ? '#f5f3ff' : 'transparent',
               transition: 'color 0.15s, background 0.15s',
-              padding: '5px 2px 4px',
+              padding: '4px 2px 3px',
               letterSpacing: 0.2,
               WebkitTapHighlightColor: 'transparent',
               userSelect: 'none',
             }}
           >
-            <span style={{ display: 'flex', alignItems: 'center', opacity: isActive ? 1 : 0.7 }}>
+            <span style={{
+              display: 'flex', alignItems: 'center',
+              opacity: isActive ? 1 : 0.65,
+              transform: isActive ? 'translateY(-1px) scale(1.18)' : 'scale(1)',
+              transition: 'transform 0.22s cubic-bezier(0.34,1.56,0.64,1), opacity 0.15s',
+            }}>
               {item.icon}
             </span>
-            <span>{item.label}</span>
+            <span style={{ transition: 'color 0.15s' }}>{item.label}</span>
           </NavLink>
         );
       })}
@@ -445,7 +450,7 @@ function Layout({ user, onLogout }) {
         </header>
 
         {/* ── Main content ── */}
-        <main style={{ flex: 1, overflowY: 'auto', overflowX: 'hidden', paddingBottom: isMobile ? 50 : 0 }}>
+        <main style={{ flex: 1, overflowY: 'auto', overflowX: 'hidden', paddingBottom: isMobile ? 46 : 0 }}>
           <div style={{ width: '100%', maxWidth: '100%', margin: 0, padding: 0 }}>
 
             {/* Error banner */}

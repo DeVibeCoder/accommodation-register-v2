@@ -407,11 +407,11 @@ function ActionToast({ notice, onClose }) {
 }
 
 /* -- Action button -- */
-function ActionBtn({ title, children, onClick, color='#64748b', hoverColor='#1e293b', bgGradient=null }) {
+function ActionBtn({ title, children, onClick, color='#64748b', hoverColor='#1e293b', bgGradient=null, size=28 }) {
   const [hov, setHov] = useState(false);
   return (
     <button title={title} onClick={onClick} onMouseEnter={()=>setHov(true)} onMouseLeave={()=>setHov(false)}
-      style={{ width:30,height:30,borderRadius:9,border:'1px solid #d7e0ec',background:bgGradient||(hov?'#f1f5f9':'#fff'),cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',color:hov?hoverColor:color,transition:'all .15s',flexShrink:0,boxShadow:hov?'0 2px 6px rgba(30,49,95,.16)':'0 1px 2px rgba(30,49,95,.08)' }}>
+      style={{ width:size,height:size,borderRadius:8,border:'1px solid #d7e0ec',background:bgGradient||(hov?'#f1f5f9':'#fff'),cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',color:hov?hoverColor:color,transition:'all .15s',flexShrink:0,boxShadow:hov?'0 2px 6px rgba(30,49,95,.16)':'0 1px 2px rgba(30,49,95,.08)' }}>
       {children}
     </button>
   );
@@ -1010,15 +1010,15 @@ function Occupancy() {
     <div style={{ width:'100%',maxWidth:'100%',margin:0,padding:'12px clamp(12px, 3vw, 32px) clamp(14px, 2.3vw, 24px)',background:'none',fontFamily:'Inter,Segoe UI,Arial,sans-serif',boxSizing:'border-box',minHeight:'100vh' }}>
 
       {/* Header */}
-      <div style={{ display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:14,flexWrap:'wrap',gap:10 }}>
-        <p style={{ margin:0,fontSize:13,color:'#94a3b8',fontWeight:600 }}>{filtered.length} of {occupants.length} active occupants</p>
-        <div style={{ display:'flex',gap:10,alignItems:'flex-start',flexWrap:'wrap' }}>
-          {canEditAccommodation ? <button onClick={()=>setAddOpen(true)} style={{ padding:'11px 26px',borderRadius:12,border:'none',background:'#6366f1',color:'#fff',fontWeight:700,fontSize:15,cursor:'pointer',display:'flex',alignItems:'center',gap:8,boxShadow:'0 2px 8px rgba(59,130,246,.35)' }}>+ Add Occupant</button> : null}
+      <div style={{ display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:isMobile ? 8 : 14,flexWrap:'wrap',gap: isMobile ? 5 : 10 }}>
+        <p style={{ margin:0,fontSize: isMobile ? 11 : 13,color:'#94a3b8',fontWeight:600 }}>{filtered.length} of {occupants.length} active occupants</p>
+        <div style={{ display:'flex',gap: isMobile ? 4 : 10,alignItems:'center',flexWrap:'nowrap' }}>
+          {canEditAccommodation ? <button onClick={()=>setAddOpen(true)} style={{ padding: isMobile ? '6px 10px' : '11px 26px',borderRadius: isMobile ? 9 : 12,border:'none',background:'#6366f1',color:'#fff',fontWeight:700,fontSize: isMobile ? 11 : 15,cursor:'pointer',display:'flex',alignItems:'center',gap: isMobile ? 4 : 8,boxShadow:'0 2px 8px rgba(59,130,246,.35)',whiteSpace:'nowrap' }}>{isMobile ? '+ Add' : '+ Add Occupant'}</button> : null}
           {canUseOccupancyBulkTools ? (
-            <div style={{ display:'flex',gap:8 }}>
-              <button onClick={handleExport} style={{ padding:'10px 18px',borderRadius:10,border:'1.5px solid #d0d7e2',background:'#fff',color:'#1e293b',fontWeight:700,fontSize:13,cursor:'pointer' }}>Export</button>
-              {canEditAccommodation ? <button disabled={isImporting} onClick={handleImportClick} style={{ padding:'10px 18px',borderRadius:10,border:'1.5px solid #d0d7e2',background:isImporting ? '#f1f5f9' : '#fff',color:'#1e293b',fontWeight:700,fontSize:13,cursor:isImporting ? 'not-allowed' : 'pointer',opacity:isImporting ? 0.7 : 1 }}>{isImporting ? 'Importing...' : 'Import'}</button> : null}
-              <button onClick={handleTemplate} style={{ padding:'10px 18px',borderRadius:10,border:'1.5px solid #d0d7e2',background:'#fff',color:'#1e293b',fontWeight:700,fontSize:13,cursor:'pointer' }}>Template</button>
+            <div style={{ display:'flex',gap: isMobile ? 3 : 8 }}>
+              <button onClick={handleExport} style={{ padding: isMobile ? '6px 9px' : '10px 18px',borderRadius: isMobile ? 8 : 10,border:'1.5px solid #d0d7e2',background:'#fff',color:'#1e293b',fontWeight:700,fontSize: isMobile ? 11 : 13,cursor:'pointer' }}>Export</button>
+              {canEditAccommodation ? <button disabled={isImporting} onClick={handleImportClick} style={{ padding: isMobile ? '6px 9px' : '10px 18px',borderRadius: isMobile ? 8 : 10,border:'1.5px solid #d0d7e2',background:isImporting ? '#f1f5f9' : '#fff',color:'#1e293b',fontWeight:700,fontSize: isMobile ? 11 : 13,cursor:isImporting ? 'not-allowed' : 'pointer',opacity:isImporting ? 0.7 : 1 }}>{isImporting ? '...' : 'Import'}</button> : null}
+              <button onClick={handleTemplate} style={{ padding: isMobile ? '6px 9px' : '10px 18px',borderRadius: isMobile ? 8 : 10,border:'1.5px solid #d0d7e2',background:'#fff',color:'#1e293b',fontWeight:700,fontSize: isMobile ? 11 : 13,cursor:'pointer' }}>Template</button>
               <input ref={importInputRef} type="file" accept=".csv,text/csv" onChange={handleImportFile} style={{ display:'none' }} />
             </div>
           ) : null}
@@ -1059,50 +1059,50 @@ function Occupancy() {
       ) : null}
 
       {/* Filters */}
-      <div style={{ display:'flex',flexWrap:'wrap',gap:12,marginBottom:24,alignItems:'flex-end',background:'#fff',borderRadius:16,padding:'16px 20px',boxShadow:'0 1px 4px rgba(30,49,95,.08)',border:'1.5px solid #e8edf5' }}>
-        <div style={{ display:'flex',flexDirection:'column',gap:4 }}>
-          <span style={{ fontSize:11,fontWeight:700,color:'#94a3b8',textTransform:'uppercase',letterSpacing:.5 }}>Person Type</span>
-          <select value={personTypeFilter} onChange={e=>setPersonTypeFilter(e.target.value)} style={{ padding:'8px 14px',borderRadius:10,border:'1.5px solid #d0d7e2',fontSize:13,fontWeight:600,color:'#1e293b',background:'#f8fafc',cursor:'pointer',minWidth:130 }}>
-            <option value="All">All Types</option>
+      <div style={{ display:'flex',flexWrap:'wrap',gap: isMobile ? 5 : 12,marginBottom: isMobile ? 10 : 24,alignItems:'flex-end',background:'#fff',borderRadius: isMobile ? 12 : 16,padding: isMobile ? '9px 10px' : '16px 20px',boxShadow:'0 1px 4px rgba(30,49,95,.08)',border:'1.5px solid #e8edf5' }}>
+        <div style={{ display:'flex',flexDirection:'column',gap: isMobile ? 2 : 4,flex: isMobile ? '1 1 0' : 'none' }}>
+          <span style={{ fontSize: isMobile ? 9 : 11,fontWeight:700,color:'#94a3b8',textTransform:'uppercase',letterSpacing:.5 }}>Type</span>
+          <select value={personTypeFilter} onChange={e=>setPersonTypeFilter(e.target.value)} style={{ padding: isMobile ? '5px 4px' : '8px 14px',borderRadius:8,border:'1.5px solid #d0d7e2',fontSize: isMobile ? 11 : 13,fontWeight:600,color:'#1e293b',background:'#f8fafc',cursor:'pointer',minWidth: isMobile ? 0 : 130,width:'100%' }}>
+            <option value="All">{isMobile ? 'All' : 'All Types'}</option>
             <option value="Permanent">Permanent</option>
             <option value="Temporary">Temporary</option>
             <option value="Project">Project</option>
           </select>
         </div>
-        <div style={{ display:'flex',flexDirection:'column',gap:4 }}>
-          <span style={{ fontSize:11,fontWeight:700,color:'#94a3b8',textTransform:'uppercase',letterSpacing:.5 }}>Building</span>
-          <select value={buildingFilter} onChange={e=>setBuildingFilter(e.target.value)} style={{ padding:'8px 14px',borderRadius:10,border:'1.5px solid #d0d7e2',fontSize:13,fontWeight:600,color:'#1e293b',background:'#f8fafc',cursor:'pointer',minWidth:160 }}>
-            <option value="All">All Buildings</option>
+        <div style={{ display:'flex',flexDirection:'column',gap: isMobile ? 2 : 4,flex: isMobile ? '1 1 0' : 'none' }}>
+          <span style={{ fontSize: isMobile ? 9 : 11,fontWeight:700,color:'#94a3b8',textTransform:'uppercase',letterSpacing:.5 }}>Building</span>
+          <select value={buildingFilter} onChange={e=>setBuildingFilter(e.target.value)} style={{ padding: isMobile ? '5px 4px' : '8px 14px',borderRadius:8,border:'1.5px solid #d0d7e2',fontSize: isMobile ? 11 : 13,fontWeight:600,color:'#1e293b',background:'#f8fafc',cursor:'pointer',minWidth: isMobile ? 0 : 160,width:'100%' }}>
+            <option value="All">{isMobile ? 'All' : 'All Buildings'}</option>
             {BUILDING_ORDER.map(b=>(<option key={b} value={b}>{BUILDING_LABELS[b]}</option>))}
           </select>
         </div>
-        <div style={{ display:'flex',flexDirection:'column',gap:4 }}>
-          <span style={{ fontSize:11,fontWeight:700,color:'#94a3b8',textTransform:'uppercase',letterSpacing:.5 }}>Section</span>
-          <select value={sectionFilter} onChange={e=>setSectionFilter(e.target.value)} style={{ padding:'8px 14px',borderRadius:10,border:'1.5px solid #d0d7e2',fontSize:13,fontWeight:600,color:'#1e293b',background:'#f8fafc',cursor:'pointer',minWidth:150 }}>
-            <option value="">All Sections</option>
+        <div style={{ display:'flex',flexDirection:'column',gap: isMobile ? 2 : 4,flex: isMobile ? '1 1 0' : 'none' }}>
+          <span style={{ fontSize: isMobile ? 9 : 11,fontWeight:700,color:'#94a3b8',textTransform:'uppercase',letterSpacing:.5 }}>Section</span>
+          <select value={sectionFilter} onChange={e=>setSectionFilter(e.target.value)} style={{ padding: isMobile ? '5px 4px' : '8px 14px',borderRadius:8,border:'1.5px solid #d0d7e2',fontSize: isMobile ? 11 : 13,fontWeight:600,color:'#1e293b',background:'#f8fafc',cursor:'pointer',minWidth: isMobile ? 0 : 150,width:'100%' }}>
+            <option value="">{isMobile ? 'All' : 'All Sections'}</option>
             {sectionOptions.map(s=>(<option key={s} value={s}>{s}</option>))}
           </select>
         </div>
-        <div style={{ display:'flex',flexDirection:'column',gap:4,flex:'1 1 180px' }}>
-          <span style={{ fontSize:11,fontWeight:700,color:'#94a3b8',textTransform:'uppercase',letterSpacing:.5 }}>Search ID / Name</span>
+        <div style={{ display:'flex',flexDirection:'column',gap: isMobile ? 2 : 4,flex:'1 1 140px' }}>
+          <span style={{ fontSize: isMobile ? 9 : 11,fontWeight:700,color:'#94a3b8',textTransform:'uppercase',letterSpacing:.5 }}>{isMobile ? 'ID / Name' : 'Search ID / Name'}</span>
           <div style={{ position:'relative' }}>
-            <svg style={{ position:'absolute',left:10,top:'50%',transform:'translateY(-50%)',color:'#94a3b8',pointerEvents:'none' }} width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-            <input type="text" placeholder="Staff ID or name..." value={idNameSearch} onChange={e=>setIdNameSearch(e.target.value)}
-              style={{ paddingLeft:30,paddingRight:10,paddingTop:8,paddingBottom:8,borderRadius:10,border:'1.5px solid #d0d7e2',fontSize:13,width:'100%',background:'#f8fafc',boxSizing:'border-box' }} />
+            <svg style={{ position:'absolute',left: isMobile ? 7 : 10,top:'50%',transform:'translateY(-50%)',color:'#94a3b8',pointerEvents:'none' }} width={isMobile ? 11 : 13} height={isMobile ? 11 : 13} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <input type="text" placeholder={isMobile ? 'ID or name' : 'Staff ID or name...'} value={idNameSearch} onChange={e=>setIdNameSearch(e.target.value)}
+              style={{ paddingLeft: isMobile ? 24 : 30,paddingRight:8,paddingTop: isMobile ? 5 : 8,paddingBottom: isMobile ? 5 : 8,borderRadius:8,border:'1.5px solid #d0d7e2',fontSize: isMobile ? 11 : 13,width:'100%',background:'#f8fafc',boxSizing:'border-box' }} />
           </div>
         </div>
-        <div style={{ display:'flex',flexDirection:'column',gap:4,flex:'1 1 160px' }}>
-          <span style={{ fontSize:11,fontWeight:700,color:'#94a3b8',textTransform:'uppercase',letterSpacing:.5 }}>Search Room</span>
+        <div style={{ display:'flex',flexDirection:'column',gap: isMobile ? 2 : 4,flex:'1 1 120px' }}>
+          <span style={{ fontSize: isMobile ? 9 : 11,fontWeight:700,color:'#94a3b8',textTransform:'uppercase',letterSpacing:.5 }}>{isMobile ? 'Room' : 'Search Room'}</span>
           <div style={{ position:'relative' }}>
-            <svg style={{ position:'absolute',left:10,top:'50%',transform:'translateY(-50%)',color:'#94a3b8',pointerEvents:'none' }} width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg>
-            <input type="text" placeholder="Room ID e.g. OB-1-101" value={roomSearch} onChange={e=>setRoomSearch(e.target.value)}
-              style={{ paddingLeft:30,paddingRight:10,paddingTop:8,paddingBottom:8,borderRadius:10,border:'1.5px solid #d0d7e2',fontSize:13,width:'100%',background:'#f8fafc',boxSizing:'border-box' }} />
+            <svg style={{ position:'absolute',left: isMobile ? 7 : 10,top:'50%',transform:'translateY(-50%)',color:'#94a3b8',pointerEvents:'none' }} width={isMobile ? 11 : 13} height={isMobile ? 11 : 13} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg>
+            <input type="text" placeholder={isMobile ? 'Room ID' : 'Room ID e.g. OB-1-101'} value={roomSearch} onChange={e=>setRoomSearch(e.target.value)}
+              style={{ paddingLeft: isMobile ? 24 : 30,paddingRight:8,paddingTop: isMobile ? 5 : 8,paddingBottom: isMobile ? 5 : 8,borderRadius:8,border:'1.5px solid #d0d7e2',fontSize: isMobile ? 11 : 13,width:'100%',background:'#f8fafc',boxSizing:'border-box' }} />
           </div>
         </div>
         {hasFilters && (
           <button onClick={()=>{ setPersonTypeFilter('All'); setBuildingFilter('All'); setSectionFilter(''); setIdNameSearch(''); setRoomSearch(''); }}
-            style={{ alignSelf:'flex-end',padding:'8px 16px',borderRadius:10,border:'1.5px solid #fca5a5',background:'#fff5f5',color:'#ef4444',fontSize:13,fontWeight:600,cursor:'pointer' }}>
-            Clear
+            style={{ alignSelf:'flex-end',padding: isMobile ? '5px 8px' : '8px 16px',borderRadius:8,border:'1.5px solid #fca5a5',background:'#fff5f5',color:'#ef4444',fontSize: isMobile ? 11 : 13,fontWeight:600,cursor:'pointer' }}>
+            {isMobile ? '✕' : 'Clear'}
           </button>
         )}
       </div>
@@ -1130,8 +1130,8 @@ function Occupancy() {
                 key={o._id}
                 style={{
                   background: '#fff',
-                  borderRadius: 14,
-                  padding: '12px 14px',
+                  borderRadius: 12,
+                  padding: '9px 10px',
                   borderLeft: `4px solid ${tc.text}`,
                   border: `1px solid #e8eef6`,
                   borderLeftWidth: 4,
@@ -1142,33 +1142,33 @@ function Occupancy() {
                 }}
               >
                 {/* Top: badges + room */}
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 7 }}>
-                  <div style={{ display: 'flex', gap: 5, flexWrap: 'wrap' }}>
-                    <span style={{ fontSize: 10, fontWeight: 700, padding: '3px 8px', borderRadius: 999, background: tc.bg, color: tc.text, textTransform: 'uppercase', border: `1px solid ${tc.text}22` }}>{o.personType}</span>
-                    <span style={{ fontSize: 10, fontWeight: 700, padding: '3px 8px', borderRadius: 999, background: '#eef2ff', color: '#4f46e5', border: '1px solid #cfd8ff' }}>ID {o.staffId || '-'}</span>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 5 }}>
+                  <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
+                    <span style={{ fontSize: 9, fontWeight: 700, padding: '2px 6px', borderRadius: 999, background: tc.bg, color: tc.text, textTransform: 'uppercase', border: `1px solid ${tc.text}22` }}>{o.personType}</span>
+                    <span style={{ fontSize: 9, fontWeight: 700, padding: '2px 6px', borderRadius: 999, background: '#eef2ff', color: '#4f46e5', border: '1px solid #cfd8ff' }}>ID {o.staffId || '-'}</span>
                   </div>
-                  <div style={{ textAlign: 'right', flexShrink: 0, marginLeft: 8 }}>
-                    <div style={{ fontSize: 12, fontWeight: 800, padding: '2px 8px', borderRadius: 6, background: '#e0e7ff', color: '#6366f1', display: 'inline-block' }}>{o.roomId}</div>
-                    <div style={{ fontSize: 10, color: '#94a3b8', fontWeight: 600, marginTop: 2 }}>Bed {o.bedNo}</div>
+                  <div style={{ textAlign: 'right', flexShrink: 0, marginLeft: 6 }}>
+                    <div style={{ fontSize: 11, fontWeight: 800, padding: '2px 6px', borderRadius: 5, background: '#e0e7ff', color: '#6366f1', display: 'inline-block' }}>{o.roomId}</div>
+                    <div style={{ fontSize: 9, color: '#94a3b8', fontWeight: 600, marginTop: 1 }}>Bed {o.bedNo}</div>
                   </div>
                 </div>
                 {/* Name */}
-                <div style={{ fontWeight: 700, fontSize: 14.5, color: '#1e293b', marginBottom: 3 }}>{o.name}</div>
+                <div style={{ fontWeight: 700, fontSize: 13, color: '#1e293b', marginBottom: 2 }}>{o.name}</div>
                 {/* Section / dept / nat */}
-                <div style={{ fontSize: 11, color: '#64748b', fontWeight: 600, marginBottom: 10 }}>
+                <div style={{ fontSize: 10, color: '#64748b', fontWeight: 600, marginBottom: 7 }}>
                   {[o.section || null, deptCode || null, natCode || null].filter(Boolean).join(' | ') || '-'}
                 </div>
                 {/* Actions */}
-                <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+                <div style={{ display: 'flex', gap: 5, alignItems: 'center' }}>
                   {canEditAccommodation ? (
                     <>
-                      <ActionBtn title="Edit"      onClick={() => setEditTarget(o)}     color="#3b82f6" bgGradient="linear-gradient(135deg,#dbeafe 0%,#eff6ff 100%)"><IconEdit /></ActionBtn>
-                      <ActionBtn title="Swap"      onClick={() => setSwapTarget(o)}     color="#8b5cf6" bgGradient="linear-gradient(135deg,#ede9fe 0%,#f3e8ff 100%)"><IconSwap /></ActionBtn>
-                      <ActionBtn title="Move"      onClick={() => setMoveTarget(o)}     color="#10b981" bgGradient="linear-gradient(135deg,#d1fae5 0%,#ecfdf5 100%)"><IconMove /></ActionBtn>
-                      <ActionBtn title="Check Out" onClick={() => setCheckoutTarget(o)} color="#f59e0b" bgGradient="linear-gradient(135deg,#fed7aa 0%,#fffbeb 100%)"><IconCheckout /></ActionBtn>
-                      <ActionBtn title="Delete"    onClick={() => setDeleteTarget(o)}   color="#ef4444" bgGradient="linear-gradient(135deg,#fecaca 0%,#fee2e2 100%)" hoverColor="#b91c1c"><IconDelete /></ActionBtn>
+                      <ActionBtn title="Edit"      onClick={() => setEditTarget(o)}     color="#3b82f6" bgGradient="linear-gradient(135deg,#dbeafe 0%,#eff6ff 100%)" size={22}><IconEdit /></ActionBtn>
+                      <ActionBtn title="Swap"      onClick={() => setSwapTarget(o)}     color="#8b5cf6" bgGradient="linear-gradient(135deg,#ede9fe 0%,#f3e8ff 100%)" size={22}><IconSwap /></ActionBtn>
+                      <ActionBtn title="Move"      onClick={() => setMoveTarget(o)}     color="#10b981" bgGradient="linear-gradient(135deg,#d1fae5 0%,#ecfdf5 100%)" size={22}><IconMove /></ActionBtn>
+                      <ActionBtn title="Check Out" onClick={() => setCheckoutTarget(o)} color="#f59e0b" bgGradient="linear-gradient(135deg,#fed7aa 0%,#fffbeb 100%)" size={22}><IconCheckout /></ActionBtn>
+                      <ActionBtn title="Delete"    onClick={() => setDeleteTarget(o)}   color="#ef4444" bgGradient="linear-gradient(135deg,#fecaca 0%,#fee2e2 100%)" hoverColor="#b91c1c" size={22}><IconDelete /></ActionBtn>
                     </>
-                  ) : <span style={{ fontSize: 11, fontWeight: 700, color: '#64748b' }}>View only</span>}
+                  ) : <span style={{ fontSize: 10, fontWeight: 700, color: '#64748b' }}>View only</span>}
                 </div>
               </div>
             );

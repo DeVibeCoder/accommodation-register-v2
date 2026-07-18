@@ -20,12 +20,12 @@ function asDate(value) {
 }
 
 const thStyle = {
-  padding: '10px 14px', fontSize: 11, fontWeight: 800, color: '#64748b',
+  padding: '8px 10px', fontSize: 10, fontWeight: 800, color: '#64748b',
   textTransform: 'uppercase', letterSpacing: '0.06em',
   borderBottom: '1px solid #e2e8f0', background: '#f8fafc',
   textAlign: 'left', whiteSpace: 'nowrap',
 };
-const tdStyle = { padding: '12px 14px', borderBottom: '1px solid #f1f5f9', verticalAlign: 'middle', fontSize: 13 };
+const tdStyle = { padding: '8px 10px', borderBottom: '1px solid #f1f5f9', verticalAlign: 'middle', fontSize: 12 };
 const modalFieldStyle = {
   height: 40, padding: '9px 10px', borderRadius: 8, border: '1px solid #cbd5e1',
   fontSize: 13, boxSizing: 'border-box', width: '100%', background: '#ffffff',
@@ -582,6 +582,7 @@ function MealExclusion() {
     refreshMealExclusionSummary,
     canEditMeals = false,
     canEditAccommodation = false,
+    isMobile = false,
   } = useOutletContext();
 
   const [activeTab, setActiveTab] = useState('active');
@@ -751,32 +752,48 @@ function MealExclusion() {
     <div style={{ width: '100%', maxWidth: '100%', margin: 0, padding: '12px clamp(12px, 3vw, 32px) clamp(14px, 2.2vw, 24px)', background: 'none', fontFamily: 'Inter,Segoe UI,Arial,sans-serif', boxSizing: 'border-box' }}>
 
       {/* --- Stat cards + buttons --- */}
-      <div style={{ display: 'flex', alignItems: 'stretch', gap: 12, marginBottom: 20, flexWrap: 'wrap' }}>
-        <div style={{ background: 'linear-gradient(135deg,#ffe9d6 0%,#ffe2bf 100%)', borderRadius: 14, border: '1px solid rgba(154,52,18,0.12)', padding: '14px 20px', flex: '1 1 170px', boxShadow: '0 8px 18px rgba(154,52,18,0.11)', animation: 'fadeUp 0.38s cubic-bezier(0.22,1,0.36,1) both', animationDelay: '0ms' }}>
-          <div style={{ fontSize: 11, color: '#9a3412', fontWeight: 800, textTransform: 'uppercase' }}>Active Exclusions</div>
-          <div style={{ fontSize: 28, fontWeight: 900, color: '#7c2d12', marginTop: 4 }}>{activeCount}</div>
+      <div style={{ display: 'grid', gridTemplateColumns: isMobile ? 'repeat(3, 1fr)' : 'repeat(3, 1fr) auto', gap: isMobile ? 6 : 12, marginBottom: isMobile ? 10 : 20, alignItems: 'stretch' }}>
+        <div style={{ background: 'linear-gradient(135deg,#ffe9d6 0%,#ffe2bf 100%)', borderRadius: isMobile ? 10 : 14, border: '1px solid rgba(154,52,18,0.12)', padding: isMobile ? '9px 10px' : '14px 20px', boxShadow: '0 8px 18px rgba(154,52,18,0.11)', animation: 'fadeUp 0.38s cubic-bezier(0.22,1,0.36,1) both', animationDelay: '0ms' }}>
+          <div style={{ fontSize: isMobile ? 9 : 11, color: '#9a3412', fontWeight: 800, textTransform: 'uppercase' }}>{isMobile ? 'Active' : 'Active Exclusions'}</div>
+          <div style={{ fontSize: isMobile ? 20 : 28, fontWeight: 900, color: '#7c2d12', marginTop: isMobile ? 2 : 4 }}>{activeCount}</div>
         </div>
-        <div style={{ background: 'linear-gradient(135deg,#e0ecff 0%,#d9f3ff 100%)', borderRadius: 14, border: '1px solid rgba(30,58,138,0.1)', padding: '14px 20px', flex: '1 1 170px', boxShadow: '0 8px 18px rgba(30,58,138,0.1)', animation: 'fadeUp 0.38s cubic-bezier(0.22,1,0.36,1) both', animationDelay: '65ms' }}>
-          <div style={{ fontSize: 11, color: '#1e3a8a', fontWeight: 800, textTransform: 'uppercase' }}>Upcoming</div>
-          <div style={{ fontSize: 28, fontWeight: 900, color: '#1e293b', marginTop: 4 }}>{upcomingCount}</div>
+        <div style={{ background: 'linear-gradient(135deg,#e0ecff 0%,#d9f3ff 100%)', borderRadius: isMobile ? 10 : 14, border: '1px solid rgba(30,58,138,0.1)', padding: isMobile ? '9px 10px' : '14px 20px', boxShadow: '0 8px 18px rgba(30,58,138,0.1)', animation: 'fadeUp 0.38s cubic-bezier(0.22,1,0.36,1) both', animationDelay: '65ms' }}>
+          <div style={{ fontSize: isMobile ? 9 : 11, color: '#1e3a8a', fontWeight: 800, textTransform: 'uppercase' }}>Upcoming</div>
+          <div style={{ fontSize: isMobile ? 20 : 28, fontWeight: 900, color: '#1e293b', marginTop: isMobile ? 2 : 4 }}>{upcomingCount}</div>
         </div>
-        <div style={{ background: 'linear-gradient(135deg,#f3e8ff 0%,#ede9fe 100%)', borderRadius: 14, border: '1px solid rgba(107,33,168,0.1)', padding: '14px 20px', flex: '1 1 170px', boxShadow: '0 8px 18px rgba(107,33,168,0.1)', animation: 'fadeUp 0.38s cubic-bezier(0.22,1,0.36,1) both', animationDelay: '130ms' }}>
-          <div style={{ fontSize: 11, color: '#6b21a8', fontWeight: 800, textTransform: 'uppercase' }}>Meal Headcount</div>
-          <div style={{ fontSize: 28, fontWeight: 900, color: '#581c87', marginTop: 4 }}>{mealHeadcount}</div>
+        <div style={{ background: 'linear-gradient(135deg,#f3e8ff 0%,#ede9fe 100%)', borderRadius: isMobile ? 10 : 14, border: '1px solid rgba(107,33,168,0.1)', padding: isMobile ? '9px 10px' : '14px 20px', boxShadow: '0 8px 18px rgba(107,33,168,0.1)', animation: 'fadeUp 0.38s cubic-bezier(0.22,1,0.36,1) both', animationDelay: '130ms' }}>
+          <div style={{ fontSize: isMobile ? 9 : 11, color: '#6b21a8', fontWeight: 800, textTransform: 'uppercase' }}>{isMobile ? 'Headcount' : 'Meal Headcount'}</div>
+          <div style={{ fontSize: isMobile ? 20 : 28, fontWeight: 900, color: '#581c87', marginTop: isMobile ? 2 : 4 }}>{mealHeadcount}</div>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginLeft: 'auto', flexWrap: 'wrap', background: '#fff', border: '1px solid #dbe4f0', borderRadius: 14, padding: 8, boxShadow: '0 8px 20px rgba(15,23,42,0.06)' }}>
+        {!isMobile && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', background: '#fff', border: '1px solid #dbe4f0', borderRadius: 14, padding: 8, boxShadow: '0 8px 20px rgba(15,23,42,0.06)' }}>
+            {canEditMeals ? (
+              <>
+                <button onClick={openAddModal} style={{ padding: '11px 16px', borderRadius: 10, border: 'none', background: '#6366f1', color: '#fff', fontWeight: 800, fontSize: 13, cursor: 'pointer', whiteSpace: 'nowrap', boxShadow: '0 2px 8px rgba(37,99,235,0.25)' }}>+ Add Exclusion</button>
+                <button onClick={() => setImportOpen(true)} style={{ padding: '11px 16px', borderRadius: 10, border: 'none', background: '#16a34a', color: '#fff', fontWeight: 800, fontSize: 13, cursor: 'pointer', whiteSpace: 'nowrap', boxShadow: '0 2px 8px rgba(22,163,74,0.25)' }}>Import CSV</button>
+                <button onClick={handleRemoveDuplicates} disabled={deduping} style={{ padding: '11px 16px', borderRadius: 10, border: '1px solid #fdba74', background: '#fff7ed', color: '#c2410c', fontWeight: 800, fontSize: 13, cursor: deduping ? 'not-allowed' : 'pointer', whiteSpace: 'nowrap' }}>
+                  {deduping ? 'Removing Duplicates...' : 'Remove Duplicates'}
+                </button>
+              </>
+            ) : null}
+            <button onClick={() => setHistoryOpen(true)} style={{ padding: '11px 16px', borderRadius: 10, border: '1px solid #93c5fd', background: '#eff6ff', color: '#4338ca', fontWeight: 800, fontSize: 13, cursor: 'pointer', whiteSpace: 'nowrap' }}>Exclusion History</button>
+          </div>
+        )}
+      </div>
+      {isMobile && (
+        <div style={{ display: 'flex', alignItems: 'center', gap: 5, flexWrap: 'wrap', marginBottom: 10 }}>
           {canEditMeals ? (
             <>
-              <button onClick={openAddModal} style={{ padding: '11px 16px', borderRadius: 10, border: 'none', background: '#6366f1', color: '#fff', fontWeight: 800, fontSize: 13, cursor: 'pointer', whiteSpace: 'nowrap', boxShadow: '0 2px 8px rgba(37,99,235,0.25)' }}>+ Add Exclusion</button>
-              <button onClick={() => setImportOpen(true)} style={{ padding: '11px 16px', borderRadius: 10, border: 'none', background: '#16a34a', color: '#fff', fontWeight: 800, fontSize: 13, cursor: 'pointer', whiteSpace: 'nowrap', boxShadow: '0 2px 8px rgba(22,163,74,0.25)' }}>Import CSV</button>
-              <button onClick={handleRemoveDuplicates} disabled={deduping} style={{ padding: '11px 16px', borderRadius: 10, border: '1px solid #fdba74', background: '#fff7ed', color: '#c2410c', fontWeight: 800, fontSize: 13, cursor: deduping ? 'not-allowed' : 'pointer', whiteSpace: 'nowrap' }}>
-                {deduping ? 'Removing Duplicates...' : 'Remove Duplicates'}
+              <button onClick={openAddModal} style={{ padding: '7px 10px', borderRadius: 8, border: 'none', background: '#6366f1', color: '#fff', fontWeight: 700, fontSize: 11, cursor: 'pointer', whiteSpace: 'nowrap', boxShadow: '0 2px 6px rgba(37,99,235,0.25)' }}>+ Add</button>
+              <button onClick={() => setImportOpen(true)} style={{ padding: '7px 10px', borderRadius: 8, border: 'none', background: '#16a34a', color: '#fff', fontWeight: 700, fontSize: 11, cursor: 'pointer', whiteSpace: 'nowrap' }}>Import</button>
+              <button onClick={handleRemoveDuplicates} disabled={deduping} style={{ padding: '7px 10px', borderRadius: 8, border: '1px solid #fdba74', background: '#fff7ed', color: '#c2410c', fontWeight: 700, fontSize: 11, cursor: deduping ? 'not-allowed' : 'pointer', whiteSpace: 'nowrap' }}>
+                {deduping ? 'Deduping...' : 'Dedup'}
               </button>
             </>
           ) : null}
-          <button onClick={() => setHistoryOpen(true)} style={{ padding: '11px 16px', borderRadius: 10, border: '1px solid #93c5fd', background: '#eff6ff', color: '#4338ca', fontWeight: 800, fontSize: 13, cursor: 'pointer', whiteSpace: 'nowrap' }}>Exclusion History</button>
+          <button onClick={() => setHistoryOpen(true)} style={{ padding: '7px 10px', borderRadius: 8, border: '1px solid #93c5fd', background: '#eff6ff', color: '#4338ca', fontWeight: 700, fontSize: 11, cursor: 'pointer', whiteSpace: 'nowrap' }}>History</button>
         </div>
-      </div>
+      )}
 
       {notice ? (
         <div style={{ marginBottom: 14, padding: '10px 14px', border: '1px solid #bfdbfe', borderRadius: 10, background: '#eff6ff', color: '#4338ca', fontWeight: 700, fontSize: 13, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>

@@ -281,49 +281,59 @@ function Rooms() {
       style={{ width: '100%', maxWidth: '100%', margin: 0, padding: '16px 24px 0 24px', background: 'none', fontFamily: 'Inter, Segoe UI, Arial, sans-serif', boxSizing: 'border-box' }}
     >
       {/* Filters */}
-      <div style={{ marginBottom: 16, width: '100%' }}>
-        <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'nowrap', width: '100%' }}>
-          <select value={building} onChange={e => setBuilding(e.target.value)} style={{ padding: '10px 14px', borderRadius: 12, border: '1.5px solid #d0d7e2', fontWeight: 600, fontSize: 15, background: '#fff', minWidth: 150, flexShrink: 0 }}>
+      <div style={{ marginBottom: 12, width: '100%' }}>
+        <div style={{
+          display: 'flex',
+          gap: isMobile ? 4 : 10,
+          alignItems: 'center',
+          flexWrap: 'nowrap',
+          width: '100%',
+          overflowX: isMobile ? 'auto' : 'visible',
+          paddingBottom: isMobile ? 4 : 0,
+          scrollbarWidth: 'none',
+          msOverflowStyle: 'none',
+        }}>
+          <select value={building} onChange={e => setBuilding(e.target.value)} style={{ padding: isMobile ? '5px 5px' : '10px 14px', borderRadius: isMobile ? 8 : 12, border: '1.5px solid #d0d7e2', fontWeight: 600, fontSize: isMobile ? 11 : 15, background: '#fff', minWidth: isMobile ? 90 : 150, flexShrink: 0 }}>
             {buildingOptions.map(opt => (
-              <option key={opt} value={opt}>{opt === 'All Buildings' ? 'Buildings: All' : opt}</option>
+              <option key={opt} value={opt}>{opt === 'All Buildings' ? 'Bldg: All' : opt}</option>
             ))}
           </select>
-          <select value={acType} onChange={e => setAcType(e.target.value)} style={{ padding: '10px 14px', borderRadius: 12, border: '1.5px solid #d0d7e2', fontWeight: 600, fontSize: 15, background: '#fff', minWidth: 110, flexShrink: 0 }}>
+          <select value={acType} onChange={e => setAcType(e.target.value)} style={{ padding: isMobile ? '5px 5px' : '10px 14px', borderRadius: isMobile ? 8 : 12, border: '1.5px solid #d0d7e2', fontWeight: 600, fontSize: isMobile ? 11 : 15, background: '#fff', minWidth: isMobile ? 60 : 110, flexShrink: 0 }}>
             {['All', 'AC', 'Non-AC'].map(opt => (
               <option key={opt} value={opt}>{opt === 'All' ? 'AC: All' : opt}</option>
             ))}
           </select>
-          <select value={shareType} onChange={e => setShareType(e.target.value)} style={{ padding: '10px 14px', borderRadius: 12, border: '1.5px solid #d0d7e2', fontWeight: 600, fontSize: 15, background: '#fff', minWidth: 130, flexShrink: 0 }}>
+          <select value={shareType} onChange={e => setShareType(e.target.value)} style={{ padding: isMobile ? '5px 5px' : '10px 14px', borderRadius: isMobile ? 8 : 12, border: '1.5px solid #d0d7e2', fontWeight: 600, fontSize: isMobile ? 11 : 15, background: '#fff', minWidth: isMobile ? 70 : 130, flexShrink: 0 }}>
             {shareTypeOptions.map(opt => (
               <option key={opt} value={opt}>{opt === 'All' ? 'Share: All' : opt}</option>
             ))}
           </select>
-          <select value={status} onChange={e => setStatus(e.target.value)} style={{ padding: '10px 14px', borderRadius: 12, border: '1.5px solid #d0d7e2', fontWeight: 600, fontSize: 15, background: '#fff', minWidth: 120, flexShrink: 0 }}>
+          <select value={status} onChange={e => setStatus(e.target.value)} style={{ padding: isMobile ? '5px 5px' : '10px 14px', borderRadius: isMobile ? 8 : 12, border: '1.5px solid #d0d7e2', fontWeight: 600, fontSize: isMobile ? 11 : 15, background: '#fff', minWidth: isMobile ? 70 : 120, flexShrink: 0 }}>
             {STATUS_OPTIONS.map(opt => (
               <option key={opt} value={opt}>{opt === 'All' ? 'Status: All' : opt}</option>
             ))}
           </select>
           <button
             onClick={() => { setBuilding('All Buildings'); setAcType('All'); setShareType('All'); setStatus('All'); setSearch(''); }}
-            style={{ padding: '10px 20px', borderRadius: 12, border: 'none', background: '#e3eafc', color: '#1e293b', fontWeight: 700, marginLeft: 6, fontSize: 15, cursor: 'pointer' }}
+            style={{ padding: isMobile ? '5px 8px' : '10px 20px', borderRadius: isMobile ? 8 : 12, border: 'none', background: '#e3eafc', color: '#1e293b', fontWeight: 700, marginLeft: isMobile ? 0 : 6, fontSize: isMobile ? 11 : 15, cursor: 'pointer', flexShrink: 0 }}
           >
-            Clear Filters
+            {isMobile ? '✕' : 'Clear Filters'}
           </button>
           {canExportRooms ? (
             <button
               onClick={exportRoomsCsv}
-              style={{ padding: '10px 20px', borderRadius: 12, border: 'none', background: '#16a34a', color: '#fff', fontWeight: 700, fontSize: 15, cursor: 'pointer' }}
+              style={{ padding: isMobile ? '5px 8px' : '10px 20px', borderRadius: isMobile ? 8 : 12, border: 'none', background: '#16a34a', color: '#fff', fontWeight: 700, fontSize: isMobile ? 11 : 15, cursor: 'pointer', flexShrink: 0 }}
             >
-              Export CSV
+              {isMobile ? 'CSV' : 'Export CSV'}
             </button>
           ) : null}
           <input
             className="search-bar"
             type="text"
-            placeholder="Search Room ID..."
+            placeholder={isMobile ? 'Room ID…' : 'Search Room ID...'}
             value={search}
             onChange={e => setSearch(e.target.value)}
-            style={{ marginLeft: 'auto', padding: '10px 14px', borderRadius: 12, border: '1.5px solid #d0d7e2', minWidth: 200, maxWidth: 260, width: '100%', flex: '1 1 220px', fontSize: 15, background: '#fff' }}
+            style={{ marginLeft: 'auto', padding: isMobile ? '5px 8px' : '10px 14px', borderRadius: isMobile ? 8 : 12, border: '1.5px solid #d0d7e2', minWidth: isMobile ? 80 : 200, maxWidth: isMobile ? 120 : 260, width: '100%', flex: '1 1 80px', fontSize: isMobile ? 11 : 15, background: '#fff' }}
           />
         </div>
       </div>
@@ -429,10 +439,10 @@ function Rooms() {
                   onClick={event => openEditModal(room, event)}
                   style={{
                     position: 'absolute',
-                    top: 10,
-                    right: 10,
-                    width: 26,
-                    height: 26,
+                    top: isMobile ? 5 : 10,
+                    right: isMobile ? 5 : 10,
+                    width: isMobile ? 18 : 26,
+                    height: isMobile ? 18 : 26,
                     borderRadius: 999,
                     border: isSpecialType ? '1px solid rgba(255,255,255,0.38)' : '1px solid #9db4ec',
                     background: isSpecialType ? 'rgba(255,255,255,0.22)' : '#93b2ff',
@@ -443,7 +453,7 @@ function Rooms() {
                     boxShadow: '0 2px 6px rgba(0,0,0,0.15)',
                   }}
                 >
-                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  <svg width={isMobile ? 8 : 11} height={isMobile ? 8 : 11} viewBox="0 0 24 24" fill="none" aria-hidden="true">
                     <path d="M4 20H8L18.5 9.5C19.3 8.7 19.3 7.4 18.5 6.6L17.4 5.5C16.6 4.7 15.3 4.7 14.5 5.5L4 16V20Z" stroke="#ffffff" strokeWidth="2.2" strokeLinejoin="round" />
                   </svg>
                 </button>
