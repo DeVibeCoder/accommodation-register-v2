@@ -347,11 +347,11 @@ function MealHistory() {
             <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: 600 }}>
               <thead>
                 <tr>
-                  <th style={{ textAlign: 'left', padding: isMobile ? '8px 8px' : '14px 16px', fontSize: isMobile ? 10 : 12, color: '#475569', textTransform: 'uppercase', letterSpacing: '.06em', borderBottom: '1px solid #dbe4f0', background: '#f8fafc' }}>Date</th>
+                  <th style={{ textAlign: 'left', padding: isMobile ? '7px 8px' : '10px 10px', fontSize: 10, color: '#475569', textTransform: 'uppercase', letterSpacing: '.06em', borderBottom: '1px solid #dbe4f0', background: '#f8fafc' }}>Date</th>
                   {departments.map(dept => (
-                    <th key={dept} title={dept} style={{ textAlign: 'center', padding: isMobile ? '8px 6px' : '14px 10px', fontSize: isMobile ? 10 : 12, color: '#475569', textTransform: 'uppercase', letterSpacing: '.06em', borderBottom: '1px solid #dbe4f0', background: '#f8fafc', whiteSpace: 'nowrap' }}>{shortCode(dept)}</th>
+                    <th key={dept} title={dept} style={{ textAlign: 'center', padding: isMobile ? '7px 6px' : '10px 8px', fontSize: 10, color: '#475569', textTransform: 'uppercase', letterSpacing: '.06em', borderBottom: '1px solid #dbe4f0', background: '#f8fafc', whiteSpace: 'nowrap' }}>{shortCode(dept)}</th>
                   ))}
-                  <th style={{ textAlign: 'center', padding: isMobile ? '8px 6px' : '14px 12px', fontSize: isMobile ? 10 : 12, color: '#475569', textTransform: 'uppercase', letterSpacing: '.06em', borderBottom: '1px solid #dbe4f0', background: '#f8fafc' }}>Total</th>
+                  <th style={{ textAlign: 'center', padding: isMobile ? '7px 6px' : '10px 8px', fontSize: 10, color: '#475569', textTransform: 'uppercase', letterSpacing: '.06em', borderBottom: '1px solid #dbe4f0', background: '#f8fafc' }}>Total</th>
                 </tr>
               </thead>
               <tbody>
@@ -359,13 +359,13 @@ function MealHistory() {
                   const baseBg = row.date === todayIso ? '#e0f2fe' : (index % 2 === 0 ? '#fff' : '#fbfdff');
                   return (
                   <tr key={row.date} style={{ cursor: 'pointer', borderBottom: '1px solid #edf2f7', background: baseBg, transition: 'background .15s ease' }} onClick={() => setSelectedRow(row)} onMouseEnter={e => { e.currentTarget.style.background = '#eef6ff'; }} onMouseLeave={e => { e.currentTarget.style.background = baseBg; }}>
-                    <td style={{ padding: isMobile ? '8px 8px' : '13px 16px', color: '#1f2937', fontWeight: 700, fontSize: isMobile ? 11 : 14 }}>
+                    <td style={{ padding: isMobile ? '7px 8px' : '9px 10px', color: '#1f2937', fontWeight: 700, fontSize: 11 }}>
                       {formatDateForUi(row.date)}
                     </td>
                     {departments.map(dept => (
-                      <td key={`${row.date}-${dept}`} style={{ textAlign: 'center', padding: isMobile ? '8px 6px' : '13px 10px', color: '#3730a3', fontWeight: 700, fontSize: isMobile ? 11 : 14 }}>{row.counts?.[dept] || 0}</td>
+                      <td key={`${row.date}-${dept}`} style={{ textAlign: 'center', padding: isMobile ? '7px 6px' : '9px 8px', color: '#3730a3', fontWeight: 700, fontSize: 11 }}>{row.counts?.[dept] || 0}</td>
                     ))}
-                    <td style={{ textAlign: 'center', padding: isMobile ? '8px 6px' : '13px 12px', color: '#0f172a', fontWeight: 900, fontSize: isMobile ? 11 : 14 }}>{row.total || 0}</td>
+                    <td style={{ textAlign: 'center', padding: isMobile ? '7px 6px' : '9px 8px', color: '#0f172a', fontWeight: 900, fontSize: 11 }}>{row.total || 0}</td>
                   </tr>
                   );
                 })}

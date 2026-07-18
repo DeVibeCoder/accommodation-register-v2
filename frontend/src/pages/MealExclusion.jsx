@@ -20,12 +20,12 @@ function asDate(value) {
 }
 
 const thStyle = {
-  padding: '8px 10px', fontSize: 10, fontWeight: 800, color: '#64748b',
+  padding: '7px 8px', fontSize: 10, fontWeight: 800, color: '#64748b',
   textTransform: 'uppercase', letterSpacing: '0.06em',
   borderBottom: '1px solid #e2e8f0', background: '#f8fafc',
   textAlign: 'left', whiteSpace: 'nowrap',
 };
-const tdStyle = { padding: '8px 10px', borderBottom: '1px solid #f1f5f9', verticalAlign: 'middle', fontSize: 12 };
+const tdStyle = { padding: '7px 8px', borderBottom: '1px solid #f1f5f9', verticalAlign: 'middle', fontSize: 11 };
 const modalFieldStyle = {
   height: 40, padding: '9px 10px', borderRadius: 8, border: '1px solid #cbd5e1',
   fontSize: 13, boxSizing: 'border-box', width: '100%', background: '#ffffff',
