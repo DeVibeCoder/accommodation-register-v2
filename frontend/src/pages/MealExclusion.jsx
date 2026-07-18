@@ -20,12 +20,14 @@ function asDate(value) {
 }
 
 const thStyle = {
-  padding: '7px 8px', fontSize: 10, fontWeight: 800, color: '#64748b',
+  padding: '10px 14px', fontSize: 11, fontWeight: 800, color: '#64748b',
   textTransform: 'uppercase', letterSpacing: '0.06em',
   borderBottom: '1px solid #e2e8f0', background: '#f8fafc',
   textAlign: 'left', whiteSpace: 'nowrap',
 };
-const tdStyle = { padding: '7px 8px', borderBottom: '1px solid #f1f5f9', verticalAlign: 'middle', fontSize: 11 };
+const tdStyle = { padding: '12px 14px', borderBottom: '1px solid #f1f5f9', verticalAlign: 'middle', fontSize: 13 };
+const thMobile = { padding: '7px 8px', fontSize: 10 };
+const tdMobile = { padding: '7px 8px', fontSize: 11 };
 const modalFieldStyle = {
   height: 40, padding: '9px 10px', borderRadius: 8, border: '1px solid #cbd5e1',
   fontSize: 13, boxSizing: 'border-box', width: '100%', background: '#ffffff',
@@ -510,7 +512,9 @@ function ExclusionHistoryModal({ open, onClose }) {
 }
 
 // --- Exclusion Table --------------------------------------------------------
-function ExclusionTable({ rows, canEdit, closingId, onClose, onEdit, emptyText }) {
+function ExclusionTable({ rows, canEdit, closingId, onClose, onEdit, emptyText, isMobile = false }) {
+  const th = isMobile ? { ...thStyle, ...thMobile } : thStyle;
+  const td = isMobile ? { ...tdStyle, ...tdMobile } : tdStyle;
   return (
     <div style={{ overflowX: 'auto', minHeight: 420 }}>
       <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: 760, tableLayout: 'fixed' }}>
@@ -524,17 +528,17 @@ function ExclusionTable({ rows, canEdit, closingId, onClose, onEdit, emptyText }
         </colgroup>
         <thead>
           <tr>
-            <th style={thStyle}>Name</th>
-            <th style={thStyle}>Department</th>
-            <th style={thStyle}>Reason</th>
-            <th style={thStyle}>From Date</th>
-            <th style={thStyle}>To Date</th>
-            <th style={{ ...thStyle, textAlign: 'right' }}>Actions</th>
+            <th style={th}>Name</th>
+            <th style={th}>Department</th>
+            <th style={th}>Reason</th>
+            <th style={th}>From Date</th>
+            <th style={th}>To Date</th>
+            <th style={{ ...th, textAlign: 'right' }}>Actions</th>
           </tr>
         </thead>
         <tbody>
           {rows.length === 0
-            ? <tr><td colSpan={6} style={{ ...tdStyle, color: '#94a3b8', fontWeight: 600, textAlign: 'center', padding: '24px 14px' }}>{emptyText}</td></tr>
+            ? <tr><td colSpan={6} style={{ ...td, color: '#94a3b8', fontWeight: 600, textAlign: 'center', padding: '24px 14px' }}>{emptyText}</td></tr>
             : rows.map((item, idx) => {
               const rc = reasonColor(item.reason);
               return (
@@ -544,22 +548,22 @@ function ExclusionTable({ rows, canEdit, closingId, onClose, onEdit, emptyText }
                   onMouseEnter={e => { e.currentTarget.style.background = '#eef6ff'; }}
                   onMouseLeave={e => { e.currentTarget.style.background = idx % 2 === 0 ? '#fff' : '#fbfdff'; }}
                 >
-                  <td style={tdStyle}>
-                    <div style={{ fontWeight: 800, color: '#1f2937', fontSize: 13, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{item.name}</div>
-                    {item.staffId ? <div style={{ fontSize: 11, color: '#64748b', marginTop: 1 }}>{item.staffId}</div> : null}
+                  <td style={td}>
+                    <div style={{ fontWeight: 800, color: '#1f2937', fontSize: isMobile ? 11 : 13, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{item.name}</div>
+                    {item.staffId ? <div style={{ fontSize: isMobile ? 10 : 11, color: '#64748b', marginTop: 1 }}>{item.staffId}</div> : null}
                   </td>
-                  <td style={{ ...tdStyle, color: '#374151', fontWeight: 600, textTransform: 'uppercase', fontSize: 12, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{item.department || '-'}</td>
-                  <td style={tdStyle}>
-                    <span style={{ display: 'inline-block', padding: '3px 10px', borderRadius: 999, background: rc.bg, color: rc.text, fontWeight: 700, fontSize: 11, border: `1px solid ${rc.text}30` }}>{item.reason}</span>
+                  <td style={{ ...td, color: '#374151', fontWeight: 600, textTransform: 'uppercase', fontSize: isMobile ? 10 : 12, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{item.department || '-'}</td>
+                  <td style={td}>
+                    <span style={{ display: 'inline-block', padding: isMobile ? '2px 6px' : '3px 10px', borderRadius: 999, background: rc.bg, color: rc.text, fontWeight: 700, fontSize: isMobile ? 10 : 11, border: `1px solid ${rc.text}30` }}>{item.reason}</span>
                   </td>
-                  <td style={{ ...tdStyle, color: '#374151' }}>{asDate(item.fromDate)}</td>
-                  <td style={{ ...tdStyle, color: '#374151' }}>{item.toDate ? asDate(item.toDate) : '-'}</td>
-                  <td style={{ ...tdStyle, textAlign: 'right' }}>
+                  <td style={{ ...td, color: '#374151' }}>{asDate(item.fromDate)}</td>
+                  <td style={{ ...td, color: '#374151' }}>{item.toDate ? asDate(item.toDate) : '-'}</td>
+                  <td style={{ ...td, textAlign: 'right' }}>
                     {canEdit ? (
-                      <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 6 }}>
-                        <button onClick={() => onEdit(item)} style={{ padding: '5px 10px', borderRadius: 6, border: '1px solid #93c5fd', background: '#eff6ff', color: '#4338ca', fontWeight: 700, cursor: 'pointer', fontSize: 12 }}>Edit</button>
-                        <button onClick={() => onClose(item.id)} disabled={closingId === item.id} style={{ padding: '5px 10px', borderRadius: 6, border: '1px solid #fca5a5', background: '#fff', color: '#dc2626', fontWeight: 700, cursor: closingId === item.id ? 'not-allowed' : 'pointer', fontSize: 12 }}>
-                          {closingId === item.id ? 'Removing...' : 'Remove'}
+                      <div style={{ display: 'flex', justifyContent: 'flex-end', gap: isMobile ? 4 : 6 }}>
+                        <button onClick={() => onEdit(item)} style={{ padding: isMobile ? '3px 7px' : '5px 10px', borderRadius: 6, border: '1px solid #93c5fd', background: '#eff6ff', color: '#4338ca', fontWeight: 700, cursor: 'pointer', fontSize: isMobile ? 10 : 12 }}>Edit</button>
+                        <button onClick={() => onClose(item.id)} disabled={closingId === item.id} style={{ padding: isMobile ? '3px 7px' : '5px 10px', borderRadius: 6, border: '1px solid #fca5a5', background: '#fff', color: '#dc2626', fontWeight: 700, cursor: closingId === item.id ? 'not-allowed' : 'pointer', fontSize: isMobile ? 10 : 12 }}>
+                          {closingId === item.id ? '...' : 'Remove'}
                         </button>
                       </div>
                     ) : null}
@@ -818,6 +822,7 @@ function MealExclusion() {
             onClose={handleCloseExclusion}
             onEdit={openEditModal}
             emptyText={activeTab === 'active' ? 'No active meal exclusions.' : 'No upcoming meal exclusions.'}
+            isMobile={isMobile}
           />
         </div>
       </div>
