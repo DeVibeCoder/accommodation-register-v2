@@ -113,7 +113,7 @@ function RoomModal({ open, onClose, room, sidebarWidth = 0 }) {
           <button style={closeBtnStyle} onClick={onClose} aria-label="Close">X</button>
         </div>
 
-        <div style={{ padding: '16px 20px 10px', background: '#fff', flex: 1, minHeight: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+        <div style={{ padding: '16px 20px 10px', background: 'var(--c-card)', flex: 1, minHeight: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
             <div style={{ fontWeight: 800, fontSize: '1.02rem', color: 'var(--c-text)' }}>Occupants</div>
             <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--c-subtle)', background: 'var(--c-surface)', border: '1px solid var(--c-border-2)', padding: '6px 10px', borderRadius: 999 }}>
@@ -176,7 +176,7 @@ function RoomModal({ open, onClose, room, sidebarWidth = 0 }) {
           </div>
         </div>
 
-        <div style={{ padding: '0 20px 16px', background: '#fff', flexShrink: 0 }}>
+        <div style={{ padding: '0 20px 16px', background: 'var(--c-card)', flexShrink: 0 }}>
           <div style={{ fontWeight: 800, fontSize: '0.92rem', marginBottom: 6, color: 'var(--c-text)' }}>Room Summary</div>
           <div style={summaryGrid}>
             {summaryItems.map(([label, value]) => (

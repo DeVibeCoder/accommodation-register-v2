@@ -120,8 +120,8 @@ function ExclusionModal({ open, onClose, occupants, canEdit, onSaved, editEntry 
   if (!open) return null;
   return (
     <div style={{ position: 'fixed', top: isMobile ? 50 : 62, left: 0, right: 0, bottom: 0, background: 'rgba(15,23,42,0.5)', zIndex: 3000, display: 'flex', alignItems: 'flex-start', justifyContent: 'center', padding: 16, overflowY: 'auto', animation: 'fadeIn 0.18s ease both' }}>
-      <div style={{ background: 'linear-gradient(180deg, var(--c-card) 0%, var(--c-card-alt) 100%)', borderRadius: 16, width: '100%', maxWidth: 560, boxShadow: '0 20px 60px rgba(0,0,0,0.2)', border: '1px solid #dbeafe', fontFamily: 'Inter,Segoe UI,Arial,sans-serif', animation: 'scaleIn 0.22s cubic-bezier(0.22,1,0.36,1) both' }}>
-        <div style={{ padding: '18px 24px 15px', borderBottom: '1px solid #dbeafe', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'linear-gradient(130deg,#eff6ff 0%,#f8fbff 100%)', borderRadius: '16px 16px 0 0' }}>
+      <div style={{ background: 'var(--c-card)', borderRadius: 16, width: '100%', maxWidth: 560, boxShadow: '0 20px 60px rgba(0,0,0,0.2)', border: '1px solid var(--c-border-2)', fontFamily: 'Inter,Segoe UI,Arial,sans-serif', animation: 'scaleIn 0.22s cubic-bezier(0.22,1,0.36,1) both' }}>
+        <div style={{ padding: '18px 24px 15px', borderBottom: '1px solid var(--c-border-2)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'linear-gradient(130deg, var(--c-card-alt) 0%, var(--c-card) 100%)', borderRadius: '16px 16px 0 0' }}>
           <div>
             <div style={{ fontWeight: 800, fontSize: '1.1rem', color: 'var(--c-text)' }}>{isEditing ? 'Edit Meal Exclusion' : 'Add Meal Exclusion'}</div>
             <div style={{ fontSize: 12, color: 'var(--c-subtle)', marginTop: 2 }}>{isEditing ? 'Update exclusion details for selected occupant' : 'Exclude a staff member from meals for a date range'}</div>
