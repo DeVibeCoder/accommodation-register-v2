@@ -334,7 +334,7 @@ function MealHistory() {
         </div>
         <div style={{ border: '1px solid #bfdbfe', borderRadius: isMobile ? 10 : 14, background: 'linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%)', padding: isMobile ? '9px 10px' : '14px 16px', boxShadow: '0 12px 30px rgba(30,49,95,0.06)', animation: 'fadeUp 0.38s cubic-bezier(0.22,1,0.36,1) both', animationDelay: '130ms' }}>
           <div style={{ color: '#6366f1', fontSize: isMobile ? 9 : 11, fontWeight: 800, textTransform: 'uppercase' }}>{isMobile ? 'Today' : "Today's Headcount"}</div>
-          <div style={{ marginTop: isMobile ? 2 : 6, fontWeight: 900, color: '#3730a3', fontSize: isMobile ? 20 : 32, animation: 'numberPop 0.5s cubic-bezier(0.22,1,0.36,1) both', animationDelay: '250ms' }}>{todaysHeadcount}</div>
+          <div style={{ marginTop: isMobile ? 2 : 6, fontWeight: 900, color: 'var(--c-text)', fontSize: isMobile ? 20 : 32, animation: 'numberPop 0.5s cubic-bezier(0.22,1,0.36,1) both', animationDelay: '250ms' }}>{todaysHeadcount}</div>
         </div>
       </div>
 
@@ -363,7 +363,7 @@ function MealHistory() {
                       {formatDateForUi(row.date)}
                     </td>
                     {departments.map(dept => (
-                      <td key={`${row.date}-${dept}`} style={{ textAlign: 'center', padding: isMobile ? '7px 6px' : '13px 10px', color: '#3730a3', fontWeight: 700, fontSize: isMobile ? 11 : 14 }}>{row.counts?.[dept] || 0}</td>
+                      <td key={`${row.date}-${dept}`} style={{ textAlign: 'center', padding: isMobile ? '7px 6px' : '13px 10px', color: 'var(--c-text)', fontWeight: 700, fontSize: isMobile ? 11 : 14 }}>{row.counts?.[dept] || 0}</td>
                     ))}
                     <td style={{ textAlign: 'center', padding: isMobile ? '7px 6px' : '13px 12px', color: 'var(--c-text)', fontWeight: 900, fontSize: isMobile ? 11 : 14 }}>{row.total || 0}</td>
                   </tr>
