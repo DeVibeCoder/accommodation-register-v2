@@ -73,6 +73,7 @@ body {
   --c-border-3:   #d0d7e2;
   --c-today-row:  #dbeafe;
   --c-today-hover:#bae6fd;
+  --c-hover-row:  #eef2ff;
 }
 
 [data-theme="dark"] {
@@ -90,6 +91,7 @@ body {
   --c-border-3:   #334155;
   --c-today-row:  #1e3a5f;
   --c-today-hover:#1e4d8c;
+  --c-hover-row:  #1e3158;
 }
 
 /* ─── Motion keyframes ──────────────────────────────────────── */

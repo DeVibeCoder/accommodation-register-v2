@@ -141,7 +141,7 @@ function ExclusionModal({ open, onClose, occupants, canEdit, onSaved, editEntry 
                     : filteredOccupants.map(item => (
                       <button key={item.id || item._id} type="button" onMouseDown={() => handlePickOccupant(item)}
                         style={{ width: '100%', textAlign: 'left', border: 'none', background: 'var(--c-card)', padding: '10px 12px', cursor: 'pointer', borderBottom: '1px solid var(--c-border)', fontSize: 12 }}
-                        onMouseEnter={e => e.currentTarget.style.background = '#eff6ff'} onMouseLeave={e => e.currentTarget.style.background = 'var(--c-card)'}>
+                        onMouseEnter={e => e.currentTarget.style.background = 'var(--c-hover-row)'} onMouseLeave={e => e.currentTarget.style.background = 'var(--c-card)'}>
                         <div style={{ fontWeight: 700, color: 'var(--c-text)', fontSize: 13 }}>{item.name || 'Unknown'}</div>
                         <div style={{ color: 'var(--c-subtle)', fontSize: 11, marginTop: 2 }}>ID: {item.staffId || '-'} | {item.roomId || '-'} / Bed {item.bedNo ?? '-'}</div>
                       </button>
@@ -548,7 +548,7 @@ function ExclusionTable({ rows, canEdit, closingId, onClose, onEdit, emptyText, 
                 <tr
                   key={item.id}
                   style={{ background: idx % 2 === 0 ? 'var(--c-card)' : 'var(--c-card-alt)', transition: 'background .15s ease' }}
-                  onMouseEnter={e => { e.currentTarget.style.background = '#eef6ff'; }}
+                  onMouseEnter={e => { e.currentTarget.style.background = 'var(--c-hover-row)'; }}
                   onMouseLeave={e => { e.currentTarget.style.background = idx % 2 === 0 ? 'var(--c-card)' : 'var(--c-card-alt)'; }}
                 >
                   <td style={td}>

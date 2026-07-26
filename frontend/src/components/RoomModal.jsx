@@ -72,7 +72,7 @@ const tableRowStyle = (index) => ({
 
 
 
-function RoomModal({ open, onClose, room }) {
+function RoomModal({ open, onClose, room, sidebarWidth = 0 }) {
   const vw = useViewportWidth();
   const isMobile = vw < 768;
   if (!open || !room) return null;
@@ -89,7 +89,7 @@ function RoomModal({ open, onClose, room }) {
   ];
 
   return (
-    <div style={{ ...overlayBase, top: isMobile ? 50 : 62, alignItems: isMobile ? 'flex-start' : 'center', padding: isMobile ? '8px 10px 8px' : 0 }} onClick={onClose}>
+    <div style={{ ...overlayBase, top: isMobile ? 50 : 62, left: isMobile ? 0 : sidebarWidth, alignItems: isMobile ? 'flex-start' : 'center', padding: isMobile ? '8px 10px 8px' : 0 }} onClick={onClose}>
       <div
         className="modal"
         style={{

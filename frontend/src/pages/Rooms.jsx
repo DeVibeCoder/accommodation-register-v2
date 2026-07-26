@@ -589,7 +589,7 @@ function Rooms() {
       )}
 
       {/* Room Details Modal */}
-      <RoomModal open={isModalOpen} onClose={() => { setIsModalOpen(false); setSelectedRoom(null); }} room={selectedRoom} />
+      <RoomModal open={isModalOpen} onClose={() => { setIsModalOpen(false); setSelectedRoom(null); }} room={selectedRoom} sidebarWidth={isMobile ? 0 : (sidebarCollapsed ? 64 : 220)} />
 
       <SaveToast
         notice={saveNotice}

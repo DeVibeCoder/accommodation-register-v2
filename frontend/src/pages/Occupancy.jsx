@@ -1220,7 +1220,7 @@ function Occupancy() {
             return(
               <div key={o._id}
                 style={{ display:'grid',gridTemplateColumns:'2.9fr 1.1fr 1.9fr 140px',padding:'0 20px',minHeight:90,alignItems:'center',paddingTop:8,paddingBottom:8,borderBottom:'1px solid var(--c-border-2)',borderLeft:`3px solid ${tc.text}1f`,gap:10,transition:'background .12s, border-left-color .12s',cursor:'default',background:rowBg }}
-                onMouseEnter={e=>{e.currentTarget.style.background='#ebf2ff'; e.currentTarget.style.borderLeftColor=tc.text;}}
+                onMouseEnter={e=>{e.currentTarget.style.background='var(--c-hover-row)'; e.currentTarget.style.borderLeftColor=tc.text;}}
                 onMouseLeave={e=>{e.currentTarget.style.background=rowBg; e.currentTarget.style.borderLeftColor=`${tc.text}1f`;}}
               >
                 <div style={{ display:'flex',flexDirection:'column',gap:5,minWidth:0,alignSelf:'flex-start',paddingTop:2 }}>

@@ -255,7 +255,7 @@ function StayHistory() {
                   key={item.id || index}
                   onClick={() => setDetailItem(item)}
                   style={{ display: 'grid', gridTemplateColumns: cols, gap: 12, alignItems: 'center', padding: '12px 20px', borderBottom: '1px solid var(--c-border)', background: rowBg, cursor: 'pointer', transition: 'background 0.12s' }}
-                  onMouseEnter={e => { e.currentTarget.style.background = '#eef2ff'; }}
+                  onMouseEnter={e => { e.currentTarget.style.background = 'var(--c-hover-row)'; }}
                   onMouseLeave={e => { e.currentTarget.style.background = rowBg; }}
                 >
                   <div>
