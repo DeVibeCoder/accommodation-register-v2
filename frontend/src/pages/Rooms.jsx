@@ -293,29 +293,29 @@ function Rooms() {
           scrollbarWidth: 'none',
           msOverflowStyle: 'none',
         }}>
-          <select value={building} onChange={e => setBuilding(e.target.value)} style={{ padding: isMobile ? '5px 5px' : '8px 10px', borderRadius: isMobile ? 8 : 12, border: '1.5px solid var(--c-border-3)', fontWeight: 600, fontSize: isMobile ? 11 : 14, background: 'var(--c-card)', minWidth: isMobile ? 90 : 120, flexShrink: 0 }}>
+          <select value={building} onChange={e => setBuilding(e.target.value)} style={{ padding: isMobile ? '5px 5px' : '8px 10px', borderRadius: isMobile ? 8 : 12, border: '1.5px solid var(--c-border-3)', fontWeight: 600, fontSize: isMobile ? 11 : 14, background: 'var(--c-card)', color: 'var(--c-text)', minWidth: isMobile ? 90 : 120, flexShrink: 0 }}>
             {buildingOptions.map(opt => (
               <option key={opt} value={opt}>{opt === 'All Buildings' ? 'Bldg: All' : opt}</option>
             ))}
           </select>
-          <select value={acType} onChange={e => setAcType(e.target.value)} style={{ padding: isMobile ? '5px 5px' : '8px 10px', borderRadius: isMobile ? 8 : 12, border: '1.5px solid var(--c-border-3)', fontWeight: 600, fontSize: isMobile ? 11 : 14, background: 'var(--c-card)', minWidth: isMobile ? 60 : 90, flexShrink: 0 }}>
+          <select value={acType} onChange={e => setAcType(e.target.value)} style={{ padding: isMobile ? '5px 5px' : '8px 10px', borderRadius: isMobile ? 8 : 12, border: '1.5px solid var(--c-border-3)', fontWeight: 600, fontSize: isMobile ? 11 : 14, background: 'var(--c-card)', color: 'var(--c-text)', minWidth: isMobile ? 60 : 90, flexShrink: 0 }}>
             {['All', 'AC', 'Non-AC'].map(opt => (
               <option key={opt} value={opt}>{opt === 'All' ? 'AC: All' : opt}</option>
             ))}
           </select>
-          <select value={shareType} onChange={e => setShareType(e.target.value)} style={{ padding: isMobile ? '5px 5px' : '8px 10px', borderRadius: isMobile ? 8 : 12, border: '1.5px solid var(--c-border-3)', fontWeight: 600, fontSize: isMobile ? 11 : 14, background: 'var(--c-card)', minWidth: isMobile ? 70 : 100, flexShrink: 0 }}>
+          <select value={shareType} onChange={e => setShareType(e.target.value)} style={{ padding: isMobile ? '5px 5px' : '8px 10px', borderRadius: isMobile ? 8 : 12, border: '1.5px solid var(--c-border-3)', fontWeight: 600, fontSize: isMobile ? 11 : 14, background: 'var(--c-card)', color: 'var(--c-text)', minWidth: isMobile ? 70 : 100, flexShrink: 0 }}>
             {shareTypeOptions.map(opt => (
               <option key={opt} value={opt}>{opt === 'All' ? 'Share: All' : opt}</option>
             ))}
           </select>
-          <select value={status} onChange={e => setStatus(e.target.value)} style={{ padding: isMobile ? '5px 5px' : '8px 10px', borderRadius: isMobile ? 8 : 12, border: '1.5px solid var(--c-border-3)', fontWeight: 600, fontSize: isMobile ? 11 : 14, background: 'var(--c-card)', minWidth: isMobile ? 70 : 100, flexShrink: 0 }}>
+          <select value={status} onChange={e => setStatus(e.target.value)} style={{ padding: isMobile ? '5px 5px' : '8px 10px', borderRadius: isMobile ? 8 : 12, border: '1.5px solid var(--c-border-3)', fontWeight: 600, fontSize: isMobile ? 11 : 14, background: 'var(--c-card)', color: 'var(--c-text)', minWidth: isMobile ? 70 : 100, flexShrink: 0 }}>
             {STATUS_OPTIONS.map(opt => (
               <option key={opt} value={opt}>{opt === 'All' ? 'Status: All' : opt}</option>
             ))}
           </select>
           <button
             onClick={() => { setBuilding('All Buildings'); setAcType('All'); setShareType('All'); setStatus('All'); setSearch(''); }}
-            style={{ padding: isMobile ? '5px 8px' : '8px 14px', borderRadius: isMobile ? 8 : 12, border: 'none', background: '#e3eafc', color: 'var(--c-text)', fontWeight: 700, marginLeft: isMobile ? 0 : 4, fontSize: isMobile ? 11 : 14, cursor: 'pointer', flexShrink: 0 }}
+            style={{ padding: isMobile ? '5px 8px' : '8px 14px', borderRadius: isMobile ? 8 : 12, border: '1px solid var(--c-border-2)', background: 'var(--c-card-alt)', color: 'var(--c-text)', fontWeight: 700, marginLeft: isMobile ? 0 : 4, fontSize: isMobile ? 11 : 14, cursor: 'pointer', flexShrink: 0 }}
           >
             {isMobile ? '✕' : 'Clear Filters'}
           </button>
