@@ -676,7 +676,7 @@ function Settings({ user, setUser }) {
                   const canDeleteUserRow = item.id !== user?.id && !(item.role === 'Admin' && roleCounts.Admin <= 1);
 
                   return (
-                    <div key={item.id} style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'minmax(0, 1.4fr) 120px 120px minmax(320px, 1.2fr)', gap: isMobile ? 8 : 12, alignItems: 'center', border: '1px solid #e2e8f0', borderRadius: 14, padding: '12px 14px', background: '#fff' }}>
+                    <div key={item.id} style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'minmax(0, 1.4fr) 110px 110px minmax(240px, 1.2fr)', gap: isMobile ? 8 : 12, alignItems: 'center', border: '1px solid #e2e8f0', borderRadius: 14, padding: '12px 14px', background: '#fff' }}>
                       <div style={{ minWidth: 0 }}>
                         <div style={{ fontWeight: 800, color: '#1e293b', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.email || 'No email'}</div>
                         <div style={{ fontSize: 12, color: '#64748b', marginTop: 3 }}>Created: {formatDate(item.createdAt)}</div>

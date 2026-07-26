@@ -392,7 +392,7 @@ function ActionToast({ notice, onClose, isMobile = false }) {
   if (!notice?.open) return null;
   const isError = notice.type === 'error';
   return (
-    <div style={{ position:'fixed',right:20,bottom: isMobile ? 66 : 20,zIndex:3100,pointerEvents:'none' }}>
+    <div style={{ position:'fixed',right:20,bottom: isMobile ? 66 : 20,zIndex:2500,pointerEvents:'none' }}>
       <div style={{ width:'min(380px, calc(100vw - 32px))',background:isError ? 'linear-gradient(135deg, #7f1d1d 0%, #dc2626 100%)' : 'linear-gradient(135deg, #4338ca 0%, #0891b2 100%)',color:'#fff',borderRadius:16,padding:'14px 16px',boxShadow:'0 18px 40px rgba(15,23,42,.24)',animation:'slideInRight 0.28s cubic-bezier(0.22,1,0.36,1) both',pointerEvents:'auto' }}>
         <div style={{ display:'flex',alignItems:'flex-start',justifyContent:'space-between',gap:12 }}>
           <div>
@@ -1007,7 +1007,7 @@ function Occupancy() {
   const hasFilters = personTypeFilter!=='All'||buildingFilter!=='All'||!!sectionFilter||idNameSearch||roomSearch;
 
   return (
-    <div style={{ width:'100%',maxWidth:'100%',margin:0,padding:'12px clamp(12px, 3vw, 32px) clamp(14px, 2.3vw, 24px)',background:'none',fontFamily:'Inter,Segoe UI,Arial,sans-serif',boxSizing:'border-box',minHeight: isMobile ? 'calc(100vh - 96px)' : '100vh' }}>
+    <div style={{ width:'100%',maxWidth:'100%',margin:0,padding:'12px clamp(12px, 3vw, 32px) clamp(14px, 2.3vw, 24px)',background:'none',fontFamily:'Inter,Segoe UI,Arial,sans-serif',boxSizing:'border-box',minHeight: isMobile ? 'calc(100vh - 96px)' : 'calc(100vh - 62px)' }}>
 
       {/* Header */}
       <div style={{ display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:isMobile ? 8 : 14,flexWrap:'wrap',gap: isMobile ? 5 : 10 }}>
@@ -1178,7 +1178,7 @@ function Occupancy() {
         /* Desktop grid table */
         <div style={{ background:'#fff',borderRadius:18,boxShadow:'0 8px 26px rgba(30,49,95,.08)',border:'1px solid #dfe6f1',overflowX:'auto' }}>
           <div style={{ minWidth:960 }}>
-          <div style={{ display:'grid',gridTemplateColumns:'2.9fr 1.1fr 1.9fr 138px',padding:'0 20px',height:42,alignItems:'center',background:'linear-gradient(180deg, #f8fbff 0%, #f3f7fd 100%)',borderBottom:'1px solid #dfe6f1',gap:10 }}>
+          <div style={{ display:'grid',gridTemplateColumns:'2.9fr 1.1fr 1.9fr 140px',padding:'0 20px',height:42,alignItems:'center',background:'linear-gradient(180deg, #f8fbff 0%, #f3f7fd 100%)',borderBottom:'1px solid #dfe6f1',gap:10 }}>
             {['Name / Person Type','Room','Section / Department | Nat','Actions'].map(h=>(
               <span key={h} style={{ fontSize:10.5,fontWeight:700,color:'#7f93b3',textTransform:'uppercase',letterSpacing:.6 }}>{h}</span>
             ))}

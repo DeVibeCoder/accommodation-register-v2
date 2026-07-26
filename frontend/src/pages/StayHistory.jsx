@@ -90,7 +90,7 @@ function StayHistory() {
   }, [enrichedHistory, activeFilter, search]);
 
   return (
-    <div style={{ width: '100%', maxWidth: '100%', margin: 0, padding: isMobile ? '10px 12px 16px' : '12px 24px 24px', background: 'none', fontFamily: 'Inter, Segoe UI, Arial, sans-serif', boxSizing: 'border-box', minHeight: isMobile ? 'calc(100vh - 96px)' : '100vh' }}>
+    <div style={{ width: '100%', maxWidth: '100%', margin: 0, padding: isMobile ? '10px 12px 16px' : '12px 24px 24px', background: 'none', fontFamily: 'Inter, Segoe UI, Arial, sans-serif', boxSizing: 'border-box', minHeight: isMobile ? 'calc(100vh - 96px)' : 'calc(100vh - 62px)' }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: isMobile ? 8 : 16, marginBottom: isMobile ? 8 : 14, flexWrap: isMobile ? 'nowrap' : 'wrap' }}>
         <p style={{ margin: 0, color: '#94a3b8', fontSize: isMobile ? 10 : 13, fontWeight: 600, flexShrink: 0 }}>
           {filtered.length} of {stayHistory.length} {isMobile ? 'activities' : 'recorded accommodation activities'}

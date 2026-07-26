@@ -759,7 +759,7 @@ function MealExclusion() {
     <div style={{ width: '100%', maxWidth: '100%', margin: 0, padding: '12px clamp(12px, 3vw, 32px) clamp(14px, 2.2vw, 24px)', background: 'none', fontFamily: 'Inter,Segoe UI,Arial,sans-serif', boxSizing: 'border-box' }}>
 
       {/* --- Stat cards + buttons --- */}
-      <div style={{ display: 'grid', gridTemplateColumns: isMobile ? 'repeat(3, 1fr)' : 'repeat(3, 1fr) auto', gap: isMobile ? 6 : 12, marginBottom: isMobile ? 10 : 20, alignItems: 'stretch' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: isMobile ? 'repeat(3, 1fr)' : 'repeat(auto-fit, minmax(160px, 1fr))', gap: isMobile ? 6 : 12, marginBottom: isMobile ? 10 : 20, alignItems: 'stretch' }}>
         <div style={{ background: 'linear-gradient(135deg,#ffe9d6 0%,#ffe2bf 100%)', borderRadius: isMobile ? 10 : 14, border: '1px solid rgba(154,52,18,0.12)', padding: isMobile ? '9px 10px' : '14px 20px', boxShadow: '0 8px 18px rgba(154,52,18,0.11)', animation: 'fadeUp 0.38s cubic-bezier(0.22,1,0.36,1) both', animationDelay: '0ms' }}>
           <div style={{ fontSize: isMobile ? 9 : 11, color: '#9a3412', fontWeight: 800, textTransform: 'uppercase' }}>{isMobile ? 'Active' : 'Active Exclusions'}</div>
           <div style={{ fontSize: isMobile ? 20 : 28, fontWeight: 900, color: '#7c2d12', marginTop: isMobile ? 2 : 4 }}>{activeCount}</div>

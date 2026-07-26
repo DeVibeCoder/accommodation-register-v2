@@ -140,7 +140,7 @@ export default function Sidebar({ collapsed = false, setCollapsed, onLogout, use
 
       {/* ── Logo / branding ── */}
       <div style={{
-        height: 68, minHeight: 68,
+        height: 62, minHeight: 62,
         display: 'flex',
         alignItems: 'center',
         justifyContent: collapsed ? 'center' : 'flex-start',

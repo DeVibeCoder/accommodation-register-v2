@@ -353,7 +353,7 @@ function Layout({ user, onLogout }) {
           flexDirection: 'column',
           overflow: 'hidden',
           boxSizing: 'border-box',
-          transition: 'margin-left 0.22s cubic-bezier(.4,0,.2,1), width 0.22s cubic-bezier(.4,0,.2,1)',
+          transition: 'margin-left 0.22s cubic-bezier(.4,0,.2,1), width 0.22s cubic-bezier(.4,0,.2,1), max-width 0.22s cubic-bezier(.4,0,.2,1)',
         }}
       >
         {/* ── Header ── */}

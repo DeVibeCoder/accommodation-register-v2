@@ -89,7 +89,7 @@ function RoomModal({ open, onClose, room }) {
   ];
 
   return (
-    <div style={{ ...overlayBase, top: isMobile ? 50 : 0, alignItems: isMobile ? 'flex-start' : 'center', padding: isMobile ? '8px 10px 8px' : 0 }} onClick={onClose}>
+    <div style={{ ...overlayBase, top: isMobile ? 50 : 62, alignItems: isMobile ? 'flex-start' : 'center', padding: isMobile ? '8px 10px 8px' : 0 }} onClick={onClose}>
       <div
         className="modal"
         style={{

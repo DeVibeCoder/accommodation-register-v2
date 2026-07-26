@@ -284,45 +284,45 @@ function Rooms() {
       <div style={{ marginBottom: 12, width: '100%' }}>
         <div style={{
           display: 'flex',
-          gap: isMobile ? 4 : 10,
+          gap: isMobile ? 4 : 8,
           alignItems: 'center',
-          flexWrap: 'nowrap',
+          flexWrap: isMobile ? 'nowrap' : 'wrap',
           width: '100%',
           overflowX: isMobile ? 'auto' : 'visible',
           paddingBottom: isMobile ? 4 : 0,
           scrollbarWidth: 'none',
           msOverflowStyle: 'none',
         }}>
-          <select value={building} onChange={e => setBuilding(e.target.value)} style={{ padding: isMobile ? '5px 5px' : '10px 14px', borderRadius: isMobile ? 8 : 12, border: '1.5px solid #d0d7e2', fontWeight: 600, fontSize: isMobile ? 11 : 15, background: '#fff', minWidth: isMobile ? 90 : 150, flexShrink: 0 }}>
+          <select value={building} onChange={e => setBuilding(e.target.value)} style={{ padding: isMobile ? '5px 5px' : '8px 10px', borderRadius: isMobile ? 8 : 12, border: '1.5px solid #d0d7e2', fontWeight: 600, fontSize: isMobile ? 11 : 14, background: '#fff', minWidth: isMobile ? 90 : 120, flexShrink: 0 }}>
             {buildingOptions.map(opt => (
               <option key={opt} value={opt}>{opt === 'All Buildings' ? 'Bldg: All' : opt}</option>
             ))}
           </select>
-          <select value={acType} onChange={e => setAcType(e.target.value)} style={{ padding: isMobile ? '5px 5px' : '10px 14px', borderRadius: isMobile ? 8 : 12, border: '1.5px solid #d0d7e2', fontWeight: 600, fontSize: isMobile ? 11 : 15, background: '#fff', minWidth: isMobile ? 60 : 110, flexShrink: 0 }}>
+          <select value={acType} onChange={e => setAcType(e.target.value)} style={{ padding: isMobile ? '5px 5px' : '8px 10px', borderRadius: isMobile ? 8 : 12, border: '1.5px solid #d0d7e2', fontWeight: 600, fontSize: isMobile ? 11 : 14, background: '#fff', minWidth: isMobile ? 60 : 90, flexShrink: 0 }}>
             {['All', 'AC', 'Non-AC'].map(opt => (
               <option key={opt} value={opt}>{opt === 'All' ? 'AC: All' : opt}</option>
             ))}
           </select>
-          <select value={shareType} onChange={e => setShareType(e.target.value)} style={{ padding: isMobile ? '5px 5px' : '10px 14px', borderRadius: isMobile ? 8 : 12, border: '1.5px solid #d0d7e2', fontWeight: 600, fontSize: isMobile ? 11 : 15, background: '#fff', minWidth: isMobile ? 70 : 130, flexShrink: 0 }}>
+          <select value={shareType} onChange={e => setShareType(e.target.value)} style={{ padding: isMobile ? '5px 5px' : '8px 10px', borderRadius: isMobile ? 8 : 12, border: '1.5px solid #d0d7e2', fontWeight: 600, fontSize: isMobile ? 11 : 14, background: '#fff', minWidth: isMobile ? 70 : 100, flexShrink: 0 }}>
             {shareTypeOptions.map(opt => (
               <option key={opt} value={opt}>{opt === 'All' ? 'Share: All' : opt}</option>
             ))}
           </select>
-          <select value={status} onChange={e => setStatus(e.target.value)} style={{ padding: isMobile ? '5px 5px' : '10px 14px', borderRadius: isMobile ? 8 : 12, border: '1.5px solid #d0d7e2', fontWeight: 600, fontSize: isMobile ? 11 : 15, background: '#fff', minWidth: isMobile ? 70 : 120, flexShrink: 0 }}>
+          <select value={status} onChange={e => setStatus(e.target.value)} style={{ padding: isMobile ? '5px 5px' : '8px 10px', borderRadius: isMobile ? 8 : 12, border: '1.5px solid #d0d7e2', fontWeight: 600, fontSize: isMobile ? 11 : 14, background: '#fff', minWidth: isMobile ? 70 : 100, flexShrink: 0 }}>
             {STATUS_OPTIONS.map(opt => (
               <option key={opt} value={opt}>{opt === 'All' ? 'Status: All' : opt}</option>
             ))}
           </select>
           <button
             onClick={() => { setBuilding('All Buildings'); setAcType('All'); setShareType('All'); setStatus('All'); setSearch(''); }}
-            style={{ padding: isMobile ? '5px 8px' : '10px 20px', borderRadius: isMobile ? 8 : 12, border: 'none', background: '#e3eafc', color: '#1e293b', fontWeight: 700, marginLeft: isMobile ? 0 : 6, fontSize: isMobile ? 11 : 15, cursor: 'pointer', flexShrink: 0 }}
+            style={{ padding: isMobile ? '5px 8px' : '8px 14px', borderRadius: isMobile ? 8 : 12, border: 'none', background: '#e3eafc', color: '#1e293b', fontWeight: 700, marginLeft: isMobile ? 0 : 4, fontSize: isMobile ? 11 : 14, cursor: 'pointer', flexShrink: 0 }}
           >
             {isMobile ? '✕' : 'Clear Filters'}
           </button>
           {canExportRooms ? (
             <button
               onClick={exportRoomsCsv}
-              style={{ padding: isMobile ? '5px 8px' : '10px 20px', borderRadius: isMobile ? 8 : 12, border: 'none', background: '#16a34a', color: '#fff', fontWeight: 700, fontSize: isMobile ? 11 : 15, cursor: 'pointer', flexShrink: 0 }}
+              style={{ padding: isMobile ? '5px 8px' : '8px 14px', borderRadius: isMobile ? 8 : 12, border: 'none', background: '#16a34a', color: '#fff', fontWeight: 700, fontSize: isMobile ? 11 : 14, cursor: 'pointer', flexShrink: 0 }}
             >
               {isMobile ? 'CSV' : 'Export CSV'}
             </button>
