@@ -28,6 +28,7 @@ const PERSON_TYPE_COLORS = {
 const OCCUPANCY_TEMPLATE_HEADERS = [
   'Person Type',
   'Staff ID',
+  'WP/PP No',
   'Full Name',
   'Section',
   'Department',
@@ -331,8 +332,9 @@ function EditOccupantModal({ open, onClose, occupant, onSave, isMobile = false }
         <h2 style={{ fontWeight:800,fontSize:'1.3rem',marginBottom:32,color:'#1e293b',letterSpacing:'-0.3px' }}>Edit Occupant</h2>
         <div style={{ display:'grid',gridTemplateColumns:'1fr 1fr',gap:'18px 24px',marginBottom:32 }}>
           <label style={lbl2}>Person Type<select name="personType" value={form.personType} onChange={handle} style={inp2}><option value="Permanent">Permanent</option><option value="Temporary">Temporary</option><option value="Project">Project</option></select></label>
-          <label style={lbl2}>Staff ID<input name="staffId" value={form.staffId} onChange={handle} style={inp2} /></label>
+          <label style={lbl2}>Staff ID<input name="staffId" value={form.staffId || ''} onChange={handle} style={inp2} placeholder="Required if no WP/PP No" /></label>
           <label style={{...lbl2,gridColumn:'1/3'}}>Full Name<input name="name" value={form.name} onChange={handle} style={inp2} /></label>
+          <label style={lbl2}>WP / PP No<input name="wpPpNo" value={form.wpPpNo || ''} onChange={handle} style={inp2} placeholder="Required if no Staff ID" /></label>
           <label style={lbl2}>Section<input name="section" value={form.section} onChange={handle} style={inp2} /></label>
           <label style={lbl2}>Department
             <select name="departmentChoice" value={form.departmentChoice} onChange={handle} style={inp2}>
@@ -524,7 +526,7 @@ function Occupancy() {
       if (sectionFilter && String(o.section||'').trim()!==sectionFilter) return false;
       if (idNameSearch.trim()){
         const q=idNameSearch.trim().toLowerCase();
-        if (!o.name.toLowerCase().includes(q) && !String(o.staffId).toLowerCase().includes(q)) return false;
+        if (!o.name.toLowerCase().includes(q) && !String(o.staffId || '').toLowerCase().includes(q) && !String(o.wpPpNo || '').toLowerCase().includes(q)) return false;
       }
       if (roomSearch.trim()){
         const q=roomSearch.trim().toLowerCase();
@@ -573,6 +575,7 @@ function Occupancy() {
       _id: getNextUid(),
       personType: form.personType,
       staffId: form.staffId,
+      wpPpNo: form.wpPpNo || '',
       name: form.fullName,
       section: form.section,
       department: form.department,
@@ -619,7 +622,7 @@ function Occupancy() {
 
     const changedFields = [];
     if (original) {
-      ['name', 'personType', 'staffId', 'section', 'department', 'nationality', 'fasting'].forEach(field => {
+      ['name', 'personType', 'staffId', 'wpPpNo', 'section', 'department', 'nationality', 'fasting'].forEach(field => {
         if (String(original[field] ?? '') !== String(updated[field] ?? '')) changedFields.push(field);
       });
     }
@@ -685,6 +688,12 @@ function Occupancy() {
       __history: {
         type: 'Check Out',
         name: occupant.name,
+        staffId: occupant.staffId,
+        wpPpNo: occupant.wpPpNo,
+        personType: occupant.personType,
+        nationality: occupant.nationality,
+        fasting: occupant.fasting,
+        checkIn: occupant.checkIn,
         section: occupant.section,
         department: occupant.department,
         roomId: occupant.roomId,
@@ -857,6 +866,7 @@ function Occupancy() {
     const rows = filtered.map(o => ({
       'Person Type': o.personType || '',
       'Staff ID': o.staffId || '',
+      'WP/PP No': o.wpPpNo || '',
       'Full Name': o.name || '',
       Section: o.section || '',
       Department: o.department || '',
@@ -876,6 +886,7 @@ function Occupancy() {
     const sample = [{
       'Person Type': 'Permanent',
       'Staff ID': 'S10001',
+      'WP/PP No': '',
       'Full Name': 'JOHN DOE',
       Section: 'ACCOUNTS',
       Department: 'FINANCE',
@@ -908,11 +919,11 @@ function Occupancy() {
     try {
       const text = await file.text();
       const parsed = parseCsvText(text);
-      const normalizedExpected = OCCUPANCY_TEMPLATE_HEADERS.map(normalizeHeader);
-      const normalizedHeaders = parsed.headers.map(normalizeHeader);
-      const isExactTemplate = normalizedExpected.every((h, idx) => normalizedHeaders[idx] === h);
+      const normalizedActual = parsed.headers.map(normalizeHeader);
+      const requiredHeaders = OCCUPANCY_TEMPLATE_HEADERS.filter(h => h !== 'WP/PP No').map(normalizeHeader);
+      const isValidTemplate = requiredHeaders.every(h => normalizedActual.includes(h));
 
-      if (!isExactTemplate) {
+      if (!isValidTemplate) {
         setImportNotice({
           type: 'error',
           text: 'Import failed: CSV does not match the occupancy template format. Please use the Template file.',
@@ -927,9 +938,13 @@ function Occupancy() {
       let skippedCount = 0;
 
       for (const cols of rows) {
-        const get = header => cols[OCCUPANCY_TEMPLATE_HEADERS.indexOf(header)] ?? '';
+        const get = header => {
+          const idx = parsed.headers.findIndex(h => normalizeHeader(h) === normalizeHeader(header));
+          return idx >= 0 ? (cols[idx] ?? '') : '';
+        };
         const personTypeRaw = get('Person Type').trim();
         const staffId = get('Staff ID').trim();
+        const wpPpNo = get('WP/PP No').trim();
         const fullName = get('Full Name').trim();
         const section = get('Section').trim();
         const department = get('Department').trim();
@@ -953,6 +968,7 @@ function Occupancy() {
           _id: getNextUid(),
           personType,
           staffId,
+          wpPpNo,
           name: fullName,
           section,
           department,
@@ -1145,7 +1161,7 @@ function Occupancy() {
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 5 }}>
                   <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
                     <span style={{ fontSize: 9, fontWeight: 700, padding: '2px 6px', borderRadius: 999, background: tc.bg, color: tc.text, textTransform: 'uppercase', border: `1px solid ${tc.text}22` }}>{o.personType}</span>
-                    <span style={{ fontSize: 9, fontWeight: 700, padding: '2px 6px', borderRadius: 999, background: '#eef2ff', color: '#4f46e5', border: '1px solid #cfd8ff' }}>ID {o.staffId || '-'}</span>
+                    <span style={{ fontSize: 9, fontWeight: 700, padding: '2px 6px', borderRadius: 999, background: '#eef2ff', color: '#4f46e5', border: '1px solid #cfd8ff' }}>{o.staffId ? `ID ${o.staffId}` : o.wpPpNo ? `WP/PP ${o.wpPpNo}` : '-'}</span>
                   </div>
                   <div style={{ textAlign: 'right', flexShrink: 0, marginLeft: 6 }}>
                     <div style={{ fontSize: 11, fontWeight: 800, padding: '2px 6px', borderRadius: 5, background: '#e0e7ff', color: '#6366f1', display: 'inline-block' }}>{o.roomId}</div>
@@ -1210,7 +1226,7 @@ function Occupancy() {
                 <div style={{ display:'flex',flexDirection:'column',gap:5,minWidth:0,alignSelf:'flex-start',paddingTop:2 }}>
                   <div style={{ display:'flex',alignItems:'center',gap:6,minWidth:0,flexWrap:'wrap' }}>
                     <span style={{ fontSize:10.5,fontWeight:600,padding:'3px 10px',borderRadius:999,background:tc.bg,color:tc.text,letterSpacing:.2,display:'inline-block',whiteSpace:'nowrap',textTransform:'uppercase',border:`1px solid ${tc.text}22` }}>{o.personType}</span>
-                    <span style={{ fontSize:10.5,fontWeight:700,padding:'3px 10px',borderRadius:999,background:'#eef2ff',color:'#4f46e5',letterSpacing:.2,display:'inline-block',whiteSpace:'nowrap',border:'1px solid #cfd8ff' }}>ID {o.staffId || '-'}</span>
+                    <span style={{ fontSize:10.5,fontWeight:700,padding:'3px 10px',borderRadius:999,background:'#eef2ff',color:'#4f46e5',letterSpacing:.2,display:'inline-block',whiteSpace:'nowrap',border:'1px solid #cfd8ff' }}>{o.staffId ? `ID ${o.staffId}` : o.wpPpNo ? `WP/PP ${o.wpPpNo}` : '-'}</span>
                   </div>
                   <span style={{ fontWeight:700,fontSize:13.5,color:'#1e293b',lineHeight:1.5,overflowWrap:'break-word',wordBreak:'break-word' }}>{o.name}</span>
                 </div>

@@ -42,7 +42,7 @@ function AddOccupantModal({ open, onClose, rooms, onAdd }) {
   const isTablet = vw >= 768 && vw < 1024;
 
   const [form, setForm] = useState({
-    personType: '', staffId: '', fullName: '', section: '',
+    personType: '', staffId: '', wpPpNo: '', fullName: '', section: '',
     department: '', otherDepartment: '', nationality: '',
     roomId: '', bedId: '', fasting: '', checkin: '',
   });
@@ -60,7 +60,10 @@ function AddOccupantModal({ open, onClose, rooms, onAdd }) {
   const validate = () => {
     const e = {};
     if (!form.personType)  e.personType  = 'Required';
-    if (!form.staffId)     e.staffId     = 'Required';
+    if (!form.staffId && !form.wpPpNo) {
+      e.staffId = 'Enter Staff ID or WP/PP No';
+      e.wpPpNo  = 'Enter Staff ID or WP/PP No';
+    }
     if (!form.fullName)    e.fullName    = 'Required';
     if (!form.department)  e.department  = 'Required';
     if (form.department === 'OTHER' && !String(form.otherDepartment || '').trim()) e.otherDepartment = 'Required';
@@ -78,7 +81,7 @@ function AddOccupantModal({ open, onClose, rooms, onAdd }) {
     if (!validate()) return;
     onAdd({ ...form, department: toDepartmentValue(form.department, form.otherDepartment) });
     onClose();
-    setForm({ personType: '', staffId: '', fullName: '', section: '', department: '', otherDepartment: '', nationality: '', roomId: '', bedId: '', fasting: '', checkin: '' });
+    setForm({ personType: '', staffId: '', wpPpNo: '', fullName: '', section: '', department: '', otherDepartment: '', nationality: '', roomId: '', bedId: '', fasting: '', checkin: '' });
     setErrors({});
   };
 
@@ -190,9 +193,14 @@ function AddOccupantModal({ open, onClose, rooms, onAdd }) {
                 {errors.personType && <span style={errStyle}>{errors.personType}</span>}
               </label>
 
-              <label style={lbl}>Staff ID*
-                <input name="staffId" value={form.staffId} onChange={handleChange} style={inp} />
+              <label style={lbl}>Staff ID
+                <input name="staffId" value={form.staffId} onChange={handleChange} style={{ ...inp, borderColor: errors.staffId ? '#f87171' : '#e2e8f0' }} placeholder="Required if no WP/PP No" />
                 {errors.staffId && <span style={errStyle}>{errors.staffId}</span>}
+              </label>
+
+              <label style={lbl}>WP / PP No
+                <input name="wpPpNo" value={form.wpPpNo} onChange={handleChange} style={{ ...inp, borderColor: errors.wpPpNo ? '#f87171' : '#e2e8f0' }} placeholder="Required if no Staff ID" />
+                {errors.wpPpNo && !errors.staffId && <span style={errStyle}>{errors.wpPpNo}</span>}
               </label>
 
               <label style={{ ...lbl, gridColumn: '1 / -1' }}>Full Name*

@@ -1,11 +1,10 @@
 import React, { useMemo, useState } from 'react';
 import { useOutletContext } from 'react-router-dom';
-import { formatDisplayDateTime } from '../utils/date';
+import { formatDisplayDateTime, formatDisplayDate } from '../utils/date';
 import { deleteStayHistoryEntry } from '../services/stayHistoryService';
 
 const FILTERS = ['All', 'Check Out', 'Check In', 'Swap', 'Move', 'Edits'];
 
-/** Abbreviate a department name to its initials, e.g. "THILAFUSHI INDUSTRIAL COMPLEX" → "TIC" */
 function shortCode(value) {
   if (!value) return '';
   const cleaned = String(value).toUpperCase().replace(/[^A-Z0-9\s]/g, ' ').replace(/\s+/g, ' ').trim();
@@ -16,15 +15,70 @@ function shortCode(value) {
 }
 
 const ACTION_STYLES = {
-  'Check In': { bg: '#dcfce7', text: '#15803d' },
+  'Check In':  { bg: '#dcfce7', text: '#15803d' },
   'Check Out': { bg: '#fee2e2', text: '#dc2626' },
-  Swap: { bg: '#ede9fe', text: '#7c3aed' },
-  Move: { bg: '#dbeafe', text: '#6366f1' },
-  Edit: { bg: '#fef3c7', text: '#b45309' },
+  Swap:        { bg: '#ede9fe', text: '#7c3aed' },
+  Move:        { bg: '#dbeafe', text: '#6366f1' },
+  Edit:        { bg: '#fef3c7', text: '#b45309' },
 };
 
-function formatTime(value) {
-  return formatDisplayDateTime(value);
+function formatTime(value) { return formatDisplayDateTime(value); }
+
+function fmtDate(value) {
+  if (!value) return '';
+  try { return formatDisplayDate(value); } catch { return String(value).slice(0, 10); }
+}
+
+/* ── Detail popup ─────────────────────────────────────────────────────── */
+function HistoryDetailModal({ item, onClose, isMobile }) {
+  if (!item) return null;
+  const tone = ACTION_STYLES[item.type] || ACTION_STYLES.Edit;
+  const idLabel = item.staffId ? `ID ${item.staffId}` : item.wpPpNo ? `WP/PP ${item.wpPpNo}` : null;
+
+  const row = (label, value) => value ? (
+    <div style={{ display: 'flex', gap: 8, alignItems: 'baseline', padding: '5px 0', borderBottom: '1px solid #f1f5f9' }}>
+      <span style={{ fontSize: 11, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 0.4, minWidth: 88, flexShrink: 0 }}>{label}</span>
+      <span style={{ fontSize: 13, fontWeight: 600, color: '#1e293b' }}>{value}</span>
+    </div>
+  ) : null;
+
+  return (
+    <div
+      onClick={onClose}
+      style={{ position: 'fixed', inset: 0, zIndex: 4000, background: 'rgba(15,23,42,0.55)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: isMobile ? '16px 12px' : '24px', animation: 'fadeIn 0.18s ease both' }}
+    >
+      <div
+        onClick={e => e.stopPropagation()}
+        style={{ background: '#fff', borderRadius: 18, padding: '20px', maxWidth: 380, width: '100%', boxShadow: '0 20px 60px rgba(15,23,42,0.25)', animation: 'scaleIn 0.2s cubic-bezier(0.22,1,0.36,1) both' }}
+      >
+        {/* Header */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 14 }}>
+          <div>
+            <span style={{ display: 'inline-flex', alignItems: 'center', padding: '4px 10px', borderRadius: 999, background: tone.bg, color: tone.text, fontWeight: 800, fontSize: 12, marginBottom: 8 }}>
+              {item.type}
+            </span>
+            <div style={{ fontWeight: 800, fontSize: 15, color: '#1e293b', lineHeight: 1.3 }}>{item.name || '-'}</div>
+            {idLabel && <div style={{ fontSize: 11, fontWeight: 700, color: '#6366f1', marginTop: 2 }}>{idLabel}</div>}
+          </div>
+          <button onClick={onClose} style={{ width: 28, height: 28, borderRadius: '50%', border: '1px solid #e2e8f0', background: '#f8fafc', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#64748b', fontSize: 13, fontWeight: 700, flexShrink: 0, marginLeft: 8 }}>✕</button>
+        </div>
+
+        {/* Details */}
+        <div style={{ display: 'flex', flexDirection: 'column' }}>
+          {row('Person Type', item.personType)}
+          {row('Section', item.section)}
+          {row('Department', item.department)}
+          {row('Nationality', item.nationality)}
+          {item.fasting !== undefined && item.fasting !== null && item.fasting !== '' && row('Fasting', item.fasting === true || item.fasting === 'true' || item.fasting === 'Yes' ? 'Yes' : 'No')}
+          {row('Room', item.roomId ? `${item.roomId}${item.bedNo ? ` / Bed ${item.bedNo}` : ''}` : null)}
+          {row('Check-in', fmtDate(item.checkIn))}
+          {item.type === 'Check Out' && row('Check-out', formatTime(item.timestamp))}
+          {item.type !== 'Check Out' && row('Time', formatTime(item.timestamp))}
+          {item.details && row('Details', item.details)}
+        </div>
+      </div>
+    </div>
+  );
 }
 
 function StayHistory() {
@@ -32,25 +86,23 @@ function StayHistory() {
   const [activeFilter, setActiveFilter] = useState('All');
   const [search, setSearch] = useState('');
   const [deletingId, setDeletingId] = useState(null);
+  const [detailItem, setDetailItem] = useState(null);
 
-  // Build a lookup of occupant section/department by name (for existing records
-  // that pre-date section/department being stored in history).
   const occupantInfoByName = useMemo(() => {
     const map = new Map();
     for (const o of occupants) {
       const key = String(o.name || '').trim().toLowerCase();
       if (key && !map.has(key)) {
-        map.set(key, { section: o.section || '', department: o.department || '' });
+        map.set(key, { section: o.section || '', department: o.department || '', staffId: o.staffId || '', wpPpNo: o.wpPpNo || '' });
       }
     }
     return map;
   }, [occupants]);
 
-  // Enrich history items: fill section/department from live occupant list
-  // when the stored record doesn't already carry them.
   const enrichedHistory = useMemo(() => {
     return stayHistory.map(item => {
-      if (item.section || item.department) return item;
+      const needsEnrich = !item.section && !item.department;
+      if (!needsEnrich) return item;
       const info = occupantInfoByName.get(String(item.name || '').trim().toLowerCase());
       if (!info) return item;
       return { ...item, section: info.section, department: info.department };
@@ -83,27 +135,36 @@ function StayHistory() {
         String(item.name || '').toLowerCase().includes(q) ||
         String(item.roomId || '').toLowerCase().includes(q) ||
         String(item.details || '').toLowerCase().includes(q) ||
-        String(item.type || '').toLowerCase().includes(q);
+        String(item.type || '').toLowerCase().includes(q) ||
+        String(item.staffId || '').toLowerCase().includes(q) ||
+        String(item.wpPpNo || '').toLowerCase().includes(q) ||
+        String(item.section || '').toLowerCase().includes(q) ||
+        String(item.department || '').toLowerCase().includes(q);
 
       return matchesFilter && matchesSearch;
     });
   }, [enrichedHistory, activeFilter, search]);
 
+  const cols = isAdmin ? '120px 1fr 100px 1.6fr 120px 36px' : '120px 1fr 100px 1.6fr 120px';
+
   return (
     <div style={{ width: '100%', maxWidth: '100%', margin: 0, padding: isMobile ? '10px 12px 16px' : '12px 24px 24px', background: 'none', fontFamily: 'Inter, Segoe UI, Arial, sans-serif', boxSizing: 'border-box', minHeight: isMobile ? 'calc(100vh - 96px)' : 'calc(100vh - 62px)' }}>
+
+      {/* ── Top bar: count + search ── */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: isMobile ? 8 : 16, marginBottom: isMobile ? 8 : 14, flexWrap: isMobile ? 'nowrap' : 'wrap' }}>
         <p style={{ margin: 0, color: '#94a3b8', fontSize: isMobile ? 10 : 13, fontWeight: 600, flexShrink: 0 }}>
           {filtered.length} of {stayHistory.length} {isMobile ? 'activities' : 'recorded accommodation activities'}
         </p>
         <input
           type="text"
-          placeholder={isMobile ? 'Search...' : 'Search name, room, action...'}
+          placeholder={isMobile ? 'Search...' : 'Search name, ID, room, action...'}
           value={search}
           onChange={e => setSearch(e.target.value)}
           style={{ padding: isMobile ? '6px 10px' : '9px 14px', borderRadius: 10, border: '1.5px solid #d0d7e2', minWidth: isMobile ? 0 : 260, width: isMobile ? '100%' : 'auto', fontSize: isMobile ? 12 : 14, background: '#fff' }}
         />
       </div>
 
+      {/* ── Filter pills ── */}
       <div style={{ display: 'flex', flexWrap: isMobile ? 'nowrap' : 'wrap', gap: isMobile ? 4 : 10, marginBottom: isMobile ? 10 : 18, overflowX: isMobile ? 'auto' : 'visible', scrollbarWidth: 'none' }}>
         {FILTERS.map(filter => {
           const isActive = activeFilter === filter;
@@ -111,18 +172,7 @@ function StayHistory() {
             <button
               key={filter}
               onClick={() => setActiveFilter(filter)}
-              style={{
-                padding: isMobile ? '4px 9px' : '9px 16px',
-                borderRadius: 999,
-                border: isActive ? '1px solid #2563eb' : '1px solid #d7e1ef',
-                background: isActive ? '#dbeafe' : '#fff',
-                color: isActive ? '#4338ca' : '#475569',
-                fontWeight: 700,
-                fontSize: isMobile ? 10 : 13,
-                cursor: 'pointer',
-                flexShrink: 0,
-                whiteSpace: 'nowrap',
-              }}
+              style={{ padding: isMobile ? '4px 9px' : '9px 16px', borderRadius: 999, border: isActive ? '1px solid #2563eb' : '1px solid #d7e1ef', background: isActive ? '#dbeafe' : '#fff', color: isActive ? '#4338ca' : '#475569', fontWeight: 700, fontSize: isMobile ? 10 : 13, cursor: 'pointer', flexShrink: 0, whiteSpace: 'nowrap' }}
             >
               {filter}
             </button>
@@ -140,46 +190,39 @@ function StayHistory() {
           ) : (
             filtered.map((item, index) => {
               const tone = ACTION_STYLES[item.type] || ACTION_STYLES.Edit;
+              const idLabel = item.staffId ? `ID ${item.staffId}` : item.wpPpNo ? `WP/PP ${item.wpPpNo}` : null;
               return (
                 <div
                   key={item.id || index}
-                  style={{
-                    background: '#fff',
-                    borderRadius: 14,
-                    padding: '12px 14px',
-                    boxShadow: '0 2px 8px rgba(30,49,95,0.06)',
-                    border: '1px solid #e8eef6',
-                    animation: 'fadeUp 0.3s ease both',
-                    animationDelay: `${Math.min(index, 10) * 25}ms`,
-                  }}
+                  onClick={() => setDetailItem(item)}
+                  style={{ background: '#fff', borderRadius: 14, padding: '11px 13px', boxShadow: '0 2px 8px rgba(30,49,95,0.06)', border: '1px solid #e8eef6', animation: 'fadeUp 0.3s ease both', animationDelay: `${Math.min(index, 10) * 25}ms`, cursor: 'pointer', WebkitTapHighlightColor: 'transparent' }}
                 >
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
-                    <span style={{ display: 'inline-flex', alignItems: 'center', padding: '4px 10px', borderRadius: 999, background: tone.bg, color: tone.text, fontWeight: 800, fontSize: 11 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
+                    <span style={{ display: 'inline-flex', alignItems: 'center', padding: '3px 9px', borderRadius: 999, background: tone.bg, color: tone.text, fontWeight: 800, fontSize: 11 }}>
                       {item.type === 'Edit' ? 'Edit' : item.type}
                     </span>
-                    <span style={{ fontSize: 11, color: '#94a3b8', fontWeight: 600 }}>{formatTime(item.timestamp)}</span>
+                    <span style={{ fontSize: 10, color: '#94a3b8', fontWeight: 600 }}>{formatTime(item.timestamp)}</span>
                   </div>
-                  <div style={{ fontWeight: 700, color: '#1e293b', fontSize: 14, marginBottom: 2 }}>{item.name || '-'}</div>
-                  {(item.section || item.department) ? (
-                    <div style={{ fontSize: 11, color: '#94a3b8', fontWeight: 600, marginBottom: 6 }}>
-                      {[item.section, shortCode(item.department)].filter(Boolean).join(' | ')}
-                    </div>
-                  ) : <div style={{ marginBottom: 6 }} />}
+                  <div style={{ fontWeight: 700, color: '#1e293b', fontSize: 13, marginBottom: 1 }}>{item.name || '-'}</div>
+                  <div style={{ fontSize: 10, color: '#94a3b8', fontWeight: 600, marginBottom: 5, display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                    {idLabel && <span style={{ color: '#6366f1' }}>{idLabel}</span>}
+                    {(item.section || item.department) && (
+                      <span>{[item.section, shortCode(item.department)].filter(Boolean).join(' | ')}</span>
+                    )}
+                  </div>
                   <div style={{ display: 'flex', alignItems: 'baseline', gap: 6, flexWrap: 'wrap' }}>
-                    <span style={{ color: '#6366f1', fontWeight: 800, fontSize: 12 }}>{item.roomId || '-'}</span>
-                    {item.bedNo ? <span style={{ color: '#94a3b8', fontSize: 11, fontWeight: 600 }}>Bed {item.bedNo}</span> : null}
-                    {item.details ? <span style={{ color: '#475569', fontSize: 12, fontWeight: 500 }}>— {item.details}</span> : null}
+                    <span style={{ color: '#6366f1', fontWeight: 800, fontSize: 11 }}>{item.roomId || '-'}</span>
+                    {item.bedNo ? <span style={{ color: '#94a3b8', fontSize: 10, fontWeight: 600 }}>Bed {item.bedNo}</span> : null}
+                    {item.details ? <span style={{ color: '#475569', fontSize: 11, fontWeight: 500 }}>— {item.details}</span> : null}
                   </div>
                   {isAdmin && (
-                    <div style={{ marginTop: 8, display: 'flex', justifyContent: 'flex-end' }}>
+                    <div style={{ marginTop: 7, display: 'flex', justifyContent: 'flex-end' }}>
                       <button
-                        onClick={() => handleDeleteEntry(item.id)}
+                        onClick={e => { e.stopPropagation(); handleDeleteEntry(item.id); }}
                         disabled={deletingId === item.id}
                         title="Delete this entry"
-                        style={{ background: '#fff1f2', border: '1px solid #fca5a5', cursor: 'pointer', color: '#dc2626', opacity: deletingId === item.id ? 0.4 : 1, fontSize: 12, fontWeight: 700, padding: '4px 10px', borderRadius: 7, lineHeight: 1 }}
-                      >
-                        Delete
-                      </button>
+                        style={{ background: '#fff1f2', border: '1px solid #fca5a5', cursor: 'pointer', color: '#dc2626', opacity: deletingId === item.id ? 0.4 : 1, fontSize: 11, fontWeight: 700, padding: '3px 9px', borderRadius: 7, lineHeight: 1 }}
+                      >Delete</button>
                     </div>
                   )}
                 </div>
@@ -190,7 +233,7 @@ function StayHistory() {
       ) : (
         /* ── Desktop table view ── */
         <div style={{ background: '#fff', borderRadius: 18, boxShadow: '0 8px 26px rgba(30,49,95,.08)', border: '1px solid #dfe6f1', overflow: 'hidden' }}>
-          <div style={{ display: 'grid', gridTemplateColumns: isAdmin ? '1.2fr 0.9fr 1fr 1.8fr 1fr auto' : '1.2fr 0.9fr 1fr 1.8fr 1fr', padding: '0 20px', height: 46, alignItems: 'center', background: 'linear-gradient(180deg, #f8fbff 0%, #f3f7fd 100%)', borderBottom: '1px solid #dfe6f1', gap: 12 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: cols, padding: '0 20px', height: 44, alignItems: 'center', background: 'linear-gradient(180deg, #f8fbff 0%, #f3f7fd 100%)', borderBottom: '1px solid #dfe6f1', gap: 12 }}>
             {[...['Action', 'Person', 'Room', 'Details', 'Time'], ...(isAdmin ? [''] : [])].map(label => (
               <span key={label} style={{ fontSize: 10.5, fontWeight: 700, color: '#7f93b3', textTransform: 'uppercase', letterSpacing: 0.6 }}>
                 {label}
@@ -206,48 +249,43 @@ function StayHistory() {
             filtered.map((item, index) => {
               const tone = ACTION_STYLES[item.type] || ACTION_STYLES.Edit;
               const rowBg = index % 2 === 0 ? '#ffffff' : '#f8fbff';
+              const idLabel = item.staffId ? `ID ${item.staffId}` : item.wpPpNo ? `WP/PP ${item.wpPpNo}` : null;
               return (
                 <div
                   key={item.id || index}
-                  style={{
-                    display: 'grid',
-                    gridTemplateColumns: isAdmin ? '1.2fr 0.9fr 1fr 1.8fr 1fr auto' : '1.2fr 0.9fr 1fr 1.8fr 1fr',
-                    gap: 12,
-                    alignItems: 'center',
-                    padding: '14px 20px',
-                    borderBottom: '1px solid #e8eef6',
-                    background: rowBg,
-                  }}
+                  onClick={() => setDetailItem(item)}
+                  style={{ display: 'grid', gridTemplateColumns: cols, gap: 12, alignItems: 'center', padding: '12px 20px', borderBottom: '1px solid #e8eef6', background: rowBg, cursor: 'pointer', transition: 'background 0.12s' }}
+                  onMouseEnter={e => { e.currentTarget.style.background = '#eef2ff'; }}
+                  onMouseLeave={e => { e.currentTarget.style.background = rowBg; }}
                 >
                   <div>
-                    <span style={{ display: 'inline-flex', alignItems: 'center', padding: '5px 10px', borderRadius: 999, background: tone.bg, color: tone.text, fontWeight: 800, fontSize: 12 }}>
+                    <span style={{ display: 'inline-flex', alignItems: 'center', padding: '4px 9px', borderRadius: 999, background: tone.bg, color: tone.text, fontWeight: 800, fontSize: 11, whiteSpace: 'nowrap' }}>
                       {item.type === 'Edit' ? 'Edit' : item.type}
                     </span>
                   </div>
-                  <div style={{ fontWeight: 700, color: '#1e293b', fontSize: 13.5 }}>
-                    {item.name || '-'}
-                    {(item.section || item.department) ? (
-                      <div style={{ fontSize: 11, color: '#94a3b8', fontWeight: 600, marginTop: 2 }}>
-                        {[item.section, shortCode(item.department)].filter(Boolean).join(' | ')}
-                      </div>
-                    ) : null}
+                  <div style={{ minWidth: 0 }}>
+                    <div style={{ fontWeight: 700, color: '#1e293b', fontSize: 13, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{item.name || '-'}</div>
+                    <div style={{ fontSize: 11, color: '#94a3b8', fontWeight: 600, marginTop: 1, display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                      {idLabel && <span style={{ color: '#6366f1' }}>{idLabel}</span>}
+                      {(item.section || item.department) && (
+                        <span>{[item.section, shortCode(item.department)].filter(Boolean).join(' | ')}</span>
+                      )}
+                    </div>
                   </div>
-                  <div style={{ color: '#6366f1', fontWeight: 800, fontSize: 13 }}>
+                  <div style={{ color: '#6366f1', fontWeight: 800, fontSize: 12 }}>
                     {item.roomId || '-'}
-                    {item.bedNo ? <div style={{ color: '#94a3b8', fontWeight: 600, fontSize: 11, marginTop: 2 }}>Bed {item.bedNo}</div> : null}
+                    {item.bedNo ? <div style={{ color: '#94a3b8', fontWeight: 600, fontSize: 10, marginTop: 1 }}>Bed {item.bedNo}</div> : null}
                   </div>
-                  <div style={{ color: '#475569', fontWeight: 600, fontSize: 13, lineHeight: 1.4 }}>{item.details || '-'}</div>
-                  <div style={{ color: '#64748b', fontSize: 12.5, fontWeight: 600 }}>{formatTime(item.timestamp)}</div>
+                  <div style={{ color: '#475569', fontWeight: 600, fontSize: 12, lineHeight: 1.4, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.details || '-'}</div>
+                  <div style={{ color: '#64748b', fontSize: 11.5, fontWeight: 600 }}>{formatTime(item.timestamp)}</div>
                   {isAdmin && (
                     <div>
                       <button
-                        onClick={() => handleDeleteEntry(item.id)}
+                        onClick={e => { e.stopPropagation(); handleDeleteEntry(item.id); }}
                         disabled={deletingId === item.id}
                         title="Delete this entry"
-                        style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#dc2626', opacity: deletingId === item.id ? 0.4 : 0.6, fontSize: 16, padding: '2px 4px', lineHeight: 1 }}
-                      >
-                        ✕
-                      </button>
+                        style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#dc2626', opacity: deletingId === item.id ? 0.4 : 0.6, fontSize: 15, padding: '2px 4px', lineHeight: 1 }}
+                      >✕</button>
                     </div>
                   )}
                 </div>
@@ -256,6 +294,8 @@ function StayHistory() {
           )}
         </div>
       )}
+
+      <HistoryDetailModal item={detailItem} onClose={() => setDetailItem(null)} isMobile={isMobile} />
     </div>
   );
 }

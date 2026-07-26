@@ -760,30 +760,30 @@ function MealExclusion() {
 
       {/* --- Stat cards + buttons --- */}
       <div style={{ display: 'grid', gridTemplateColumns: isMobile ? 'repeat(3, 1fr)' : 'repeat(auto-fit, minmax(160px, 1fr))', gap: isMobile ? 6 : 12, marginBottom: isMobile ? 10 : 20, alignItems: 'stretch' }}>
-        <div style={{ background: 'linear-gradient(135deg,#ffe9d6 0%,#ffe2bf 100%)', borderRadius: isMobile ? 10 : 14, border: '1px solid rgba(154,52,18,0.12)', padding: isMobile ? '9px 10px' : '14px 20px', boxShadow: '0 8px 18px rgba(154,52,18,0.11)', animation: 'fadeUp 0.38s cubic-bezier(0.22,1,0.36,1) both', animationDelay: '0ms' }}>
-          <div style={{ fontSize: isMobile ? 9 : 11, color: '#9a3412', fontWeight: 800, textTransform: 'uppercase' }}>{isMobile ? 'Active' : 'Active Exclusions'}</div>
-          <div style={{ fontSize: isMobile ? 20 : 28, fontWeight: 900, color: '#7c2d12', marginTop: isMobile ? 2 : 4 }}>{activeCount}</div>
+        <div style={{ background: 'linear-gradient(135deg,#ffe9d6 0%,#ffe2bf 100%)', borderRadius: isMobile ? 10 : 12, border: '1px solid rgba(154,52,18,0.12)', padding: isMobile ? '9px 10px' : '10px 14px', boxShadow: '0 4px 12px rgba(154,52,18,0.10)', animation: 'fadeUp 0.38s cubic-bezier(0.22,1,0.36,1) both', animationDelay: '0ms' }}>
+          <div style={{ fontSize: isMobile ? 9 : 10, color: '#9a3412', fontWeight: 800, textTransform: 'uppercase' }}>{isMobile ? 'Active' : 'Active Exclusions'}</div>
+          <div style={{ fontSize: isMobile ? 20 : 22, fontWeight: 900, color: '#7c2d12', marginTop: isMobile ? 2 : 3 }}>{activeCount}</div>
         </div>
-        <div style={{ background: 'linear-gradient(135deg,#e0ecff 0%,#d9f3ff 100%)', borderRadius: isMobile ? 10 : 14, border: '1px solid rgba(30,58,138,0.1)', padding: isMobile ? '9px 10px' : '14px 20px', boxShadow: '0 8px 18px rgba(30,58,138,0.1)', animation: 'fadeUp 0.38s cubic-bezier(0.22,1,0.36,1) both', animationDelay: '65ms' }}>
-          <div style={{ fontSize: isMobile ? 9 : 11, color: '#1e3a8a', fontWeight: 800, textTransform: 'uppercase' }}>Upcoming</div>
-          <div style={{ fontSize: isMobile ? 20 : 28, fontWeight: 900, color: '#1e293b', marginTop: isMobile ? 2 : 4 }}>{upcomingCount}</div>
+        <div style={{ background: 'linear-gradient(135deg,#e0ecff 0%,#d9f3ff 100%)', borderRadius: isMobile ? 10 : 12, border: '1px solid rgba(30,58,138,0.1)', padding: isMobile ? '9px 10px' : '10px 14px', boxShadow: '0 4px 12px rgba(30,58,138,0.09)', animation: 'fadeUp 0.38s cubic-bezier(0.22,1,0.36,1) both', animationDelay: '65ms' }}>
+          <div style={{ fontSize: isMobile ? 9 : 10, color: '#1e3a8a', fontWeight: 800, textTransform: 'uppercase' }}>Upcoming</div>
+          <div style={{ fontSize: isMobile ? 20 : 22, fontWeight: 900, color: '#1e293b', marginTop: isMobile ? 2 : 3 }}>{upcomingCount}</div>
         </div>
-        <div style={{ background: 'linear-gradient(135deg,#f3e8ff 0%,#ede9fe 100%)', borderRadius: isMobile ? 10 : 14, border: '1px solid rgba(107,33,168,0.1)', padding: isMobile ? '9px 10px' : '14px 20px', boxShadow: '0 8px 18px rgba(107,33,168,0.1)', animation: 'fadeUp 0.38s cubic-bezier(0.22,1,0.36,1) both', animationDelay: '130ms' }}>
-          <div style={{ fontSize: isMobile ? 9 : 11, color: '#6b21a8', fontWeight: 800, textTransform: 'uppercase' }}>{isMobile ? 'Headcount' : 'Meal Headcount'}</div>
-          <div style={{ fontSize: isMobile ? 20 : 28, fontWeight: 900, color: '#581c87', marginTop: isMobile ? 2 : 4 }}>{mealHeadcount}</div>
+        <div style={{ background: 'linear-gradient(135deg,#f3e8ff 0%,#ede9fe 100%)', borderRadius: isMobile ? 10 : 12, border: '1px solid rgba(107,33,168,0.1)', padding: isMobile ? '9px 10px' : '10px 14px', boxShadow: '0 4px 12px rgba(107,33,168,0.09)', animation: 'fadeUp 0.38s cubic-bezier(0.22,1,0.36,1) both', animationDelay: '130ms' }}>
+          <div style={{ fontSize: isMobile ? 9 : 10, color: '#6b21a8', fontWeight: 800, textTransform: 'uppercase' }}>{isMobile ? 'Headcount' : 'Meal Headcount'}</div>
+          <div style={{ fontSize: isMobile ? 20 : 22, fontWeight: 900, color: '#581c87', marginTop: isMobile ? 2 : 3 }}>{mealHeadcount}</div>
         </div>
         {!isMobile && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', background: '#fff', border: '1px solid #dbe4f0', borderRadius: 14, padding: 8, boxShadow: '0 8px 20px rgba(15,23,42,0.06)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap', background: '#fff', border: '1px solid #dbe4f0', borderRadius: 12, padding: 7, boxShadow: '0 4px 12px rgba(15,23,42,0.06)' }}>
             {canEditMeals ? (
               <>
-                <button onClick={openAddModal} style={{ padding: '11px 16px', borderRadius: 10, border: 'none', background: '#6366f1', color: '#fff', fontWeight: 800, fontSize: 13, cursor: 'pointer', whiteSpace: 'nowrap', boxShadow: '0 2px 8px rgba(37,99,235,0.25)' }}>+ Add Exclusion</button>
-                <button onClick={() => setImportOpen(true)} style={{ padding: '11px 16px', borderRadius: 10, border: 'none', background: '#16a34a', color: '#fff', fontWeight: 800, fontSize: 13, cursor: 'pointer', whiteSpace: 'nowrap', boxShadow: '0 2px 8px rgba(22,163,74,0.25)' }}>Import CSV</button>
-                <button onClick={handleRemoveDuplicates} disabled={deduping} style={{ padding: '11px 16px', borderRadius: 10, border: '1px solid #fdba74', background: '#fff7ed', color: '#c2410c', fontWeight: 800, fontSize: 13, cursor: deduping ? 'not-allowed' : 'pointer', whiteSpace: 'nowrap' }}>
-                  {deduping ? 'Removing Duplicates...' : 'Remove Duplicates'}
+                <button onClick={openAddModal} style={{ padding: '8px 13px', borderRadius: 8, border: 'none', background: '#6366f1', color: '#fff', fontWeight: 800, fontSize: 12, cursor: 'pointer', whiteSpace: 'nowrap', boxShadow: '0 2px 6px rgba(37,99,235,0.22)' }}>+ Add Exclusion</button>
+                <button onClick={() => setImportOpen(true)} style={{ padding: '8px 13px', borderRadius: 8, border: 'none', background: '#16a34a', color: '#fff', fontWeight: 800, fontSize: 12, cursor: 'pointer', whiteSpace: 'nowrap', boxShadow: '0 2px 6px rgba(22,163,74,0.22)' }}>Import CSV</button>
+                <button onClick={handleRemoveDuplicates} disabled={deduping} style={{ padding: '8px 13px', borderRadius: 8, border: '1px solid #fdba74', background: '#fff7ed', color: '#c2410c', fontWeight: 800, fontSize: 12, cursor: deduping ? 'not-allowed' : 'pointer', whiteSpace: 'nowrap' }}>
+                  {deduping ? 'Removing...' : 'Remove Duplicates'}
                 </button>
               </>
             ) : null}
-            <button onClick={() => setHistoryOpen(true)} style={{ padding: '11px 16px', borderRadius: 10, border: '1px solid #93c5fd', background: '#eff6ff', color: '#4338ca', fontWeight: 800, fontSize: 13, cursor: 'pointer', whiteSpace: 'nowrap' }}>Exclusion History</button>
+            <button onClick={() => setHistoryOpen(true)} style={{ padding: '8px 13px', borderRadius: 8, border: '1px solid #93c5fd', background: '#eff6ff', color: '#4338ca', fontWeight: 800, fontSize: 12, cursor: 'pointer', whiteSpace: 'nowrap' }}>Exclusion History</button>
           </div>
         )}
       </div>
