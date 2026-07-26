@@ -324,13 +324,13 @@ function MealHistory() {
       ) : null}
 
       <div style={{ display: 'grid', gridTemplateColumns: isMobile ? 'repeat(3, 1fr)' : 'repeat(auto-fit, minmax(220px, 1fr))', gap: isMobile ? 6 : 12, marginBottom: isMobile ? 10 : 16 }}>
-        <div style={{ border: '1px solid #d8e2f2', borderRadius: isMobile ? 10 : 14, background: 'linear-gradient(135deg, #ffffff 0%, #eef6ff 100%)', padding: isMobile ? '9px 10px' : '14px 16px', boxShadow: '0 12px 30px rgba(30,49,95,0.06)', animation: 'fadeUp 0.38s cubic-bezier(0.22,1,0.36,1) both', animationDelay: '0ms' }}>
-          <div style={{ color: '#5b7090', fontSize: isMobile ? 9 : 11, fontWeight: 800, textTransform: 'uppercase' }}>{isMobile ? 'Total' : 'Total Meals (Filtered)'}</div>
-          <div style={{ marginTop: isMobile ? 2 : 6, fontWeight: 900, color: '#0f172a', fontSize: isMobile ? 20 : 32, animation: 'numberPop 0.5s cubic-bezier(0.22,1,0.36,1) both', animationDelay: '120ms' }}>{totalMeals}</div>
+        <div style={{ border: '1px solid var(--c-border-2)', borderRadius: isMobile ? 10 : 14, background: 'linear-gradient(135deg, var(--c-card) 0%, var(--c-card-alt) 100%)', padding: isMobile ? '9px 10px' : '14px 16px', boxShadow: '0 12px 30px rgba(30,49,95,0.06)', animation: 'fadeUp 0.38s cubic-bezier(0.22,1,0.36,1) both', animationDelay: '0ms' }}>
+          <div style={{ color: 'var(--c-subtle)', fontSize: isMobile ? 9 : 11, fontWeight: 800, textTransform: 'uppercase' }}>{isMobile ? 'Total' : 'Total Meals (Filtered)'}</div>
+          <div style={{ marginTop: isMobile ? 2 : 6, fontWeight: 900, color: 'var(--c-text)', fontSize: isMobile ? 20 : 32, animation: 'numberPop 0.5s cubic-bezier(0.22,1,0.36,1) both', animationDelay: '120ms' }}>{totalMeals}</div>
         </div>
-        <div style={{ border: '1px solid #d8e2f2', borderRadius: isMobile ? 10 : 14, background: 'linear-gradient(135deg, #ffffff 0%, #eef6ff 100%)', padding: isMobile ? '9px 10px' : '14px 16px', boxShadow: '0 12px 30px rgba(30,49,95,0.06)', animation: 'fadeUp 0.38s cubic-bezier(0.22,1,0.36,1) both', animationDelay: '65ms' }}>
-          <div style={{ color: '#5b7090', fontSize: isMobile ? 9 : 11, fontWeight: 800, textTransform: 'uppercase' }}>{isMobile ? 'Avg/Day' : 'Average Per Day'}</div>
-          <div style={{ marginTop: isMobile ? 2 : 6, fontWeight: 900, color: '#0f172a', fontSize: isMobile ? 20 : 32, animation: 'numberPop 0.5s cubic-bezier(0.22,1,0.36,1) both', animationDelay: '185ms' }}>{averageMeals.toFixed(1)}</div>
+        <div style={{ border: '1px solid var(--c-border-2)', borderRadius: isMobile ? 10 : 14, background: 'linear-gradient(135deg, var(--c-card) 0%, var(--c-card-alt) 100%)', padding: isMobile ? '9px 10px' : '14px 16px', boxShadow: '0 12px 30px rgba(30,49,95,0.06)', animation: 'fadeUp 0.38s cubic-bezier(0.22,1,0.36,1) both', animationDelay: '65ms' }}>
+          <div style={{ color: 'var(--c-subtle)', fontSize: isMobile ? 9 : 11, fontWeight: 800, textTransform: 'uppercase' }}>{isMobile ? 'Avg/Day' : 'Average Per Day'}</div>
+          <div style={{ marginTop: isMobile ? 2 : 6, fontWeight: 900, color: 'var(--c-text)', fontSize: isMobile ? 20 : 32, animation: 'numberPop 0.5s cubic-bezier(0.22,1,0.36,1) both', animationDelay: '185ms' }}>{averageMeals.toFixed(1)}</div>
         </div>
         <div style={{ border: '1px solid #bfdbfe', borderRadius: isMobile ? 10 : 14, background: 'linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%)', padding: isMobile ? '9px 10px' : '14px 16px', boxShadow: '0 12px 30px rgba(30,49,95,0.06)', animation: 'fadeUp 0.38s cubic-bezier(0.22,1,0.36,1) both', animationDelay: '130ms' }}>
           <div style={{ color: '#6366f1', fontSize: isMobile ? 9 : 11, fontWeight: 800, textTransform: 'uppercase' }}>{isMobile ? 'Today' : "Today's Headcount"}</div>

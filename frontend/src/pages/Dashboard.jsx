@@ -77,13 +77,13 @@ function DonutCard({ title, data, subtitle }) {
   return (
     <div style={{ background:'var(--c-card)', border:'1px solid #dce5f2', borderRadius:16, padding:'16px 16px', boxShadow:'0 4px 14px rgba(15,23,42,.05)' }}>
       <div style={{ display:'flex', justifyContent:'space-between', alignItems:'baseline', marginBottom:10 }}>
-        <h3 style={{ margin:0, fontSize:15, color:'#1f2a44', fontWeight:800 }}>{title}</h3>
+        <h3 style={{ margin:0, fontSize:15, color:'var(--c-text)', fontWeight:800 }}>{title}</h3>
         <span style={{ fontSize:11, color:'var(--c-subtle)' }}>{subtitle}</span>
       </div>
       <div style={{ display:'grid', gridTemplateColumns:'minmax(128px, 140px) minmax(0, 1fr)', gap:10, alignItems:'center' }}>
         <div style={{ display:'flex', alignItems:'center', justifyContent:'center' }}>
           <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
-            <circle cx={size / 2} cy={size / 2} r={radius} fill="none" stroke="#e8eef8" strokeWidth={stroke} />
+            <circle cx={size / 2} cy={size / 2} r={radius} fill="none" stroke="var(--c-border)" strokeWidth={stroke} />
             {segments.map((seg, idx) => (
               <circle
                 key={`${title}-${idx}`}
@@ -110,7 +110,7 @@ function DonutCard({ title, data, subtitle }) {
               <div key={`${title}-${row.label}-${idx}`} style={{ display:'grid', gridTemplateColumns:'12px minmax(0, 1fr) auto auto', alignItems:'center', gap:8, fontSize:12 }}>
                 <span style={{ width:10, height:10, borderRadius:99, background:CHART_COLORS[idx % CHART_COLORS.length], display:'inline-block' }} />
                 <span style={{ color:'var(--c-text-2)', fontWeight:600, whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis' }}>{row.label}</span>
-                <span style={{ color:'#1f2a44', fontWeight:800 }}>{row.value}</span>
+                <span style={{ color:'var(--c-text)', fontWeight:800 }}>{row.value}</span>
                 <span style={{ color:'var(--c-subtle)', fontWeight:600 }}>{pct}%</span>
               </div>
             );
@@ -219,7 +219,7 @@ function Dashboard() {
       <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit, minmax(280px, 1fr))', gap:14, marginBottom:14 }}>
         <div style={{ background:'var(--c-card)', border:'1px solid var(--c-border-2)', borderRadius:16, padding:'20px 22px', boxShadow:'0 6px 16px rgba(15,23,42,.05)', animation:'fadeUp 0.4s cubic-bezier(0.22,1,0.36,1) both', animationDelay:'260ms' }}>
           <div style={{ fontWeight:800, color:'var(--c-text)', marginBottom:10 }}>Occupancy Overview</div>
-          <div style={{ height:14, background:'#e7edf7', borderRadius:999, overflow:'hidden' }}>
+          <div style={{ height:14, background:'var(--c-border)', borderRadius:999, overflow:'hidden' }}>
             <div style={{ width:`${percent(metrics.occupied, metrics.totalBeds)}%`, height:'100%', borderRadius:999, background:'linear-gradient(90deg, #6366f1 0%, #0891b2 100%)' }} />
           </div>
           <div style={{ display:'flex', justifyContent:'space-between', marginTop:10, fontSize:13, color:'var(--c-subtle)' }}>
@@ -249,7 +249,7 @@ function Dashboard() {
         </div>
         <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit, minmax(260px, 1fr))', gap:14 }}>
           {metrics.byBuilding.map(b => (
-            <div key={b.code} style={{ border:'1px solid #d9e2f0', borderRadius:14, padding:'14px 14px', background:'linear-gradient(180deg, #ffffff 0%, #f6f9ff 100%)', boxShadow:'inset 0 1px 0 rgba(255,255,255,.8)' }}>
+            <div key={b.code} style={{ border:'1px solid var(--c-border-2)', borderRadius:14, padding:'14px 14px', background:'var(--c-card)', boxShadow:'0 2px 8px rgba(15,23,42,0.05)' }}>
               <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:10 }}>
                 <div>
                   <div style={{ fontWeight:800, color:'var(--c-text)', fontSize:16 }}>{b.label}</div>
@@ -272,7 +272,7 @@ function Dashboard() {
                 </div>
               </div>
 
-              <div style={{ height:11, background:'#e8eef7', borderRadius:999, overflow:'hidden', position:'relative' }}>
+              <div style={{ height:11, background:'var(--c-border)', borderRadius:999, overflow:'hidden', position:'relative' }}>
                 <div style={{ width:`${b.occupancyPct}%`, height:'100%', background:'linear-gradient(90deg, #a5b4fc 0%, #6366f1 45%, #4338ca 100%)' }} />
               </div>
             </div>
