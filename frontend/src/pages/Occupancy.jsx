@@ -189,10 +189,10 @@ function SwapModal({ open, onClose, occupant, allOccupants, onSwap, isMobile = f
 
   return (
     <div onClick={onClose} style={{ position:'fixed',top:isMobile?50:62,left:0,right:0,bottom:0,zIndex:3000,background:'rgba(20,30,60,.55)',display:'flex',alignItems:'center',justifyContent:'center',overflowY:'auto',animation:'fadeIn 0.18s ease both' }}>
-      <div onClick={e=>e.stopPropagation()} style={{ background:'#fff',borderRadius:18,padding:'28px 32px',maxWidth:560,width:'95%',boxShadow:'0 8px 40px rgba(30,50,120,.18)',position:'relative',display:'flex',flexDirection:'column',maxHeight:'88vh',animation:'scaleIn 0.22s cubic-bezier(0.22,1,0.36,1) both' }}>
+      <div onClick={e=>e.stopPropagation()} style={{ background:'var(--c-card)',borderRadius:18,padding:'28px 32px',maxWidth:560,width:'95%',boxShadow:'0 8px 40px rgba(30,50,120,.18)',position:'relative',display:'flex',flexDirection:'column',maxHeight:'88vh',animation:'scaleIn 0.22s cubic-bezier(0.22,1,0.36,1) both' }}>
         <button onClick={onClose} style={{ position:'absolute',top:14,right:18,fontSize:22,border:'none',background:'none',cursor:'pointer',color:'#64748b' }}>X</button>
-        <h2 style={{ fontWeight:800,fontSize:'1.1rem',marginBottom:4,color:'#1e293b' }}>Swap Occupant</h2>
-        <p style={{ fontSize:12,color:'#64748b',marginBottom:14 }}>
+        <h2 style={{ fontWeight:800,fontSize:'1.1rem',marginBottom:4,color:'var(--c-text)' }}>Swap Occupant</h2>
+        <p style={{ fontSize:12,color:'var(--c-subtle)',marginBottom:14 }}>
           Swapping <strong>{occupant.name}</strong> - {occupant.roomId} / Bed {occupant.bedNo}
         </p>
 
@@ -205,12 +205,12 @@ function SwapModal({ open, onClose, occupant, allOccupants, onSwap, isMobile = f
             placeholder="Search by name, ID, room, section..."
             value={search}
             onChange={e => { setSearch(e.target.value); setTargetId(null); }}
-            style={{ width:'100%',boxSizing:'border-box',paddingLeft:32,paddingRight:10,paddingTop:9,paddingBottom:9,borderRadius:10,border:'1.5px solid #d0d7e2',fontSize:13,background:'#f8fafc' }}
+            style={{ width:'100%',boxSizing:'border-box',paddingLeft:32,paddingRight:10,paddingTop:9,paddingBottom:9,borderRadius:10,border:'1.5px solid var(--c-border-3)',fontSize:13,background:'var(--c-surface)',color:'var(--c-text)' }}
           />
         </div>
 
         {/* Results list */}
-        <div style={{ flex:1,overflowY:'auto',border:'1.5px solid #e2e8f0',borderRadius:12,marginBottom:16,minHeight:0 }}>
+        <div style={{ flex:1,overflowY:'auto',border:'1.5px solid var(--c-border)',borderRadius:12,marginBottom:16,minHeight:0 }}>
           {filtered.length === 0 && (
             <div style={{ padding:'24px',textAlign:'center',color:'#94a3b8',fontSize:13 }}>No occupants match your search.</div>
           )}
@@ -224,18 +224,18 @@ function SwapModal({ open, onClose, occupant, allOccupants, onSwap, isMobile = f
                   display:'grid',gridTemplateColumns:'1fr auto',alignItems:'center',gap:10,
                   padding:'10px 14px',cursor:'pointer',
                   background: isSelected ? '#eff6ff' : 'transparent',
-                  borderBottom:'1px solid #f1f5f9',
+                  borderBottom:'1px solid var(--c-border)',
                   transition:'background .12s',
                 }}
                 onMouseEnter={e => { if (!isSelected) e.currentTarget.style.background='#f8fafc'; }}
                 onMouseLeave={e => { if (!isSelected) e.currentTarget.style.background='transparent'; }}
               >
                 <div>
-                  <div style={{ fontWeight:700,fontSize:13,color:'#1e293b' }}>{o.name}</div>
-                  <div style={{ fontSize:11,color:'#64748b',marginTop:2 }}>
+                  <div style={{ fontWeight:700,fontSize:13,color:'var(--c-text)' }}>{o.name}</div>
+                  <div style={{ fontSize:11,color:'var(--c-subtle)',marginTop:2 }}>
                     {o.roomId} / Bed {o.bedNo}
-                    {o.section ? <span style={{ marginLeft:8,color:'#94a3b8' }}>| {o.section}</span> : null}
-                    {o.staffId ? <span style={{ marginLeft:8,color:'#94a3b8' }}>| ID {o.staffId}</span> : null}
+                    {o.section ? <span style={{ marginLeft:8,color:'var(--c-muted)' }}>| {o.section}</span> : null}
+                    {o.staffId ? <span style={{ marginLeft:8,color:'var(--c-muted)' }}>| ID {o.staffId}</span> : null}
                   </div>
                 </div>
                 {isSelected && (
@@ -254,7 +254,7 @@ function SwapModal({ open, onClose, occupant, allOccupants, onSwap, isMobile = f
         )}
 
         <div style={{ display:'flex',justifyContent:'flex-end',gap:10 }}>
-          <button onClick={onClose} style={{ padding:'9px 26px',borderRadius:10,border:'none',background:'#e3eafc',color:'#1e293b',fontWeight:700,cursor:'pointer' }}>Cancel</button>
+          <button onClick={onClose} style={{ padding:'9px 26px',borderRadius:10,border:'none',background:'#e3eafc',color:'var(--c-text)',fontWeight:700,cursor:'pointer' }}>Cancel</button>
           <button
             disabled={targetId == null}
             onClick={() => { onSwap(occupant._id, targetId); onClose(); }}
@@ -279,20 +279,20 @@ function MoveModal({ open, onClose, occupant, allRooms, onMove, isMobile = false
   const ready = targetRoom && targetBed;
   return (
     <div onClick={onClose} style={{ position:'fixed',top:isMobile?50:62,left:0,right:0,bottom:0,zIndex:3000,background:'rgba(20,30,60,.55)',display:'flex',alignItems:'center',justifyContent:'center',overflowY:'auto',animation:'fadeIn 0.18s ease both' }}>
-      <div onClick={e=>e.stopPropagation()} style={{ background:'#fff',borderRadius:18,padding:'32px 40px',maxWidth:520,width:'95%',boxShadow:'0 8px 40px rgba(30,50,120,.18)',position:'relative',animation:'scaleIn 0.22s cubic-bezier(0.22,1,0.36,1) both' }}>
+      <div onClick={e=>e.stopPropagation()} style={{ background:'var(--c-card)',borderRadius:18,padding:'32px 40px',maxWidth:520,width:'95%',boxShadow:'0 8px 40px rgba(30,50,120,.18)',position:'relative',animation:'scaleIn 0.22s cubic-bezier(0.22,1,0.36,1) both' }}>
         <button onClick={onClose} style={{ position:'absolute',top:16,right:20,fontSize:22,border:'none',background:'none',cursor:'pointer',color:'#64748b' }}>X</button>
-        <h2 style={{ fontWeight:800,fontSize:'1.15rem',marginBottom:8,color:'#1e293b' }}>Move Occupant</h2>
-        <p style={{ fontSize:13,color:'#64748b',marginBottom:20 }}>Moving <strong>{occupant.name}</strong> from {occupant.roomId} / Bed {occupant.bedNo}</p>
+        <h2 style={{ fontWeight:800,fontSize:'1.15rem',marginBottom:8,color:'var(--c-text)' }}>Move Occupant</h2>
+        <p style={{ fontSize:13,color:'var(--c-subtle)',marginBottom:20 }}>Moving <strong>{occupant.name}</strong> from {occupant.roomId} / Bed {occupant.bedNo}</p>
         <div style={{ display:'grid',gridTemplateColumns:'1fr 1fr',gap:16,marginBottom:24 }}>
-          <label style={{ display:'flex',flexDirection:'column',fontWeight:600,fontSize:14,color:'#334155',gap:6 }}>Room
-            <select value={targetRoom} onChange={e=>{setTargetRoom(e.target.value);setTargetBed('');}} style={{ padding:'9px 12px',borderRadius:10,border:'1.5px solid #d0d7e2',fontSize:14 }}>
+          <label style={{ display:'flex',flexDirection:'column',fontWeight:600,fontSize:14,color:'var(--c-text-2)',gap:6 }}>Room
+            <select value={targetRoom} onChange={e=>{setTargetRoom(e.target.value);setTargetBed('');}} style={{ padding:'9px 12px',borderRadius:10,border:'1.5px solid var(--c-border-3)',fontSize:14,background:'var(--c-surface)',color:'var(--c-text)' }}>
               <option value="">Select room...</option>
               {orderedRooms.filter(r=>r.id!==occupant.roomId && r.beds.some(b=>!b.occupied)).map(r=>(
                 <option key={r.id} value={r.id}>{r.id}</option>
               ))}
             </select>
           </label>
-          <label style={{ display:'flex',flexDirection:'column',fontWeight:600,fontSize:14,color:'#334155',gap:6 }}>Bed
+          <label style={{ display:'flex',flexDirection:'column',fontWeight:600,fontSize:14,color:'var(--c-text-2)',gap:6 }}>Bed
             <select value={targetBed} onChange={e=>setTargetBed(e.target.value)} style={{ padding:'9px 12px',borderRadius:10,border:'1.5px solid #d0d7e2',fontSize:14 }}>
               <option value="">Select bed...</option>
               {availBeds.map(b=><option key={b.bedId} value={b.bedId}>{b.bedId}</option>)}
@@ -300,7 +300,7 @@ function MoveModal({ open, onClose, occupant, allRooms, onMove, isMobile = false
           </label>
         </div>
         <div style={{ display:'flex',justifyContent:'flex-end',gap:12 }}>
-          <button onClick={onClose} style={{ padding:'9px 28px',borderRadius:10,border:'none',background:'#e3eafc',color:'#1e293b',fontWeight:700,cursor:'pointer' }}>Cancel</button>
+          <button onClick={onClose} style={{ padding:'9px 28px',borderRadius:10,border:'none',background:'#e3eafc',color:'var(--c-text)',fontWeight:700,cursor:'pointer' }}>Cancel</button>
           <button disabled={!ready} onClick={()=>{ onMove(occupant._id,targetRoom,targetBed); onClose(); }} style={{ padding:'9px 28px',borderRadius:10,border:'none',background:ready?'#10b981':'#6ee7b7',color:'#fff',fontWeight:700,cursor:ready?'pointer':'not-allowed' }}>Confirm Move</button>
         </div>
       </div>
@@ -321,15 +321,15 @@ function EditOccupantModal({ open, onClose, occupant, onSave, isMobile = false }
     });
   }, [occupant]);
   if (!open || !occupant || !form) return null;
-  const lbl2 = { display:'flex',flexDirection:'column',fontWeight:600,fontSize:13,color:'#475569',gap:5 };
-  const inp2 = { padding:'10px 12px',borderRadius:10,border:'1.5px solid #d0d7e2',fontSize:13,fontWeight:500,color:'#1e293b',background:'#fff' };
+  const lbl2 = { display:'flex',flexDirection:'column',fontWeight:600,fontSize:13,color:'var(--c-text-2)',gap:5 };
+  const inp2 = { padding:'10px 12px',borderRadius:10,border:'1.5px solid var(--c-border-3)',fontSize:13,fontWeight:500,color:'var(--c-text)',background:'var(--c-card)' };
   const handle = e => setForm(f=>({...f,[e.target.name]:e.target.value}));
   const handleFasting = e => setForm(f=>({...f,fasting:e.target.value==='true'}));
   return (
     <div onClick={onClose} style={{ position:'fixed',top:isMobile?50:62,left:0,right:0,bottom:0,zIndex:3000,background:'rgba(20,30,60,.55)',display:'flex',alignItems:'center',justifyContent:'center',overflowY:'auto',animation:'fadeIn 0.18s ease both' }}>
-      <div onClick={e=>e.stopPropagation()} style={{ background:'#fff',borderRadius:18,padding:'40px',maxWidth:700,width:'95%',boxShadow:'0 8px 40px rgba(30,50,120,.18)',position:'relative',animation:'scaleIn 0.22s cubic-bezier(0.22,1,0.36,1) both' }}>
-        <button onClick={onClose} style={{ position:'absolute',top:16,right:20,fontSize:24,border:'none',background:'none',cursor:'pointer',color:'#94a3b8' }}>X</button>
-        <h2 style={{ fontWeight:800,fontSize:'1.3rem',marginBottom:32,color:'#1e293b',letterSpacing:'-0.3px' }}>Edit Occupant</h2>
+      <div onClick={e=>e.stopPropagation()} style={{ background:'var(--c-card)',borderRadius:18,padding:'40px',maxWidth:700,width:'95%',boxShadow:'0 8px 40px rgba(30,50,120,.18)',position:'relative',animation:'scaleIn 0.22s cubic-bezier(0.22,1,0.36,1) both' }}>
+        <button onClick={onClose} style={{ position:'absolute',top:16,right:20,fontSize:24,border:'none',background:'none',cursor:'pointer',color:'var(--c-muted)' }}>X</button>
+        <h2 style={{ fontWeight:800,fontSize:'1.3rem',marginBottom:32,color:'var(--c-text)',letterSpacing:'-0.3px' }}>Edit Occupant</h2>
         <div style={{ display:'grid',gridTemplateColumns:'1fr 1fr',gap:'18px 24px',marginBottom:32 }}>
           <label style={lbl2}>Person Type<select name="personType" value={form.personType} onChange={handle} style={inp2}><option value="Permanent">Permanent</option><option value="Temporary">Temporary</option><option value="Project">Project</option></select></label>
           <label style={lbl2}>Staff ID<input name="staffId" value={form.staffId || ''} onChange={handle} style={inp2} placeholder="Required if no WP/PP No" /></label>
@@ -351,7 +351,7 @@ function EditOccupantModal({ open, onClose, occupant, onSave, isMobile = false }
           <label style={lbl2}>Fasting<select name="fasting" value={String(form.fasting)} onChange={handleFasting} style={inp2}><option value="true">Yes</option><option value="false">No</option></select></label>
         </div>
         <div style={{ display:'flex',justifyContent:'flex-end',gap:12 }}>
-          <button onClick={onClose} style={{ padding:'10px 32px',borderRadius:10,border:'none',background:'#e3eafc',color:'#1e293b',fontWeight:700,cursor:'pointer',fontSize:14 }}>Cancel</button>
+          <button onClick={onClose} style={{ padding:'10px 32px',borderRadius:10,border:'none',background:'#e3eafc',color:'var(--c-text)',fontWeight:700,cursor:'pointer',fontSize:14 }}>Cancel</button>
           <button onClick={()=>{
             onSave({
               ...form,
@@ -370,11 +370,11 @@ function ConfirmModal({ open, onClose, onConfirm, title, message, confirmLabel='
   if (!open) return null;
   return (
     <div onClick={onClose} style={{ position:'fixed',top:isMobile?50:62,left:0,right:0,bottom:0,zIndex:3000,background:'rgba(20,30,60,.55)',display:'flex',alignItems:'center',justifyContent:'center',overflowY:'auto',animation:'fadeIn 0.18s ease both' }}>
-      <div onClick={e=>e.stopPropagation()} style={{ background:'#fff',borderRadius:18,padding:'32px 40px',maxWidth:420,width:'95%',boxShadow:'0 8px 40px rgba(30,50,120,.18)',animation:'scaleIn 0.22s cubic-bezier(0.22,1,0.36,1) both' }}>
-        <h2 style={{ fontWeight:800,fontSize:'1.1rem',marginBottom:10,color:'#1e293b' }}>{title}</h2>
-        <p style={{ fontSize:14,color:'#64748b',marginBottom:28 }}>{message}</p>
+      <div onClick={e=>e.stopPropagation()} style={{ background:'var(--c-card)',borderRadius:18,padding:'32px 40px',maxWidth:420,width:'95%',boxShadow:'0 8px 40px rgba(30,50,120,.18)',animation:'scaleIn 0.22s cubic-bezier(0.22,1,0.36,1) both' }}>
+        <h2 style={{ fontWeight:800,fontSize:'1.1rem',marginBottom:10,color:'var(--c-text)' }}>{title}</h2>
+        <p style={{ fontSize:14,color:'var(--c-subtle)',marginBottom:28 }}>{message}</p>
         <div style={{ display:'flex',justifyContent:'flex-end',gap:12 }}>
-          <button onClick={onClose} style={{ padding:'9px 28px',borderRadius:10,border:'none',background:'#e3eafc',color:'#1e293b',fontWeight:700,cursor:'pointer' }}>Cancel</button>
+          <button onClick={onClose} style={{ padding:'9px 28px',borderRadius:10,border:'none',background:'#e3eafc',color:'var(--c-text)',fontWeight:700,cursor:'pointer' }}>Cancel</button>
           <button onClick={()=>{ onConfirm(); onClose(); }} style={{ padding:'9px 28px',borderRadius:10,border:'none',background:confirmColor,color:'#fff',fontWeight:700,cursor:'pointer' }}>{confirmLabel}</button>
         </div>
       </div>
@@ -413,7 +413,7 @@ function ActionBtn({ title, children, onClick, color='#64748b', hoverColor='#1e2
   const [hov, setHov] = useState(false);
   return (
     <button title={title} onClick={onClick} onMouseEnter={()=>setHov(true)} onMouseLeave={()=>setHov(false)}
-      style={{ width:size,height:size,borderRadius:8,border:'1px solid #d7e0ec',background:bgGradient||(hov?'#f1f5f9':'#fff'),cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',color:hov?hoverColor:color,transition:'all .15s',flexShrink:0,boxShadow:hov?'0 2px 6px rgba(30,49,95,.16)':'0 1px 2px rgba(30,49,95,.08)' }}>
+      style={{ width:size,height:size,borderRadius:8,border:'1px solid var(--c-border-2)',background:bgGradient||(hov?'var(--c-card-alt)':'var(--c-card)'),cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',color:hov?hoverColor:color,transition:'all .15s',flexShrink:0,boxShadow:hov?'0 2px 6px rgba(30,49,95,.16)':'0 1px 2px rgba(30,49,95,.08)' }}>
       {children}
     </button>
   );
@@ -1032,9 +1032,9 @@ function Occupancy() {
           {canEditAccommodation ? <button onClick={()=>setAddOpen(true)} style={{ padding: isMobile ? '6px 10px' : '11px 26px',borderRadius: isMobile ? 9 : 12,border:'none',background:'#6366f1',color:'#fff',fontWeight:700,fontSize: isMobile ? 11 : 15,cursor:'pointer',display:'flex',alignItems:'center',gap: isMobile ? 4 : 8,boxShadow:'0 2px 8px rgba(59,130,246,.35)',whiteSpace:'nowrap' }}>{isMobile ? '+ Add' : '+ Add Occupant'}</button> : null}
           {canUseOccupancyBulkTools ? (
             <div style={{ display:'flex',gap: isMobile ? 3 : 8 }}>
-              <button onClick={handleExport} style={{ padding: isMobile ? '6px 9px' : '10px 18px',borderRadius: isMobile ? 8 : 10,border:'1.5px solid #d0d7e2',background:'#fff',color:'#1e293b',fontWeight:700,fontSize: isMobile ? 11 : 13,cursor:'pointer' }}>Export</button>
-              {canEditAccommodation ? <button disabled={isImporting} onClick={handleImportClick} style={{ padding: isMobile ? '6px 9px' : '10px 18px',borderRadius: isMobile ? 8 : 10,border:'1.5px solid #d0d7e2',background:isImporting ? '#f1f5f9' : '#fff',color:'#1e293b',fontWeight:700,fontSize: isMobile ? 11 : 13,cursor:isImporting ? 'not-allowed' : 'pointer',opacity:isImporting ? 0.7 : 1 }}>{isImporting ? '...' : 'Import'}</button> : null}
-              <button onClick={handleTemplate} style={{ padding: isMobile ? '6px 9px' : '10px 18px',borderRadius: isMobile ? 8 : 10,border:'1.5px solid #d0d7e2',background:'#fff',color:'#1e293b',fontWeight:700,fontSize: isMobile ? 11 : 13,cursor:'pointer' }}>Template</button>
+              <button onClick={handleExport} style={{ padding: isMobile ? '6px 9px' : '10px 18px',borderRadius: isMobile ? 8 : 10,border:'1.5px solid var(--c-border-3)',background:'var(--c-card)',color:'var(--c-text)',fontWeight:700,fontSize: isMobile ? 11 : 13,cursor:'pointer' }}>Export</button>
+              {canEditAccommodation ? <button disabled={isImporting} onClick={handleImportClick} style={{ padding: isMobile ? '6px 9px' : '10px 18px',borderRadius: isMobile ? 8 : 10,border:'1.5px solid #d0d7e2',background:isImporting ? 'var(--c-surface)' : 'var(--c-card)',color:'var(--c-text)',fontWeight:700,fontSize: isMobile ? 11 : 13,cursor:isImporting ? 'not-allowed' : 'pointer',opacity:isImporting ? 0.7 : 1 }}>{isImporting ? '...' : 'Import'}</button> : null}
+              <button onClick={handleTemplate} style={{ padding: isMobile ? '6px 9px' : '10px 18px',borderRadius: isMobile ? 8 : 10,border:'1.5px solid var(--c-border-3)',background:'var(--c-card)',color:'var(--c-text)',fontWeight:700,fontSize: isMobile ? 11 : 13,cursor:'pointer' }}>Template</button>
               <input ref={importInputRef} type="file" accept=".csv,text/csv" onChange={handleImportFile} style={{ display:'none' }} />
             </div>
           ) : null}
@@ -1075,10 +1075,10 @@ function Occupancy() {
       ) : null}
 
       {/* Filters */}
-      <div style={{ display:'flex',flexWrap:'wrap',gap: isMobile ? 5 : 12,marginBottom: isMobile ? 10 : 24,alignItems:'flex-end',background:'#fff',borderRadius: isMobile ? 12 : 16,padding: isMobile ? '9px 10px' : '16px 20px',boxShadow:'0 1px 4px rgba(30,49,95,.08)',border:'1.5px solid #e8edf5' }}>
+      <div style={{ display:'flex',flexWrap:'wrap',gap: isMobile ? 5 : 12,marginBottom: isMobile ? 10 : 24,alignItems:'flex-end',background:'var(--c-card)',borderRadius: isMobile ? 12 : 16,padding: isMobile ? '9px 10px' : '16px 20px',boxShadow:'0 1px 4px rgba(30,49,95,.08)',border:'1.5px solid var(--c-border)' }}>
         <div style={{ display:'flex',flexDirection:'column',gap: isMobile ? 2 : 4,flex: isMobile ? '1 1 0' : 'none' }}>
           <span style={{ fontSize: isMobile ? 9 : 11,fontWeight:700,color:'#94a3b8',textTransform:'uppercase',letterSpacing:.5 }}>Type</span>
-          <select value={personTypeFilter} onChange={e=>setPersonTypeFilter(e.target.value)} style={{ padding: isMobile ? '5px 4px' : '8px 14px',borderRadius:8,border:'1.5px solid #d0d7e2',fontSize: isMobile ? 11 : 13,fontWeight:600,color:'#1e293b',background:'#f8fafc',cursor:'pointer',minWidth: isMobile ? 0 : 130,width:'100%' }}>
+          <select value={personTypeFilter} onChange={e=>setPersonTypeFilter(e.target.value)} style={{ padding: isMobile ? '5px 4px' : '8px 14px',borderRadius:8,border:'1.5px solid var(--c-border-3)',fontSize: isMobile ? 11 : 13,fontWeight:600,color:'var(--c-text)',background:'var(--c-surface)',cursor:'pointer',minWidth: isMobile ? 0 : 130,width:'100%' }}>
             <option value="All">{isMobile ? 'All' : 'All Types'}</option>
             <option value="Permanent">Permanent</option>
             <option value="Temporary">Temporary</option>
@@ -1087,14 +1087,14 @@ function Occupancy() {
         </div>
         <div style={{ display:'flex',flexDirection:'column',gap: isMobile ? 2 : 4,flex: isMobile ? '1 1 0' : 'none' }}>
           <span style={{ fontSize: isMobile ? 9 : 11,fontWeight:700,color:'#94a3b8',textTransform:'uppercase',letterSpacing:.5 }}>Building</span>
-          <select value={buildingFilter} onChange={e=>setBuildingFilter(e.target.value)} style={{ padding: isMobile ? '5px 4px' : '8px 14px',borderRadius:8,border:'1.5px solid #d0d7e2',fontSize: isMobile ? 11 : 13,fontWeight:600,color:'#1e293b',background:'#f8fafc',cursor:'pointer',minWidth: isMobile ? 0 : 160,width:'100%' }}>
+          <select value={buildingFilter} onChange={e=>setBuildingFilter(e.target.value)} style={{ padding: isMobile ? '5px 4px' : '8px 14px',borderRadius:8,border:'1.5px solid var(--c-border-3)',fontSize: isMobile ? 11 : 13,fontWeight:600,color:'var(--c-text)',background:'var(--c-surface)',cursor:'pointer',minWidth: isMobile ? 0 : 160,width:'100%' }}>
             <option value="All">{isMobile ? 'All' : 'All Buildings'}</option>
             {BUILDING_ORDER.map(b=>(<option key={b} value={b}>{BUILDING_LABELS[b]}</option>))}
           </select>
         </div>
         <div style={{ display:'flex',flexDirection:'column',gap: isMobile ? 2 : 4,flex: isMobile ? '1 1 0' : 'none' }}>
           <span style={{ fontSize: isMobile ? 9 : 11,fontWeight:700,color:'#94a3b8',textTransform:'uppercase',letterSpacing:.5 }}>Section</span>
-          <select value={sectionFilter} onChange={e=>setSectionFilter(e.target.value)} style={{ padding: isMobile ? '5px 4px' : '8px 14px',borderRadius:8,border:'1.5px solid #d0d7e2',fontSize: isMobile ? 11 : 13,fontWeight:600,color:'#1e293b',background:'#f8fafc',cursor:'pointer',minWidth: isMobile ? 0 : 150,width:'100%' }}>
+          <select value={sectionFilter} onChange={e=>setSectionFilter(e.target.value)} style={{ padding: isMobile ? '5px 4px' : '8px 14px',borderRadius:8,border:'1.5px solid var(--c-border-3)',fontSize: isMobile ? 11 : 13,fontWeight:600,color:'var(--c-text)',background:'var(--c-surface)',cursor:'pointer',minWidth: isMobile ? 0 : 150,width:'100%' }}>
             <option value="">{isMobile ? 'All' : 'All Sections'}</option>
             {sectionOptions.map(s=>(<option key={s} value={s}>{s}</option>))}
           </select>
@@ -1104,7 +1104,7 @@ function Occupancy() {
           <div style={{ position:'relative' }}>
             <svg style={{ position:'absolute',left: isMobile ? 7 : 10,top:'50%',transform:'translateY(-50%)',color:'#94a3b8',pointerEvents:'none' }} width={isMobile ? 11 : 13} height={isMobile ? 11 : 13} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
             <input type="text" placeholder={isMobile ? 'ID or name' : 'Staff ID or name...'} value={idNameSearch} onChange={e=>setIdNameSearch(e.target.value)}
-              style={{ paddingLeft: isMobile ? 24 : 30,paddingRight:8,paddingTop: isMobile ? 5 : 8,paddingBottom: isMobile ? 5 : 8,borderRadius:8,border:'1.5px solid #d0d7e2',fontSize: isMobile ? 11 : 13,width:'100%',background:'#f8fafc',boxSizing:'border-box' }} />
+              style={{ paddingLeft: isMobile ? 24 : 30,paddingRight:8,paddingTop: isMobile ? 5 : 8,paddingBottom: isMobile ? 5 : 8,borderRadius:8,border:'1.5px solid var(--c-border-3)',fontSize: isMobile ? 11 : 13,width:'100%',background:'var(--c-surface)',color:'var(--c-text)',boxSizing:'border-box' }} />
           </div>
         </div>
         <div style={{ display:'flex',flexDirection:'column',gap: isMobile ? 2 : 4,flex:'1 1 120px' }}>
@@ -1112,7 +1112,7 @@ function Occupancy() {
           <div style={{ position:'relative' }}>
             <svg style={{ position:'absolute',left: isMobile ? 7 : 10,top:'50%',transform:'translateY(-50%)',color:'#94a3b8',pointerEvents:'none' }} width={isMobile ? 11 : 13} height={isMobile ? 11 : 13} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg>
             <input type="text" placeholder={isMobile ? 'Room ID' : 'Room ID e.g. OB-1-101'} value={roomSearch} onChange={e=>setRoomSearch(e.target.value)}
-              style={{ paddingLeft: isMobile ? 24 : 30,paddingRight:8,paddingTop: isMobile ? 5 : 8,paddingBottom: isMobile ? 5 : 8,borderRadius:8,border:'1.5px solid #d0d7e2',fontSize: isMobile ? 11 : 13,width:'100%',background:'#f8fafc',boxSizing:'border-box' }} />
+              style={{ paddingLeft: isMobile ? 24 : 30,paddingRight:8,paddingTop: isMobile ? 5 : 8,paddingBottom: isMobile ? 5 : 8,borderRadius:8,border:'1.5px solid var(--c-border-3)',fontSize: isMobile ? 11 : 13,width:'100%',background:'var(--c-surface)',color:'var(--c-text)',boxSizing:'border-box' }} />
           </div>
         </div>
         {hasFilters && (
@@ -1127,13 +1127,13 @@ function Occupancy() {
       {isMobile ? (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
           {grouped.length === 0 && (
-            <div style={{ padding: '40px 16px', textAlign: 'center', color: '#94a3b8', fontSize: 14, background: '#fff', borderRadius: 14 }}>No occupants match the current filters.</div>
+            <div style={{ padding: '40px 16px', textAlign: 'center', color: 'var(--c-muted)', fontSize: 14, background: 'var(--c-card)', borderRadius: 14 }}>No occupants match the current filters.</div>
           )}
           {grouped.map((item, idx) => {
             if (item.type === 'building') {
               return (
-                <div key={`b-${item.name}-${idx}`} style={{ padding: '7px 12px', background: '#e2e8f0', borderRadius: 10, marginTop: idx === 0 ? 0 : 4 }}>
-                  <span style={{ fontSize: 10.5, fontWeight: 800, color: '#475569', textTransform: 'uppercase', letterSpacing: 1.2 }}>{item.label}</span>
+                <div key={`b-${item.name}-${idx}`} style={{ padding: '7px 12px', background: 'var(--c-card-alt)', borderRadius: 10, marginTop: idx === 0 ? 0 : 4 }}>
+                  <span style={{ fontSize: 10.5, fontWeight: 800, color: 'var(--c-text-2)', textTransform: 'uppercase', letterSpacing: 1.2 }}>{item.label}</span>
                 </div>
               );
             }
@@ -1145,11 +1145,11 @@ function Occupancy() {
               <div
                 key={o._id}
                 style={{
-                  background: '#fff',
+                  background: 'var(--c-card)',
                   borderRadius: 12,
                   padding: '9px 10px',
                   borderLeft: `4px solid ${tc.text}`,
-                  border: `1px solid #e8eef6`,
+                  border: `1px solid var(--c-border)`,
                   borderLeftWidth: 4,
                   borderLeftColor: tc.text,
                   boxShadow: '0 2px 8px rgba(30,49,95,0.06)',
@@ -1165,13 +1165,13 @@ function Occupancy() {
                   </div>
                   <div style={{ textAlign: 'right', flexShrink: 0, marginLeft: 6 }}>
                     <div style={{ fontSize: 11, fontWeight: 800, padding: '2px 6px', borderRadius: 5, background: '#e0e7ff', color: '#6366f1', display: 'inline-block' }}>{o.roomId}</div>
-                    <div style={{ fontSize: 9, color: '#94a3b8', fontWeight: 600, marginTop: 1 }}>Bed {o.bedNo}</div>
+                    <div style={{ fontSize: 9, color: 'var(--c-muted)', fontWeight: 600, marginTop: 1 }}>Bed {o.bedNo}</div>
                   </div>
                 </div>
                 {/* Name */}
-                <div style={{ fontWeight: 700, fontSize: 13, color: '#1e293b', marginBottom: 2 }}>{o.name}</div>
+                <div style={{ fontWeight: 700, fontSize: 13, color: 'var(--c-text)', marginBottom: 2 }}>{o.name}</div>
                 {/* Section / dept / nat */}
-                <div style={{ fontSize: 10, color: '#64748b', fontWeight: 600, marginBottom: 7 }}>
+                <div style={{ fontSize: 10, color: 'var(--c-subtle)', fontWeight: 600, marginBottom: 7 }}>
                   {[o.section || null, deptCode || null, natCode || null].filter(Boolean).join(' | ') || '-'}
                 </div>
                 {/* Actions */}
@@ -1184,7 +1184,7 @@ function Occupancy() {
                       <ActionBtn title="Check Out" onClick={() => setCheckoutTarget(o)} color="#f59e0b" bgGradient="linear-gradient(135deg,#fed7aa 0%,#fffbeb 100%)" size={22}><IconCheckout /></ActionBtn>
                       <ActionBtn title="Delete"    onClick={() => setDeleteTarget(o)}   color="#ef4444" bgGradient="linear-gradient(135deg,#fecaca 0%,#fee2e2 100%)" hoverColor="#b91c1c" size={22}><IconDelete /></ActionBtn>
                     </>
-                  ) : <span style={{ fontSize: 10, fontWeight: 700, color: '#64748b' }}>View only</span>}
+                  ) : <span style={{ fontSize: 10, fontWeight: 700, color: 'var(--c-subtle)' }}>View only</span>}
                 </div>
               </div>
             );
@@ -1192,23 +1192,23 @@ function Occupancy() {
         </div>
       ) : (
         /* Desktop grid table */
-        <div style={{ background:'#fff',borderRadius:18,boxShadow:'0 8px 26px rgba(30,49,95,.08)',border:'1px solid #dfe6f1',overflowX:'auto' }}>
+        <div style={{ background:'var(--c-card)',borderRadius:18,boxShadow:'0 8px 26px rgba(30,49,95,.08)',border:'1px solid var(--c-border-2)',overflowX:'auto' }}>
           <div style={{ minWidth:960 }}>
-          <div style={{ display:'grid',gridTemplateColumns:'2.9fr 1.1fr 1.9fr 140px',padding:'0 20px',height:42,alignItems:'center',background:'linear-gradient(180deg, #f8fbff 0%, #f3f7fd 100%)',borderBottom:'1px solid #dfe6f1',gap:10 }}>
+          <div style={{ display:'grid',gridTemplateColumns:'2.9fr 1.1fr 1.9fr 140px',padding:'0 20px',height:42,alignItems:'center',background:'linear-gradient(180deg, var(--c-card-alt) 0%, var(--c-card-hdr) 100%)',borderBottom:'1px solid var(--c-border-2)',gap:10 }}>
             {['Name / Person Type','Room','Section / Department | Nat','Actions'].map(h=>(
               <span key={h} style={{ fontSize:10.5,fontWeight:700,color:'#7f93b3',textTransform:'uppercase',letterSpacing:.6 }}>{h}</span>
             ))}
           </div>
 
           {grouped.length===0 && (
-            <div style={{ padding:'48px 20px',textAlign:'center',color:'#94a3b8',fontSize:15 }}>No occupants match the current filters.</div>
+            <div style={{ padding:'48px 20px',textAlign:'center',color:'var(--c-muted)',fontSize:15 }}>No occupants match the current filters.</div>
           )}
 
           {grouped.map((item,idx)=>{
             if(item.type==='building'){
               return(
-                <div key={`b-${item.name}-${idx}`} style={{ padding:'12px 20px 6px',background:'#f1f5f9',borderTop:idx===0?'none':'2px solid #e2e8f0',borderBottom:'1px solid #e2e8f0' }}>
-                  <span style={{ fontSize:11.5,fontWeight:800,color:'#475569',textTransform:'uppercase',letterSpacing:1.2 }}>{item.label}</span>
+                <div key={`b-${item.name}-${idx}`} style={{ padding:'12px 20px 6px',background:'var(--c-card-alt)',borderTop:idx===0?'none':'2px solid var(--c-border)',borderBottom:'1px solid var(--c-border)' }}>
+                  <span style={{ fontSize:11.5,fontWeight:800,color:'var(--c-text-2)',textTransform:'uppercase',letterSpacing:1.2 }}>{item.label}</span>
                 </div>
               );
             }
@@ -1216,10 +1216,10 @@ function Occupancy() {
             const tc=PERSON_TYPE_COLORS[o.personType]||{bg:'#f1f5f9',text:'#475569'};
             const deptCode = shortCode(o.department);
             const natCode = shortCode(o.nationality);
-            const rowBg = item.rowIndex % 2 === 0 ? '#ffffff' : '#f4f7fb';
+            const rowBg = item.rowIndex % 2 === 0 ? 'var(--c-card)' : 'var(--c-card-alt)';
             return(
               <div key={o._id}
-                style={{ display:'grid',gridTemplateColumns:'2.9fr 1.1fr 1.9fr 140px',padding:'0 20px',minHeight:90,alignItems:'center',paddingTop:8,paddingBottom:8,borderBottom:'1px solid #e1e8f2',borderLeft:`3px solid ${tc.text}1f`,gap:10,transition:'background .12s, border-left-color .12s',cursor:'default',background:rowBg }}
+                style={{ display:'grid',gridTemplateColumns:'2.9fr 1.1fr 1.9fr 140px',padding:'0 20px',minHeight:90,alignItems:'center',paddingTop:8,paddingBottom:8,borderBottom:'1px solid var(--c-border-2)',borderLeft:`3px solid ${tc.text}1f`,gap:10,transition:'background .12s, border-left-color .12s',cursor:'default',background:rowBg }}
                 onMouseEnter={e=>{e.currentTarget.style.background='#ebf2ff'; e.currentTarget.style.borderLeftColor=tc.text;}}
                 onMouseLeave={e=>{e.currentTarget.style.background=rowBg; e.currentTarget.style.borderLeftColor=`${tc.text}1f`;}}
               >
@@ -1228,20 +1228,20 @@ function Occupancy() {
                     <span style={{ fontSize:10.5,fontWeight:600,padding:'3px 10px',borderRadius:999,background:tc.bg,color:tc.text,letterSpacing:.2,display:'inline-block',whiteSpace:'nowrap',textTransform:'uppercase',border:`1px solid ${tc.text}22` }}>{o.personType}</span>
                     <span style={{ fontSize:10.5,fontWeight:700,padding:'3px 10px',borderRadius:999,background:'#eef2ff',color:'#4f46e5',letterSpacing:.2,display:'inline-block',whiteSpace:'nowrap',border:'1px solid #cfd8ff' }}>{o.staffId ? `ID ${o.staffId}` : o.wpPpNo ? `WP/PP ${o.wpPpNo}` : '-'}</span>
                   </div>
-                  <span style={{ fontWeight:700,fontSize:13.5,color:'#1e293b',lineHeight:1.5,overflowWrap:'break-word',wordBreak:'break-word' }}>{o.name}</span>
+                  <span style={{ fontWeight:700,fontSize:13.5,color:'var(--c-text)',lineHeight:1.5,overflowWrap:'break-word',wordBreak:'break-word' }}>{o.name}</span>
                 </div>
 
                 <div style={{ display:'flex',flexDirection:'column',gap:5,minWidth:0,justifyContent:'center' }}>
                   <span style={{ fontSize:13,fontWeight:800,padding:'2px 10px',borderRadius:6,background:'#e0e7ff',color:'#6366f1',display:'inline-block',width:'fit-content',whiteSpace:'nowrap',letterSpacing:'0.5px' }}>{o.roomId}</span>
-                  <span style={{ fontSize:11,color:'#94a3b8',whiteSpace:'nowrap',marginLeft:20 }}>Bed {o.bedNo}</span>
+                  <span style={{ fontSize:11,color:'var(--c-muted)',whiteSpace:'nowrap',marginLeft:20 }}>Bed {o.bedNo}</span>
                 </div>
 
                 <div style={{ display:'flex',flexDirection:'column',gap:4,minWidth:0,justifyContent:'center' }}>
-                  <div style={{ fontSize:12,color:'#1e293b',fontWeight:700,lineHeight:1.2,whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis' }}>{o.section||'-'}</div>
-                  <div style={{ fontSize:11,color:'#94a3b8',fontWeight:600,letterSpacing:.2,whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis' }}>{deptCode} | {natCode}</div>
+                  <div style={{ fontSize:12,color:'var(--c-text)',fontWeight:700,lineHeight:1.2,whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis' }}>{o.section||'-'}</div>
+                  <div style={{ fontSize:11,color:'var(--c-muted)',fontWeight:600,letterSpacing:.2,whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis' }}>{deptCode} | {natCode}</div>
                 </div>
 
-                <div style={{ display:'flex',gap:4,alignItems:'center',background:'rgba(255,255,255,.76)',padding:'4px 6px',borderRadius:11,overflow:'visible',flexWrap:'nowrap',justifyContent:'center',border:'1px solid #dbe4f0' }}>
+                <div style={{ display:'flex',gap:4,alignItems:'center',background:'var(--c-card)',padding:'4px 6px',borderRadius:11,overflow:'visible',flexWrap:'nowrap',justifyContent:'center',border:'1px solid var(--c-border-2)' }}>
                   {canEditAccommodation ? (
                     <>
                       <ActionBtn title="Edit"      onClick={()=>setEditTarget(o)}     color="#3b82f6" bgGradient="linear-gradient(135deg, #dbeafe 0%, #eff6ff 100%)"><IconEdit /></ActionBtn>
@@ -1250,7 +1250,7 @@ function Occupancy() {
                       <ActionBtn title="Check Out" onClick={()=>setCheckoutTarget(o)} color="#f59e0b" bgGradient="linear-gradient(135deg, #fed7aa 0%, #fffbeb 100%)"><IconCheckout /></ActionBtn>
                       <ActionBtn title="Delete"    onClick={()=>setDeleteTarget(o)}   color="#ef4444" bgGradient="linear-gradient(135deg, #fecaca 0%, #fee2e2 100%)" hoverColor="#b91c1c"><IconDelete /></ActionBtn>
                     </>
-                  ) : <span style={{ fontSize: 11, fontWeight: 700, color:'#64748b', padding:'4px 8px' }}>View only</span>}
+                  ) : <span style={{ fontSize: 11, fontWeight: 700, color:'var(--c-subtle)', padding:'4px 8px' }}>View only</span>}
                 </div>
               </div>
             );

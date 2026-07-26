@@ -90,13 +90,13 @@ function AddOccupantModal({ open, onClose, rooms, onAdd }) {
   /* ── Input font-size ≥ 16px on mobile to prevent iOS zoom ── */
   const inpFontSize = isMobile ? 16 : 13;
 
-  const lbl = { display: 'flex', flexDirection: 'column', fontWeight: 600, fontSize: isMobile ? 13 : 12, color: '#475569', gap: 4 };
+  const lbl = { display: 'flex', flexDirection: 'column', fontWeight: 600, fontSize: isMobile ? 13 : 12, color: 'var(--c-text-2)', gap: 4 };
   const inp = {
     width: '100%', boxSizing: 'border-box',
     padding: isMobile ? '11px 12px' : '7px 10px',
-    borderRadius: 9, border: '1.5px solid #e2e8f0',
+    borderRadius: 9, border: '1.5px solid var(--c-border)',
     fontSize: inpFontSize, fontWeight: 500,
-    color: '#1e293b', background: '#f8fafc', outline: 'none',
+    color: 'var(--c-text)', background: 'var(--c-surface)', outline: 'none',
     minHeight: isMobile ? 44 : 'auto',   /* 44px touch target on mobile */
   };
   const errStyle = { color: '#dc2626', fontSize: 11, marginTop: 2 };
@@ -124,7 +124,7 @@ function AddOccupantModal({ open, onClose, rooms, onAdd }) {
   const modalStyle = isMobile
     ? {
         /* Mobile bottom sheet — takes up to 88% of screen height */
-        background: '#fff',
+        background: 'var(--c-card)',
         borderRadius: '18px 18px 0 0',
         width: '100%',
         maxHeight: '88vh',
@@ -135,7 +135,7 @@ function AddOccupantModal({ open, onClose, rooms, onAdd }) {
       }
     : {
         /* Tablet / Desktop — centred card */
-        background: '#fff',
+        background: 'var(--c-card)',
         borderRadius: 14,
         width: '100%',
         maxWidth: isTablet ? 520 : 660,
@@ -164,17 +164,17 @@ function AddOccupantModal({ open, onClose, rooms, onAdd }) {
         <div style={{
           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
           padding: isMobile ? '16px 20px' : '13px 18px',
-          borderBottom: '1px solid #f1f5f9',
-          background: 'linear-gradient(135deg,#f8fafc 0%,#f1f5f9 100%)',
+          borderBottom: '1px solid var(--c-border)',
+          background: 'linear-gradient(135deg, var(--c-surface) 0%, var(--c-bg) 100%)',
           flexShrink: 0,
         }}>
-          <h2 style={{ margin: 0, fontWeight: 800, fontSize: isMobile ? '1.05rem' : '1rem', color: '#1e293b' }}>
+          <h2 style={{ margin: 0, fontWeight: 800, fontSize: isMobile ? '1.05rem' : '1rem', color: 'var(--c-text)' }}>
             Add Occupant
           </h2>
           <button
             onClick={onClose}
             aria-label="Close"
-            style={{ width: 30, height: 30, borderRadius: '50%', border: '1px solid #e2e8f0', background: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#64748b', fontSize: 14, fontWeight: 700 }}
+            style={{ width: 30, height: 30, borderRadius: '50%', border: '1px solid var(--c-border)', background: 'var(--c-card)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--c-subtle)', fontSize: 14, fontWeight: 700 }}
           >✕</button>
         </div>
 
@@ -194,7 +194,7 @@ function AddOccupantModal({ open, onClose, rooms, onAdd }) {
               </label>
 
               <label style={lbl}>Staff ID
-                <input name="staffId" value={form.staffId} onChange={handleChange} style={{ ...inp, borderColor: errors.staffId ? '#f87171' : '#e2e8f0' }} placeholder="Required if no WP/PP No" />
+                <input name="staffId" value={form.staffId} onChange={handleChange} style={{ ...inp, borderColor: errors.staffId ? '#f87171' : 'var(--c-border)' }} placeholder="Required if no WP/PP No" />
                 {errors.staffId && <span style={errStyle}>{errors.staffId}</span>}
               </label>
 
@@ -272,7 +272,7 @@ function AddOccupantModal({ open, onClose, rooms, onAdd }) {
               gap: 10,
               paddingBottom: isMobile ? 8 : 0,
             }}>
-              <button type="button" onClick={onClose} style={{ padding: isMobile ? '13px 22px' : '9px 22px', borderRadius: 9, border: '1.5px solid #e2e8f0', background: '#fff', color: '#475569', fontWeight: 700, fontSize: isMobile ? 15 : 13, cursor: 'pointer', width: isMobile ? '100%' : 'auto' }}>
+              <button type="button" onClick={onClose} style={{ padding: isMobile ? '13px 22px' : '9px 22px', borderRadius: 9, border: '1.5px solid var(--c-border)', background: 'var(--c-card)', color: 'var(--c-text-2)', fontWeight: 700, fontSize: isMobile ? 15 : 13, cursor: 'pointer', width: isMobile ? '100%' : 'auto' }}>
                 Cancel
               </button>
               <button type="submit" style={{ padding: isMobile ? '13px 22px' : '9px 22px', borderRadius: 9, border: 'none', background: 'linear-gradient(135deg,#4f46e5 0%,#6366f1 100%)', color: '#fff', fontWeight: 700, fontSize: isMobile ? 15 : 13, cursor: 'pointer', boxShadow: '0 4px 12px rgba(99,102,241,0.3)', width: isMobile ? '100%' : 'auto' }}>

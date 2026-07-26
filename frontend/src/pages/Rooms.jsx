@@ -293,29 +293,29 @@ function Rooms() {
           scrollbarWidth: 'none',
           msOverflowStyle: 'none',
         }}>
-          <select value={building} onChange={e => setBuilding(e.target.value)} style={{ padding: isMobile ? '5px 5px' : '8px 10px', borderRadius: isMobile ? 8 : 12, border: '1.5px solid #d0d7e2', fontWeight: 600, fontSize: isMobile ? 11 : 14, background: '#fff', minWidth: isMobile ? 90 : 120, flexShrink: 0 }}>
+          <select value={building} onChange={e => setBuilding(e.target.value)} style={{ padding: isMobile ? '5px 5px' : '8px 10px', borderRadius: isMobile ? 8 : 12, border: '1.5px solid var(--c-border-3)', fontWeight: 600, fontSize: isMobile ? 11 : 14, background: 'var(--c-card)', minWidth: isMobile ? 90 : 120, flexShrink: 0 }}>
             {buildingOptions.map(opt => (
               <option key={opt} value={opt}>{opt === 'All Buildings' ? 'Bldg: All' : opt}</option>
             ))}
           </select>
-          <select value={acType} onChange={e => setAcType(e.target.value)} style={{ padding: isMobile ? '5px 5px' : '8px 10px', borderRadius: isMobile ? 8 : 12, border: '1.5px solid #d0d7e2', fontWeight: 600, fontSize: isMobile ? 11 : 14, background: '#fff', minWidth: isMobile ? 60 : 90, flexShrink: 0 }}>
+          <select value={acType} onChange={e => setAcType(e.target.value)} style={{ padding: isMobile ? '5px 5px' : '8px 10px', borderRadius: isMobile ? 8 : 12, border: '1.5px solid var(--c-border-3)', fontWeight: 600, fontSize: isMobile ? 11 : 14, background: 'var(--c-card)', minWidth: isMobile ? 60 : 90, flexShrink: 0 }}>
             {['All', 'AC', 'Non-AC'].map(opt => (
               <option key={opt} value={opt}>{opt === 'All' ? 'AC: All' : opt}</option>
             ))}
           </select>
-          <select value={shareType} onChange={e => setShareType(e.target.value)} style={{ padding: isMobile ? '5px 5px' : '8px 10px', borderRadius: isMobile ? 8 : 12, border: '1.5px solid #d0d7e2', fontWeight: 600, fontSize: isMobile ? 11 : 14, background: '#fff', minWidth: isMobile ? 70 : 100, flexShrink: 0 }}>
+          <select value={shareType} onChange={e => setShareType(e.target.value)} style={{ padding: isMobile ? '5px 5px' : '8px 10px', borderRadius: isMobile ? 8 : 12, border: '1.5px solid var(--c-border-3)', fontWeight: 600, fontSize: isMobile ? 11 : 14, background: 'var(--c-card)', minWidth: isMobile ? 70 : 100, flexShrink: 0 }}>
             {shareTypeOptions.map(opt => (
               <option key={opt} value={opt}>{opt === 'All' ? 'Share: All' : opt}</option>
             ))}
           </select>
-          <select value={status} onChange={e => setStatus(e.target.value)} style={{ padding: isMobile ? '5px 5px' : '8px 10px', borderRadius: isMobile ? 8 : 12, border: '1.5px solid #d0d7e2', fontWeight: 600, fontSize: isMobile ? 11 : 14, background: '#fff', minWidth: isMobile ? 70 : 100, flexShrink: 0 }}>
+          <select value={status} onChange={e => setStatus(e.target.value)} style={{ padding: isMobile ? '5px 5px' : '8px 10px', borderRadius: isMobile ? 8 : 12, border: '1.5px solid var(--c-border-3)', fontWeight: 600, fontSize: isMobile ? 11 : 14, background: 'var(--c-card)', minWidth: isMobile ? 70 : 100, flexShrink: 0 }}>
             {STATUS_OPTIONS.map(opt => (
               <option key={opt} value={opt}>{opt === 'All' ? 'Status: All' : opt}</option>
             ))}
           </select>
           <button
             onClick={() => { setBuilding('All Buildings'); setAcType('All'); setShareType('All'); setStatus('All'); setSearch(''); }}
-            style={{ padding: isMobile ? '5px 8px' : '8px 14px', borderRadius: isMobile ? 8 : 12, border: 'none', background: '#e3eafc', color: '#1e293b', fontWeight: 700, marginLeft: isMobile ? 0 : 4, fontSize: isMobile ? 11 : 14, cursor: 'pointer', flexShrink: 0 }}
+            style={{ padding: isMobile ? '5px 8px' : '8px 14px', borderRadius: isMobile ? 8 : 12, border: 'none', background: '#e3eafc', color: 'var(--c-text)', fontWeight: 700, marginLeft: isMobile ? 0 : 4, fontSize: isMobile ? 11 : 14, cursor: 'pointer', flexShrink: 0 }}
           >
             {isMobile ? '✕' : 'Clear Filters'}
           </button>
@@ -333,7 +333,7 @@ function Rooms() {
             placeholder={isMobile ? 'Room ID…' : 'Search Room ID...'}
             value={search}
             onChange={e => setSearch(e.target.value)}
-            style={{ marginLeft: 'auto', padding: isMobile ? '5px 8px' : '10px 14px', borderRadius: isMobile ? 8 : 12, border: '1.5px solid #d0d7e2', minWidth: isMobile ? 80 : 200, maxWidth: isMobile ? 120 : 260, width: '100%', flex: '1 1 80px', fontSize: isMobile ? 11 : 15, background: '#fff' }}
+            style={{ marginLeft: 'auto', padding: isMobile ? '5px 8px' : '10px 14px', borderRadius: isMobile ? 8 : 12, border: '1.5px solid var(--c-border-3)', minWidth: isMobile ? 80 : 200, maxWidth: isMobile ? 120 : 260, width: '100%', flex: '1 1 80px', fontSize: isMobile ? 11 : 15, background: 'var(--c-card)', color: 'var(--c-text)' }}
           />
         </div>
       </div>
@@ -553,35 +553,35 @@ function Rooms() {
           onClick={closeEditModal}
         >
           <div
-            style={{ width: '100%', maxWidth: 360, background: '#ffffff', borderRadius: 14, border: '1px solid #d6dfef', boxShadow: '0 20px 44px rgba(21,35,71,0.22)', padding: 20 }}
+            style={{ width: '100%', maxWidth: 360, background: 'var(--c-card)', borderRadius: 14, border: '1px solid var(--c-border-2)', boxShadow: '0 20px 44px rgba(21,35,71,0.22)', padding: 20 }}
             onClick={event => event.stopPropagation()}
           >
             <h3 style={{ margin: '0 0 14px 0', color: '#1f3263', fontSize: '1rem', fontWeight: 800 }}>Edit Room</h3>
             <div style={{ display: 'grid', gap: 10 }}>
-              <label style={{ display: 'grid', gap: 4, fontSize: 13, color: '#55658b', fontWeight: 700 }}>
+              <label style={{ display: 'grid', gap: 4, fontSize: 13, color: 'var(--c-text-2)', fontWeight: 700 }}>
                 Room ID
-                <input value={editRoomId} readOnly style={{ padding: '9px 10px', borderRadius: 9, border: '1px solid #d4dceb', background: '#f6f8fc', color: '#4a5a80', fontWeight: 700, fontSize: 14 }} />
+                <input value={editRoomId} readOnly style={{ padding: '9px 10px', borderRadius: 9, border: '1px solid var(--c-border-2)', background: 'var(--c-surface)', color: 'var(--c-text-2)', fontWeight: 700, fontSize: 14 }} />
               </label>
-              <label style={{ display: 'grid', gap: 4, fontSize: 13, color: '#55658b', fontWeight: 700 }}>
+              <label style={{ display: 'grid', gap: 4, fontSize: 13, color: 'var(--c-text-2)', fontWeight: 700 }}>
                 Beds
-                <input type="number" min={1} value={editBeds} onChange={event => setEditBeds(event.target.value)} style={{ padding: '9px 10px', borderRadius: 9, border: '1px solid #cfd8ea', background: '#fff', color: '#1f315e', fontWeight: 700, fontSize: 14 }} />
+                <input type="number" min={1} value={editBeds} onChange={event => setEditBeds(event.target.value)} style={{ padding: '9px 10px', borderRadius: 9, border: '1px solid var(--c-border-2)', background: 'var(--c-card)', color: 'var(--c-text)', fontWeight: 700, fontSize: 14 }} />
               </label>
-              <label style={{ display: 'grid', gap: 4, fontSize: 13, color: '#55658b', fontWeight: 700 }}>
+              <label style={{ display: 'grid', gap: 4, fontSize: 13, color: 'var(--c-text-2)', fontWeight: 700 }}>
                 Room Type
-                <select value={editRoomType} onChange={event => setEditRoomType(event.target.value)} style={{ padding: '9px 10px', borderRadius: 9, border: '1px solid #cfd8ea', background: '#fff', color: '#1f315e', fontWeight: 700, fontSize: 14 }}>
+                <select value={editRoomType} onChange={event => setEditRoomType(event.target.value)} style={{ padding: '9px 10px', borderRadius: 9, border: '1px solid var(--c-border-2)', background: 'var(--c-card)', color: 'var(--c-text)', fontWeight: 700, fontSize: 14 }}>
                   {ROOM_TYPE_OPTIONS.map(option => <option key={option} value={option}>{option}</option>)}
                 </select>
               </label>
-              <label style={{ display: 'grid', gap: 4, fontSize: 13, color: '#55658b', fontWeight: 700 }}>
+              <label style={{ display: 'grid', gap: 4, fontSize: 13, color: 'var(--c-text-2)', fontWeight: 700 }}>
                 AC / Non-AC
-                <select value={editAcType} onChange={event => setEditAcType(event.target.value)} style={{ padding: '9px 10px', borderRadius: 9, border: '1px solid #cfd8ea', background: '#fff', color: '#1f315e', fontWeight: 700, fontSize: 14 }}>
+                <select value={editAcType} onChange={event => setEditAcType(event.target.value)} style={{ padding: '9px 10px', borderRadius: 9, border: '1px solid var(--c-border-2)', background: 'var(--c-card)', color: 'var(--c-text)', fontWeight: 700, fontSize: 14 }}>
                   <option value="AC">AC</option>
                   <option value="Non-AC">Non-AC</option>
                 </select>
               </label>
             </div>
             <div style={{ marginTop: 16, display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
-              <button type="button" onClick={closeEditModal} style={{ padding: '8px 14px', borderRadius: 9, border: '1px solid #d4dded', background: '#f8faff', color: '#40527a', fontWeight: 700, cursor: 'pointer', fontSize: 14 }}>Cancel</button>
+              <button type="button" onClick={closeEditModal} style={{ padding: '8px 14px', borderRadius: 9, border: '1px solid var(--c-border)', background: 'var(--c-surface)', color: 'var(--c-text-2)', fontWeight: 700, cursor: 'pointer', fontSize: 14 }}>Cancel</button>
               <button type="button" onClick={saveRoomEdits} style={{ padding: '8px 14px', borderRadius: 9, border: 'none', background: '#6366f1', color: '#ffffff', fontWeight: 800, cursor: 'pointer', fontSize: 14 }}>Save</button>
             </div>
           </div>

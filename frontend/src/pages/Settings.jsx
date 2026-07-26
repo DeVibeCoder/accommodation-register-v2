@@ -40,21 +40,21 @@ function ConfirmationDialog({ config, busy, onCancel, onConfirm }) {
 
   return (
     <div style={{ position: 'fixed', top: isMobile ? 50 : 62, left: 0, right: 0, bottom: 0, background: 'rgba(15, 23, 42, 0.45)', display: 'flex', alignItems: 'flex-start', justifyContent: 'center', zIndex: 1000, padding: 16, overflowY: 'auto', animation: 'fadeIn 0.18s ease both' }}>
-      <div style={{ width: '100%', maxWidth: 460, background: '#fff', borderRadius: 20, boxShadow: '0 24px 60px rgba(15,23,42,.22)', border: '1px solid #dbe4f0', overflow: 'hidden', animation: 'scaleIn 0.22s cubic-bezier(0.22,1,0.36,1) both' }}>
+      <div style={{ width: '100%', maxWidth: 460, background: 'var(--c-card)', borderRadius: 20, boxShadow: '0 24px 60px rgba(15,23,42,.22)', border: '1px solid var(--c-border-2)', overflow: 'hidden', animation: 'scaleIn 0.22s cubic-bezier(0.22,1,0.36,1) both' }}>
         <div style={{ padding: '20px 22px', background: isDanger ? 'linear-gradient(135deg, #7f1d1d 0%, #dc2626 100%)' : 'linear-gradient(135deg, #1e3a8a 0%, #0ea5e9 100%)', color: '#fff' }}>
           <div style={{ fontSize: 12, fontWeight: 800, letterSpacing: 0.5, textTransform: 'uppercase', opacity: 0.9 }}>Please Confirm</div>
           <div style={{ fontSize: 22, fontWeight: 900, marginTop: 4 }}>{config.title}</div>
         </div>
 
         <div style={{ padding: '20px 22px 22px' }}>
-          <p style={{ margin: 0, color: '#475569', fontSize: 15, lineHeight: 1.6, fontWeight: 600 }}>{config.message}</p>
+          <p style={{ margin: 0, color: 'var(--c-text-2)', fontSize: 15, lineHeight: 1.6, fontWeight: 600 }}>{config.message}</p>
 
           <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10, marginTop: 22, flexWrap: 'wrap' }}>
             <button
               type="button"
               onClick={onCancel}
               disabled={busy}
-              style={{ padding: '10px 14px', borderRadius: 10, border: '1px solid #cbd5e1', background: '#fff', color: '#334155', fontWeight: 800, cursor: busy ? 'not-allowed' : 'pointer' }}
+              style={{ padding: '10px 14px', borderRadius: 10, border: '1px solid var(--c-border-3)', background: 'var(--c-card)', color: 'var(--c-text-2)', fontWeight: 800, cursor: busy ? 'not-allowed' : 'pointer' }}
             >
               Cancel
             </button>
@@ -78,12 +78,12 @@ function ResultDialog({ open, title, message, onClose }) {
   const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
   return (
     <div style={{ position: 'fixed', top: isMobile ? 50 : 62, left: 0, right: 0, bottom: 0, background: 'rgba(15, 23, 42, 0.45)', display: 'flex', alignItems: 'flex-start', justifyContent: 'center', zIndex: 1001, padding: 16, overflowY: 'auto', animation: 'fadeIn 0.18s ease both' }}>
-      <div style={{ width: '100%', maxWidth: 420, background: '#fff', borderRadius: 18, boxShadow: '0 24px 60px rgba(15,23,42,.22)', border: '1px solid #dbe4f0', overflow: 'hidden', animation: 'scaleIn 0.22s cubic-bezier(0.22,1,0.36,1) both' }}>
+      <div style={{ width: '100%', maxWidth: 420, background: 'var(--c-card)', borderRadius: 18, boxShadow: '0 24px 60px rgba(15,23,42,.22)', border: '1px solid var(--c-border-2)', overflow: 'hidden', animation: 'scaleIn 0.22s cubic-bezier(0.22,1,0.36,1) both' }}>
         <div style={{ padding: '18px 20px', background: 'linear-gradient(135deg, #1e3a8a 0%, #0ea5e9 100%)', color: '#fff' }}>
           <div style={{ fontSize: 20, fontWeight: 900 }}>{title}</div>
         </div>
         <div style={{ padding: '18px 20px 20px' }}>
-          <p style={{ margin: 0, color: '#475569', fontSize: 15, lineHeight: 1.6, fontWeight: 600 }}>{message}</p>
+          <p style={{ margin: 0, color: 'var(--c-text-2)', fontSize: 15, lineHeight: 1.6, fontWeight: 600 }}>{message}</p>
           <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 18 }}>
             <button
               type="button"
@@ -593,9 +593,9 @@ function Settings({ user, setUser }) {
     setIsSavingRoom(false);
   };
 
-  const cardStyle = { background: '#fff', borderRadius: 18, boxShadow: '0 10px 28px rgba(30,49,95,.08)', border: '1px solid #dfe6f1', padding: '22px 24px', marginBottom: 22 };
-  const labelStyle = { display: 'flex', flexDirection: 'column', gap: 6, color: '#334155', fontWeight: 700, fontSize: 13 };
-  const inputStyle = { fontSize: 14, padding: '10px 12px', borderRadius: 10, border: '1.5px solid #d0d7e2', fontWeight: 600, background: '#fff' };
+  const cardStyle = { background: 'var(--c-card)', borderRadius: 18, boxShadow: '0 10px 28px rgba(30,49,95,.08)', border: '1px solid var(--c-border-2)', padding: '22px 24px', marginBottom: 22 };
+  const labelStyle = { display: 'flex', flexDirection: 'column', gap: 6, color: 'var(--c-text-2)', fontWeight: 700, fontSize: 13 };
+  const inputStyle = { fontSize: 14, padding: '10px 12px', borderRadius: 10, border: '1.5px solid var(--c-border-3)', fontWeight: 600, background: 'var(--c-card)', color: 'var(--c-text)' };
 
   return (
     <div className="page-container" style={{ width: '100%', maxWidth: '100%', margin: 0, padding: isMobile ? '10px 12px 16px' : '12px 32px 24px 32px', background: 'none', fontFamily: 'Inter, Segoe UI, Arial, sans-serif', boxSizing: 'border-box' }}>
@@ -619,14 +619,14 @@ function Settings({ user, setUser }) {
       ) : null}
 
       <div style={cardStyle}>
-        <h2 style={{ fontWeight: 800, fontSize: '1.25rem', color: '#1e293b', margin: 0 }}>My Access</h2>
-        <p style={{ color: '#64748b', fontWeight: 600, margin: '6px 0 16px' }}>Your current permission level in the accommodation system.</p>
+        <h2 style={{ fontWeight: 800, fontSize: '1.25rem', color: 'var(--c-text)', margin: 0 }}>My Access</h2>
+        <p style={{ color: 'var(--c-subtle)', fontWeight: 600, margin: '6px 0 16px' }}>Your current permission level in the accommodation system.</p>
 
         <div style={{ display: 'inline-flex', padding: '8px 14px', borderRadius: 999, background: '#eef2ff', color: '#4338ca', fontWeight: 900, fontSize: 13, marginBottom: 14 }}>
           {user?.role || 'Viewer'}
         </div>
 
-        <div style={{ color: '#475569', fontWeight: 600 }}>
+        <div style={{ color: 'var(--c-text-2)', fontWeight: 600 }}>
           {(roleDescriptions.find(item => item.role === (user?.role || 'Viewer')) || roleDescriptions[0]).desc}
         </div>
       </div>
@@ -636,8 +636,8 @@ function Settings({ user, setUser }) {
           <div style={cardStyle}>
             <div style={{ display: 'flex', justifyContent: 'space-between', gap: 14, alignItems: 'center', flexWrap: 'wrap', marginBottom: 16 }}>
               <div>
-                <h2 style={{ fontWeight: 800, fontSize: '1.25rem', color: '#1e293b', margin: 0 }}>User Access Management</h2>
-                <p style={{ color: '#64748b', fontWeight: 600, margin: '6px 0 0' }}>Manage roles, send password reset emails, and remove users safely.</p>
+                <h2 style={{ fontWeight: 800, fontSize: '1.25rem', color: 'var(--c-text)', margin: 0 }}>User Access Management</h2>
+                <p style={{ color: 'var(--c-subtle)', fontWeight: 600, margin: '6px 0 0' }}>Manage roles, send password reset emails, and remove users safely.</p>
               </div>
               <input
                 type="text"
@@ -650,9 +650,9 @@ function Settings({ user, setUser }) {
 
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 12, marginBottom: 18 }}>
               {roleDescriptions.map(item => (
-                <div key={item.role} style={{ borderRadius: 14, border: '1px solid #dbe4f0', background: '#f8fbff', padding: '14px 16px' }}>
-                  <div style={{ fontWeight: 900, color: '#1e293b', fontSize: 16 }}>{item.role}</div>
-                  <div style={{ marginTop: 4, color: '#64748b', fontSize: 13, minHeight: 36 }}>{item.desc}</div>
+                <div key={item.role} style={{ borderRadius: 14, border: '1px solid var(--c-border-2)', background: 'var(--c-card-alt)', padding: '14px 16px' }}>
+                  <div style={{ fontWeight: 900, color: 'var(--c-text)', fontSize: 16 }}>{item.role}</div>
+                  <div style={{ marginTop: 4, color: 'var(--c-subtle)', fontSize: 13, minHeight: 36 }}>{item.desc}</div>
                   <div style={{ marginTop: 10, display: 'inline-flex', padding: '4px 10px', borderRadius: 999, background: '#e0e7ff', color: '#4338ca', fontWeight: 800, fontSize: 12 }}>
                     {roleCounts[item.role]} users
                   </div>
@@ -661,11 +661,11 @@ function Settings({ user, setUser }) {
             </div>
 
             {usersLoading ? (
-              <div style={{ color: '#64748b', fontWeight: 700 }}>Loading users...</div>
+              <div style={{ color: 'var(--c-subtle)', fontWeight: 700 }}>Loading users...</div>
             ) : (
               <div style={{ display: 'grid', gap: 10 }}>
                 {filteredUsers.length === 0 ? (
-                  <div style={{ color: '#94a3b8', fontWeight: 700, padding: '10px 0' }}>No users found.</div>
+                  <div style={{ color: 'var(--c-muted)', fontWeight: 700, padding: '10px 0' }}>No users found.</div>
                 ) : filteredUsers.map(item => {
                   const selectedRole = pendingRoles[item.id] || item.role;
                   const hasPendingChange = selectedRole !== item.role;
@@ -676,10 +676,10 @@ function Settings({ user, setUser }) {
                   const canDeleteUserRow = item.id !== user?.id && !(item.role === 'Admin' && roleCounts.Admin <= 1);
 
                   return (
-                    <div key={item.id} style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'minmax(0, 1.4fr) 110px 110px minmax(240px, 1.2fr)', gap: isMobile ? 8 : 12, alignItems: 'center', border: '1px solid #e2e8f0', borderRadius: 14, padding: '12px 14px', background: '#fff' }}>
+                    <div key={item.id} style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'minmax(0, 1.4fr) 110px 110px minmax(240px, 1.2fr)', gap: isMobile ? 8 : 12, alignItems: 'center', border: '1px solid var(--c-border)', borderRadius: 14, padding: '12px 14px', background: 'var(--c-card)' }}>
                       <div style={{ minWidth: 0 }}>
-                        <div style={{ fontWeight: 800, color: '#1e293b', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.email || 'No email'}</div>
-                        <div style={{ fontSize: 12, color: '#64748b', marginTop: 3 }}>Created: {formatDate(item.createdAt)}</div>
+                        <div style={{ fontWeight: 800, color: 'var(--c-text)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.email || 'No email'}</div>
+                        <div style={{ fontSize: 12, color: 'var(--c-subtle)', marginTop: 3 }}>Created: {formatDate(item.createdAt)}</div>
                       </div>
                       <div style={{ fontWeight: 700, color: item.emailConfirmed ? '#166534' : '#b45309' }}>{item.emailConfirmed ? 'Confirmed' : 'Pending'}</div>
                       <div>
@@ -725,7 +725,7 @@ function Settings({ user, setUser }) {
                               type="button"
                               onClick={() => setPendingRoles(prev => ({ ...prev, [item.id]: item.role }))}
                               disabled={isBusyUser}
-                              style={{ padding: '8px 12px', borderRadius: 10, border: '1px solid #cbd5e1', background: '#fff', color: '#334155', fontWeight: 800, cursor: isBusyUser ? 'not-allowed' : 'pointer' }}
+                              style={{ padding: '8px 12px', borderRadius: 10, border: '1px solid var(--c-border-3)', background: 'var(--c-card)', color: 'var(--c-text-2)', fontWeight: 800, cursor: isBusyUser ? 'not-allowed' : 'pointer' }}
                             >
                               Cancel
                             </button>
@@ -733,7 +733,7 @@ function Settings({ user, setUser }) {
                         </div>
 
                         {!hasPendingChange ? (
-                          <div style={{ color: '#64748b', fontSize: 12, fontWeight: 700 }}>
+                          <div style={{ color: 'var(--c-subtle)', fontSize: 12, fontWeight: 700 }}>
                             {item.id === user?.id ? 'Current signed-in account cannot be deleted.' : (!canDeleteUserRow ? 'Keep at least one Admin account active.' : 'No pending role changes.')}
                           </div>
                         ) : null}
@@ -748,8 +748,8 @@ function Settings({ user, setUser }) {
           <div style={cardStyle}>
             <div style={{ display: 'flex', justifyContent: 'space-between', gap: 14, alignItems: 'center', flexWrap: 'wrap', marginBottom: 14 }}>
               <div>
-                <h2 style={{ fontWeight: 800, fontSize: '1.2rem', color: '#1e293b', margin: 0 }}>System Health</h2>
-                <p style={{ color: '#64748b', fontWeight: 600, margin: '6px 0 0' }}>Backend integrity snapshot for live occupancy and stay history.</p>
+                <h2 style={{ fontWeight: 800, fontSize: '1.2rem', color: 'var(--c-text)', margin: 0 }}>System Health</h2>
+                <p style={{ color: 'var(--c-subtle)', fontWeight: 600, margin: '6px 0 0' }}>Backend integrity snapshot for live occupancy and stay history.</p>
               </div>
               <button
                 type="button"
@@ -762,23 +762,23 @@ function Settings({ user, setUser }) {
             </div>
 
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 12, marginBottom: 14 }}>
-              <div style={{ borderRadius: 14, border: '1px solid #dbe4f0', background: '#f8fbff', padding: '14px 16px' }}>
-                <div style={{ fontSize: 12, color: '#64748b', fontWeight: 800, textTransform: 'uppercase' }}>Health Status</div>
+              <div style={{ borderRadius: 14, border: '1px solid var(--c-border-2)', background: 'var(--c-card-alt)', padding: '14px 16px' }}>
+                <div style={{ fontSize: 12, color: 'var(--c-subtle)', fontWeight: 800, textTransform: 'uppercase' }}>Health Status</div>
                 <div style={{ marginTop: 8, fontWeight: 900, fontSize: 18, color: healthSummary?.ok ? '#166534' : '#b91c1c' }}>
                   {healthLoading && !healthSummary ? 'Checking...' : (healthSummary?.ok ? 'Healthy' : 'Needs Attention')}
                 </div>
               </div>
-              <div style={{ borderRadius: 14, border: '1px solid #dbe4f0', background: '#f8fbff', padding: '14px 16px' }}>
-                <div style={{ fontSize: 12, color: '#64748b', fontWeight: 800, textTransform: 'uppercase' }}>Active Occupants</div>
-                <div style={{ marginTop: 8, fontWeight: 900, fontSize: 18, color: '#1e293b' }}>{healthSummary?.activeOccupants ?? '-'}</div>
+              <div style={{ borderRadius: 14, border: '1px solid var(--c-border-2)', background: 'var(--c-card-alt)', padding: '14px 16px' }}>
+                <div style={{ fontSize: 12, color: 'var(--c-subtle)', fontWeight: 800, textTransform: 'uppercase' }}>Active Occupants</div>
+                <div style={{ marginTop: 8, fontWeight: 900, fontSize: 18, color: 'var(--c-text)' }}>{healthSummary?.activeOccupants ?? '-'}</div>
               </div>
-              <div style={{ borderRadius: 14, border: '1px solid #dbe4f0', background: '#f8fbff', padding: '14px 16px' }}>
-                <div style={{ fontSize: 12, color: '#64748b', fontWeight: 800, textTransform: 'uppercase' }}>Total Occupancy Rows</div>
-                <div style={{ marginTop: 8, fontWeight: 900, fontSize: 18, color: '#1e293b' }}>{healthSummary?.totalRows ?? '-'}</div>
+              <div style={{ borderRadius: 14, border: '1px solid var(--c-border-2)', background: 'var(--c-card-alt)', padding: '14px 16px' }}>
+                <div style={{ fontSize: 12, color: 'var(--c-subtle)', fontWeight: 800, textTransform: 'uppercase' }}>Total Occupancy Rows</div>
+                <div style={{ marginTop: 8, fontWeight: 900, fontSize: 18, color: 'var(--c-text)' }}>{healthSummary?.totalRows ?? '-'}</div>
               </div>
-              <div style={{ borderRadius: 14, border: '1px solid #dbe4f0', background: '#f8fbff', padding: '14px 16px' }}>
-                <div style={{ fontSize: 12, color: '#64748b', fontWeight: 800, textTransform: 'uppercase' }}>Stay History Entries</div>
-                <div style={{ marginTop: 8, fontWeight: 900, fontSize: 18, color: '#1e293b' }}>{healthSummary?.stayHistoryEntries ?? '-'}</div>
+              <div style={{ borderRadius: 14, border: '1px solid var(--c-border-2)', background: 'var(--c-card-alt)', padding: '14px 16px' }}>
+                <div style={{ fontSize: 12, color: 'var(--c-subtle)', fontWeight: 800, textTransform: 'uppercase' }}>Stay History Entries</div>
+                <div style={{ marginTop: 8, fontWeight: 900, fontSize: 18, color: 'var(--c-text)' }}>{healthSummary?.stayHistoryEntries ?? '-'}</div>
               </div>
             </div>
 
@@ -788,7 +788,7 @@ function Settings({ user, setUser }) {
               </div>
             ) : null}
 
-            <div style={{ color: '#475569', fontWeight: 700, fontSize: 13 }}>
+            <div style={{ color: 'var(--c-text-2)', fontWeight: 700, fontSize: 13 }}>
               Last checked: {healthSummary?.checkedAt ? formatDate(healthSummary.checkedAt) : 'Not checked yet'}
             </div>
 
@@ -809,8 +809,8 @@ function Settings({ user, setUser }) {
           <div style={cardStyle}>
             <div style={{ display: 'flex', justifyContent: 'space-between', gap: 14, alignItems: 'center', flexWrap: 'wrap', marginBottom: 14 }}>
               <div>
-                <h2 style={{ fontWeight: 800, fontSize: '1.2rem', color: '#1e293b', margin: 0 }}>Backup & Restore</h2>
-                <p style={{ color: '#64748b', fontWeight: 600, margin: '6px 0 0' }}>
+                <h2 style={{ fontWeight: 800, fontSize: '1.2rem', color: 'var(--c-text)', margin: 0 }}>Backup & Restore</h2>
+                <p style={{ color: 'var(--c-subtle)', fontWeight: 600, margin: '6px 0 0' }}>
                   Daily automatic backups are stored in the database, and you can create/restore manual snapshots any time.
                 </p>
               </div>
@@ -819,7 +819,7 @@ function Settings({ user, setUser }) {
                   type="button"
                   onClick={handleRefreshBackups}
                   disabled={backupsLoading || backupsBusy}
-                  style={{ padding: '10px 14px', borderRadius: 10, border: '1px solid #cbd5e1', background: '#fff', color: '#334155', fontWeight: 800, cursor: backupsLoading || backupsBusy ? 'not-allowed' : 'pointer' }}
+                  style={{ padding: '10px 14px', borderRadius: 10, border: '1px solid var(--c-border-3)', background: 'var(--c-card)', color: 'var(--c-text-2)', fontWeight: 800, cursor: backupsLoading || backupsBusy ? 'not-allowed' : 'pointer' }}
                 >
                   {backupsLoading ? 'Refreshing...' : 'Refresh'}
                 </button>
@@ -835,33 +835,33 @@ function Settings({ user, setUser }) {
             </div>
 
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 12, marginBottom: 14 }}>
-              <div style={{ borderRadius: 14, border: '1px solid #dbe4f0', background: '#f8fbff', padding: '14px 16px' }}>
-                <div style={{ fontSize: 12, color: '#64748b', fontWeight: 800, textTransform: 'uppercase' }}>Latest Backup</div>
-                <div style={{ marginTop: 8, fontWeight: 900, fontSize: 16, color: '#1e293b' }}>
+              <div style={{ borderRadius: 14, border: '1px solid var(--c-border-2)', background: 'var(--c-card-alt)', padding: '14px 16px' }}>
+                <div style={{ fontSize: 12, color: 'var(--c-subtle)', fontWeight: 800, textTransform: 'uppercase' }}>Latest Backup</div>
+                <div style={{ marginTop: 8, fontWeight: 900, fontSize: 16, color: 'var(--c-text)' }}>
                   {backups[0]?.createdAt ? formatDate(backups[0].createdAt) : 'None'}
                 </div>
               </div>
-              <div style={{ borderRadius: 14, border: '1px solid #dbe4f0', background: '#f8fbff', padding: '14px 16px' }}>
-                <div style={{ fontSize: 12, color: '#64748b', fontWeight: 800, textTransform: 'uppercase' }}>Backups Available</div>
-                <div style={{ marginTop: 8, fontWeight: 900, fontSize: 18, color: '#1e293b' }}>{backups.length}</div>
+              <div style={{ borderRadius: 14, border: '1px solid var(--c-border-2)', background: 'var(--c-card-alt)', padding: '14px 16px' }}>
+                <div style={{ fontSize: 12, color: 'var(--c-subtle)', fontWeight: 800, textTransform: 'uppercase' }}>Backups Available</div>
+                <div style={{ marginTop: 8, fontWeight: 900, fontSize: 18, color: 'var(--c-text)' }}>{backups.length}</div>
               </div>
             </div>
 
             {backupsLoading ? (
-              <div style={{ color: '#64748b', fontWeight: 700 }}>Loading backups...</div>
+              <div style={{ color: 'var(--c-subtle)', fontWeight: 700 }}>Loading backups...</div>
             ) : backups.length === 0 ? (
-              <div style={{ color: '#64748b', fontWeight: 700 }}>
+              <div style={{ color: 'var(--c-subtle)', fontWeight: 700 }}>
                 No backups found. Run "Create Backup Now" after setting up the backup SQL migration.
               </div>
             ) : (
               <div style={{ display: 'grid', gap: 10 }}>
                 {backups.map(item => (
-                  <div key={item.id} style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1.4fr) auto', gap: 12, alignItems: 'center', border: '1px solid #e2e8f0', borderRadius: 14, padding: '12px 14px', background: '#fff' }}>
+                  <div key={item.id} style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1.4fr) auto', gap: 12, alignItems: 'center', border: '1px solid var(--c-border)', borderRadius: 14, padding: '12px 14px', background: 'var(--c-card)' }}>
                     <div style={{ minWidth: 0 }}>
-                      <div style={{ fontWeight: 800, color: '#1e293b' }}>
+                      <div style={{ fontWeight: 800, color: 'var(--c-text)' }}>
                         {item.type === 'daily' ? 'Daily Backup' : 'Manual Backup'} - {formatDate(item.createdAt)}
                       </div>
-                      <div style={{ marginTop: 4, color: '#64748b', fontSize: 12, fontWeight: 700 }}>
+                      <div style={{ marginTop: 4, color: 'var(--c-subtle)', fontSize: 12, fontWeight: 700 }}>
                         Rows: {item.rowCount || 0} | Occupancy: {item?.summary?.occupancy || 0} | Stay history: {item?.summary?.stayHistory || 0}
                       </div>
                     </div>
@@ -880,8 +880,8 @@ function Settings({ user, setUser }) {
           </div>
 
           <div style={cardStyle}>
-            <h2 style={{ fontWeight: 800, fontSize: '1.2rem', color: '#1e293b', marginBottom: 10 }}>Test Data Reset</h2>
-            <p style={{ color: '#64748b', fontWeight: 600, margin: '0 0 16px' }}>
+            <h2 style={{ fontWeight: 800, fontSize: '1.2rem', color: 'var(--c-text)', marginBottom: 10 }}>Test Data Reset</h2>
+            <p style={{ color: 'var(--c-subtle)', fontWeight: 600, margin: '0 0 16px' }}>
               Clear live occupancy and stay history while keeping all room cards and room master data untouched.
             </p>
             <button
@@ -894,8 +894,8 @@ function Settings({ user, setUser }) {
           </div>
 
           <div style={cardStyle}>
-            <h2 style={{ fontWeight: 800, fontSize: '1.2rem', color: '#1e293b', marginBottom: 10 }}>Add Room</h2>
-            <p style={{ color: '#64748b', fontWeight: 600, margin: '0 0 18px' }}>
+            <h2 style={{ fontWeight: 800, fontSize: '1.2rem', color: 'var(--c-text)', marginBottom: 10 }}>Add Room</h2>
+            <p style={{ color: 'var(--c-subtle)', fontWeight: 600, margin: '0 0 18px' }}>
               Add a new room to the live room master so it appears in the Rooms section for future use.
             </p>
 

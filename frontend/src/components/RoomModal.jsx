@@ -30,9 +30,9 @@ const closeBtnStyle = {
   borderRadius: 999,
   fontSize: 22,
   fontWeight: 700,
-  color: '#1e315f',
-  background: '#f8fbff',
-  border: '1px solid #d7e3f3',
+  color: 'var(--c-text)',
+  background: 'var(--c-card-alt)',
+  border: '1px solid var(--c-border-2)',
   cursor: 'pointer',
   zIndex: 10,
   display: 'flex',
@@ -52,8 +52,8 @@ const tableHeaderStyle = {
   gap: 12,
   alignItems: 'center',
   padding: '12px 16px',
-  background: 'linear-gradient(180deg, #f8fbff 0%, #f3f7fd 100%)',
-  borderBottom: '1px solid #dfe6f1',
+  background: 'linear-gradient(180deg, var(--c-card-alt) 0%, var(--c-card-hdr) 100%)',
+  borderBottom: '1px solid var(--c-border-2)',
   position: 'sticky',
   top: 0,
   zIndex: 2,
@@ -64,8 +64,8 @@ const tableRowStyle = (index) => ({
   gap: 12,
   alignItems: 'center',
   padding: '12px 16px',
-  background: index % 2 === 0 ? '#ffffff' : '#f8fbff',
-  borderBottom: '1px solid #ebf0f6',
+  background: index % 2 === 0 ? 'var(--c-card)' : 'var(--c-card-alt)',
+  borderBottom: '1px solid var(--c-border)',
   fontSize: 13.5,
 });
 
@@ -94,7 +94,7 @@ function RoomModal({ open, onClose, room }) {
         className="modal"
         style={{
           ...modalStyle,
-          background: '#fff',
+          background: 'var(--c-card)',
           borderRadius: 18,
           width: isMobile ? '100%' : 'min(1100px, 96vw)',
           height: isMobile ? 'calc(100vh - 50px - 46px - 16px)' : 'min(680px, 88vh)',
@@ -105,43 +105,43 @@ function RoomModal({ open, onClose, room }) {
         }}
         onClick={e => e.stopPropagation()}
       >
-        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', borderBottom: '1px solid #e3eafc', padding: '16px 20px', width: '100%', boxSizing: 'border-box', background: '#fff' }}>
+        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', borderBottom: '1px solid var(--c-border)', padding: '16px 20px', width: '100%', boxSizing: 'border-box', background: 'var(--c-card)' }}>
           <div>
-            <div style={{ fontWeight: 900, fontSize: '1.45rem', color: '#1e315f', letterSpacing: 0.2 }}>{room.id}</div>
-            <div style={{ fontSize: 12.5, color: '#6b7a94', marginTop: 4 }}>{room.building} | FLOOR {room.floor}</div>
+            <div style={{ fontWeight: 900, fontSize: '1.45rem', color: 'var(--c-text)', letterSpacing: 0.2 }}>{room.id}</div>
+            <div style={{ fontSize: 12.5, color: 'var(--c-subtle)', marginTop: 4 }}>{room.building} | FLOOR {room.floor}</div>
           </div>
           <button style={closeBtnStyle} onClick={onClose} aria-label="Close">X</button>
         </div>
 
         <div style={{ padding: '16px 20px 10px', background: '#fff', flex: 1, minHeight: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
-            <div style={{ fontWeight: 800, fontSize: '1.02rem', color: '#1e315f' }}>Occupants</div>
-            <div style={{ fontSize: 12, fontWeight: 700, color: '#64748b', background: '#f8fafc', border: '1px solid #dbe4f0', padding: '6px 10px', borderRadius: 999 }}>
+            <div style={{ fontWeight: 800, fontSize: '1.02rem', color: 'var(--c-text)' }}>Occupants</div>
+            <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--c-subtle)', background: 'var(--c-surface)', border: '1px solid var(--c-border-2)', padding: '6px 10px', borderRadius: 999 }}>
               {activeOccupants.length} active
             </div>
           </div>
 
-          <div style={{ border: '1px solid #dfe6f1', borderRadius: 14, overflow: 'hidden', background: '#fff', flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
+          <div style={{ border: '1px solid var(--c-border-2)', borderRadius: 14, overflow: 'hidden', background: 'var(--c-card)', flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
             {activeOccupants.length === 0 ? (
-              <div style={{ padding: '22px 16px', color: '#7a869a', fontStyle: 'italic', fontSize: 14.5 }}>No occupants in this room.</div>
+              <div style={{ padding: '22px 16px', color: 'var(--c-muted)', fontStyle: 'italic', fontSize: 14.5 }}>No occupants in this room.</div>
             ) : isMobile ? (
               /* Mobile: card per occupant */
               <div style={{ flex: 1, minHeight: 0, overflowY: 'auto', padding: '10px 12px', display: 'flex', flexDirection: 'column', gap: 8 }}>
                 {activeOccupants.map((bed, idx) => (
-                  <div key={idx} style={{ background: idx % 2 === 0 ? '#f8faff' : '#fff', border: '1px solid #e3eafc', borderRadius: 10, padding: '10px 12px' }}>
+                  <div key={idx} style={{ background: idx % 2 === 0 ? 'var(--c-surface)' : 'var(--c-card)', border: '1px solid var(--c-border)', borderRadius: 10, padding: '10px 12px' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 5 }}>
-                      <span style={{ fontSize: 10, fontWeight: 700, color: '#7f93b3', textTransform: 'uppercase' }}>Bed {idx + 1}</span>
+                      <span style={{ fontSize: 10, fontWeight: 700, color: 'var(--c-muted)', textTransform: 'uppercase' }}>Bed {idx + 1}</span>
                       <span style={{ background: '#e3eafc', color: '#1e315f', borderRadius: 999, padding: '3px 9px', fontWeight: 700, fontSize: 11 }}>
                         {bed.occupant.personType || 'Occupant'}
                       </span>
                     </div>
-                    <div style={{ fontWeight: 800, fontSize: 14, color: '#1e293b', marginBottom: 3 }}>{bed.occupant.name}</div>
-                    <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', fontSize: 12, color: '#475569', fontWeight: 600 }}>
+                    <div style={{ fontWeight: 800, fontSize: 14, color: 'var(--c-text)', marginBottom: 3 }}>{bed.occupant.name}</div>
+                    <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', fontSize: 12, color: 'var(--c-text-2)', fontWeight: 600 }}>
                       <span>ID: {bed.occupant.staffId || '-'}</span>
-                      <span style={{ color: '#94a3b8' }}>·</span>
+                      <span style={{ color: 'var(--c-muted)' }}>·</span>
                       <span>{bed.occupant.nationality || '-'}</span>
                     </div>
-                    <div style={{ marginTop: 4, fontSize: 12, color: '#64748b', fontWeight: 600 }}>{bed.occupant.department || '-'}</div>
+                    <div style={{ marginTop: 4, fontSize: 12, color: 'var(--c-subtle)', fontWeight: 600 }}>{bed.occupant.department || '-'}</div>
                   </div>
                 ))}
               </div>
@@ -150,7 +150,7 @@ function RoomModal({ open, onClose, room }) {
               <>
                 <div style={tableHeaderStyle}>
                   {['#', 'ID', 'Name', 'Department', 'Type', 'Nationality'].map(label => (
-                    <div key={label} style={{ fontSize: 10.5, fontWeight: 800, color: '#7f93b3', textTransform: 'uppercase', letterSpacing: 0.6 }}>
+                    <div key={label} style={{ fontSize: 10.5, fontWeight: 800, color: 'var(--c-muted)', textTransform: 'uppercase', letterSpacing: 0.6 }}>
                       {label}
                     </div>
                   ))}
@@ -158,16 +158,16 @@ function RoomModal({ open, onClose, room }) {
                 <div style={{ flex: 1, minHeight: 0, overflowY: 'auto' }}>
                   {activeOccupants.map((bed, idx) => (
                     <div key={idx} style={tableRowStyle(idx)}>
-                      <div style={{ fontWeight: 800, color: '#1e315f' }}>{idx + 1}</div>
-                      <div style={{ color: '#64748b', fontWeight: 700 }}>{bed.occupant.staffId || '-'}</div>
-                      <div style={{ color: '#1e293b', fontWeight: 800, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{bed.occupant.name}</div>
-                      <div style={{ color: '#475569', fontWeight: 600, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{bed.occupant.department || '-'}</div>
+                      <div style={{ fontWeight: 800, color: 'var(--c-text)' }}>{idx + 1}</div>
+                      <div style={{ color: 'var(--c-subtle)', fontWeight: 700 }}>{bed.occupant.staffId || '-'}</div>
+                      <div style={{ color: 'var(--c-text)', fontWeight: 800, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{bed.occupant.name}</div>
+                      <div style={{ color: 'var(--c-text-2)', fontWeight: 600, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{bed.occupant.department || '-'}</div>
                       <div>
                         <span style={{ background: '#e3eafc', color: '#1e315f', borderRadius: 999, padding: '4px 10px', fontWeight: 700, fontSize: 12 }}>
                           {bed.occupant.personType || 'Occupant'}
                         </span>
                       </div>
-                      <div style={{ color: '#475569', fontWeight: 600 }}>{bed.occupant.nationality || '-'}</div>
+                      <div style={{ color: 'var(--c-text-2)', fontWeight: 600 }}>{bed.occupant.nationality || '-'}</div>
                     </div>
                   ))}
                 </div>
@@ -177,12 +177,12 @@ function RoomModal({ open, onClose, room }) {
         </div>
 
         <div style={{ padding: '0 20px 16px', background: '#fff', flexShrink: 0 }}>
-          <div style={{ fontWeight: 800, fontSize: '0.92rem', marginBottom: 6, color: '#1e315f' }}>Room Summary</div>
+          <div style={{ fontWeight: 800, fontSize: '0.92rem', marginBottom: 6, color: 'var(--c-text)' }}>Room Summary</div>
           <div style={summaryGrid}>
             {summaryItems.map(([label, value]) => (
-              <div key={label} style={{ background: '#f8fbff', border: '1px solid #dde7f3', borderRadius: 8, padding: '6px 8px', minWidth: 0 }}>
-                <div style={{ fontSize: 9, color: '#7f93b3', textTransform: 'uppercase', fontWeight: 700, letterSpacing: 0.4, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{label}</div>
-                <div style={{ marginTop: 1, fontSize: 12.5, fontWeight: 800, color: '#1e293b', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{value}</div>
+              <div key={label} style={{ background: 'var(--c-card-alt)', border: '1px solid var(--c-border-2)', borderRadius: 8, padding: '6px 8px', minWidth: 0 }}>
+                <div style={{ fontSize: 9, color: 'var(--c-muted)', textTransform: 'uppercase', fontWeight: 700, letterSpacing: 0.4, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{label}</div>
+                <div style={{ marginTop: 1, fontSize: 12.5, fontWeight: 800, color: 'var(--c-text)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{value}</div>
               </div>
             ))}
           </div>

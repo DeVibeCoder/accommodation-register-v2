@@ -127,8 +127,8 @@ function BottomNav({ role, pathname }) {
       position: 'fixed',
       bottom: 0, left: 0, right: 0,
       zIndex: 300,
-      background: '#ffffff',
-      borderTop: '1.5px solid #e2e8f0',
+      background: 'var(--c-card)',
+      borderTop: '1.5px solid var(--c-border)',
       display: 'flex',
       alignItems: 'stretch',
       boxShadow: '0 -2px 16px rgba(15,23,42,0.10)',
@@ -192,6 +192,20 @@ function Layout({ user, onLogout }) {
   const location = useLocation();
   const vw = useViewportWidth();
   const isMobile = vw < 768;
+
+  const [isDark, setIsDark] = React.useState(() => localStorage.getItem('theme') === 'dark');
+  const toggleTheme = () => setIsDark(prev => {
+    const next = !prev;
+    localStorage.setItem('theme', next ? 'dark' : 'light');
+    return next;
+  });
+  React.useEffect(() => {
+    document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
+  }, [isDark]);
+  React.useEffect(() => {
+    document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const uidRef = useRef(1000);
@@ -331,7 +345,7 @@ function Layout({ user, onLogout }) {
   }, []);
 
   return (
-    <div style={{ minHeight: '100vh', overflow: 'hidden', background: '#f1f5f9' }}>
+    <div style={{ minHeight: '100vh', overflow: 'hidden', background: 'var(--c-bg)' }}>
 
       {/* Desktop sidebar — hidden completely on mobile */}
       {!isMobile && (
@@ -361,8 +375,8 @@ function Layout({ user, onLogout }) {
           style={{
             height: isMobile ? 50 : 62,
             minHeight: isMobile ? 50 : 62,
-            background: '#ffffff',
-            borderBottom: '1px solid #e2e8f0',
+            background: 'var(--c-card)',
+            borderBottom: '1px solid var(--c-border)',
             display: 'flex',
             alignItems: 'center',
             padding: isMobile ? '0 12px' : '0 24px',
@@ -400,14 +414,54 @@ function Layout({ user, onLogout }) {
 
           {/* Page name — centered */}
           <div style={{ flex: 1, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-            <span style={{ fontWeight: 700, fontSize: isMobile ? 16 : 17, color: '#1e293b', letterSpacing: '-0.2px' }}>
+            <span style={{ fontWeight: 700, fontSize: isMobile ? 16 : 17, color: 'var(--c-text)', letterSpacing: '-0.2px' }}>
               {PAGE_NAMES[location.pathname] ?? 'TIC Meals & Stay'}
             </span>
           </div>
 
-          {/* Mobile right actions: settings (admin) + logout */}
+          {/* Desktop right: theme toggle */}
+          {!isMobile && (
+            <div style={{ display: 'flex', gap: 6, alignItems: 'center', flexShrink: 0 }}>
+              <button
+                onClick={toggleTheme}
+                title={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
+                style={{
+                  width: 34, height: 34,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  background: isDark ? '#1e3a5f' : 'transparent',
+                  border: isDark ? '1px solid #334155' : '1px solid #e2e8f0',
+                  color: isDark ? '#fbbf24' : '#64748b',
+                  cursor: 'pointer',
+                  borderRadius: 8,
+                  fontSize: 16,
+                  transition: 'all 0.15s',
+                }}
+              >
+                {isDark ? '☀️' : '🌙'}
+              </button>
+            </div>
+          )}
+
+          {/* Mobile right actions: theme toggle + settings (admin) + logout */}
           {isMobile && (
             <div style={{ display: 'flex', gap: 6, alignItems: 'center', flexShrink: 0 }}>
+              <button
+                onClick={toggleTheme}
+                title={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
+                style={{
+                  width: 34, height: 34,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  background: isDark ? '#1e3a5f' : 'transparent',
+                  border: isDark ? '1px solid #334155' : '1px solid #e2e8f0',
+                  color: isDark ? '#fbbf24' : '#64748b',
+                  cursor: 'pointer',
+                  borderRadius: 8,
+                  fontSize: 16,
+                  transition: 'all 0.15s',
+                }}
+              >
+                {isDark ? '☀️' : '🌙'}
+              </button>
               {isAdmin && (
                 <NavLink
                   to="/settings"
@@ -496,7 +550,7 @@ function Layout({ user, onLogout }) {
               </div>
             ) : (
               <div key={location.pathname} style={{ animation: 'fadeIn 0.25s ease both' }}>
-                <Outlet context={{ sidebarCollapsed, setSidebarCollapsed, occupants, setOccupants, roomsState, setRoomsState, getNextUid, stayHistory, setStayHistory, addStayHistory, prependStayHistoryEntry, mealExclusionSummary, setMealExclusionSummary, refreshMealExclusionSummary, user, role, isAdmin, canEditAccommodation, canEditMeals, canUseOccupancyBulkTools, canExportRooms, isMobile }} />
+                <Outlet context={{ sidebarCollapsed, setSidebarCollapsed, occupants, setOccupants, roomsState, setRoomsState, getNextUid, stayHistory, setStayHistory, addStayHistory, prependStayHistoryEntry, mealExclusionSummary, setMealExclusionSummary, refreshMealExclusionSummary, user, role, isAdmin, canEditAccommodation, canEditMeals, canUseOccupancyBulkTools, canExportRooms, isMobile, isDark }} />
               </div>
             )}
           </div>

@@ -36,9 +36,9 @@ function HistoryDetailModal({ item, onClose, isMobile }) {
   const idLabel = item.staffId ? `ID ${item.staffId}` : item.wpPpNo ? `WP/PP ${item.wpPpNo}` : null;
 
   const row = (label, value) => value ? (
-    <div style={{ display: 'flex', gap: 8, alignItems: 'baseline', padding: '5px 0', borderBottom: '1px solid #f1f5f9' }}>
-      <span style={{ fontSize: 11, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 0.4, minWidth: 88, flexShrink: 0 }}>{label}</span>
-      <span style={{ fontSize: 13, fontWeight: 600, color: '#1e293b' }}>{value}</span>
+    <div style={{ display: 'flex', gap: 8, alignItems: 'baseline', padding: '5px 0', borderBottom: '1px solid var(--c-border)' }}>
+      <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--c-muted)', textTransform: 'uppercase', letterSpacing: 0.4, minWidth: 88, flexShrink: 0 }}>{label}</span>
+      <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--c-text)' }}>{value}</span>
     </div>
   ) : null;
 
@@ -49,7 +49,7 @@ function HistoryDetailModal({ item, onClose, isMobile }) {
     >
       <div
         onClick={e => e.stopPropagation()}
-        style={{ background: '#fff', borderRadius: 18, padding: '20px', maxWidth: 380, width: '100%', boxShadow: '0 20px 60px rgba(15,23,42,0.25)', animation: 'scaleIn 0.2s cubic-bezier(0.22,1,0.36,1) both' }}
+        style={{ background: 'var(--c-card)', borderRadius: 18, padding: '20px', maxWidth: 380, width: '100%', boxShadow: '0 20px 60px rgba(15,23,42,0.25)', animation: 'scaleIn 0.2s cubic-bezier(0.22,1,0.36,1) both' }}
       >
         {/* Header */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 14 }}>
@@ -57,10 +57,10 @@ function HistoryDetailModal({ item, onClose, isMobile }) {
             <span style={{ display: 'inline-flex', alignItems: 'center', padding: '4px 10px', borderRadius: 999, background: tone.bg, color: tone.text, fontWeight: 800, fontSize: 12, marginBottom: 8 }}>
               {item.type}
             </span>
-            <div style={{ fontWeight: 800, fontSize: 15, color: '#1e293b', lineHeight: 1.3 }}>{item.name || '-'}</div>
+            <div style={{ fontWeight: 800, fontSize: 15, color: 'var(--c-text)', lineHeight: 1.3 }}>{item.name || '-'}</div>
             {idLabel && <div style={{ fontSize: 11, fontWeight: 700, color: '#6366f1', marginTop: 2 }}>{idLabel}</div>}
           </div>
-          <button onClick={onClose} style={{ width: 28, height: 28, borderRadius: '50%', border: '1px solid #e2e8f0', background: '#f8fafc', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#64748b', fontSize: 13, fontWeight: 700, flexShrink: 0, marginLeft: 8 }}>✕</button>
+          <button onClick={onClose} style={{ width: 28, height: 28, borderRadius: '50%', border: '1px solid var(--c-border)', background: 'var(--c-surface)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--c-subtle)', fontSize: 13, fontWeight: 700, flexShrink: 0, marginLeft: 8 }}>✕</button>
         </div>
 
         {/* Details */}
@@ -152,7 +152,7 @@ function StayHistory() {
 
       {/* ── Top bar: count + search ── */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: isMobile ? 8 : 16, marginBottom: isMobile ? 8 : 14, flexWrap: isMobile ? 'nowrap' : 'wrap' }}>
-        <p style={{ margin: 0, color: '#94a3b8', fontSize: isMobile ? 10 : 13, fontWeight: 600, flexShrink: 0 }}>
+        <p style={{ margin: 0, color: 'var(--c-muted)', fontSize: isMobile ? 10 : 13, fontWeight: 600, flexShrink: 0 }}>
           {filtered.length} of {stayHistory.length} {isMobile ? 'activities' : 'recorded accommodation activities'}
         </p>
         <input
@@ -160,7 +160,7 @@ function StayHistory() {
           placeholder={isMobile ? 'Search...' : 'Search name, ID, room, action...'}
           value={search}
           onChange={e => setSearch(e.target.value)}
-          style={{ padding: isMobile ? '6px 10px' : '9px 14px', borderRadius: 10, border: '1.5px solid #d0d7e2', minWidth: isMobile ? 0 : 260, width: isMobile ? '100%' : 'auto', fontSize: isMobile ? 12 : 14, background: '#fff' }}
+          style={{ padding: isMobile ? '6px 10px' : '9px 14px', borderRadius: 10, border: '1.5px solid var(--c-border-3)', minWidth: isMobile ? 0 : 260, width: isMobile ? '100%' : 'auto', fontSize: isMobile ? 12 : 14, background: 'var(--c-card)', color: 'var(--c-text)' }}
         />
       </div>
 
@@ -172,7 +172,7 @@ function StayHistory() {
             <button
               key={filter}
               onClick={() => setActiveFilter(filter)}
-              style={{ padding: isMobile ? '4px 9px' : '9px 16px', borderRadius: 999, border: isActive ? '1px solid #2563eb' : '1px solid #d7e1ef', background: isActive ? '#dbeafe' : '#fff', color: isActive ? '#4338ca' : '#475569', fontWeight: 700, fontSize: isMobile ? 10 : 13, cursor: 'pointer', flexShrink: 0, whiteSpace: 'nowrap' }}
+              style={{ padding: isMobile ? '4px 9px' : '9px 16px', borderRadius: 999, border: isActive ? '1px solid #2563eb' : '1px solid var(--c-border-2)', background: isActive ? '#dbeafe' : 'var(--c-card)', color: isActive ? '#4338ca' : 'var(--c-text-2)', fontWeight: 700, fontSize: isMobile ? 10 : 13, cursor: 'pointer', flexShrink: 0, whiteSpace: 'nowrap' }}
             >
               {filter}
             </button>
@@ -184,7 +184,7 @@ function StayHistory() {
       {isMobile ? (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
           {filtered.length === 0 ? (
-            <div style={{ padding: '40px 16px', textAlign: 'center', color: '#94a3b8', background: '#fff', borderRadius: 16 }}>
+            <div style={{ padding: '40px 16px', textAlign: 'center', color: 'var(--c-muted)', background: 'var(--c-card)', borderRadius: 16 }}>
               No stay activity has been recorded yet for this filter.
             </div>
           ) : (
@@ -195,16 +195,16 @@ function StayHistory() {
                 <div
                   key={item.id || index}
                   onClick={() => setDetailItem(item)}
-                  style={{ background: '#fff', borderRadius: 14, padding: '11px 13px', boxShadow: '0 2px 8px rgba(30,49,95,0.06)', border: '1px solid #e8eef6', animation: 'fadeUp 0.3s ease both', animationDelay: `${Math.min(index, 10) * 25}ms`, cursor: 'pointer', WebkitTapHighlightColor: 'transparent' }}
+                  style={{ background: 'var(--c-card)', borderRadius: 14, padding: '11px 13px', boxShadow: '0 2px 8px rgba(30,49,95,0.06)', border: '1px solid var(--c-border)', animation: 'fadeUp 0.3s ease both', animationDelay: `${Math.min(index, 10) * 25}ms`, cursor: 'pointer', WebkitTapHighlightColor: 'transparent' }}
                 >
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
                     <span style={{ display: 'inline-flex', alignItems: 'center', padding: '3px 9px', borderRadius: 999, background: tone.bg, color: tone.text, fontWeight: 800, fontSize: 11 }}>
                       {item.type === 'Edit' ? 'Edit' : item.type}
                     </span>
-                    <span style={{ fontSize: 10, color: '#94a3b8', fontWeight: 600 }}>{formatTime(item.timestamp)}</span>
+                    <span style={{ fontSize: 10, color: 'var(--c-muted)', fontWeight: 600 }}>{formatTime(item.timestamp)}</span>
                   </div>
-                  <div style={{ fontWeight: 700, color: '#1e293b', fontSize: 13, marginBottom: 1 }}>{item.name || '-'}</div>
-                  <div style={{ fontSize: 10, color: '#94a3b8', fontWeight: 600, marginBottom: 5, display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                  <div style={{ fontWeight: 700, color: 'var(--c-text)', fontSize: 13, marginBottom: 1 }}>{item.name || '-'}</div>
+                  <div style={{ fontSize: 10, color: 'var(--c-muted)', fontWeight: 600, marginBottom: 5, display: 'flex', gap: 6, flexWrap: 'wrap' }}>
                     {idLabel && <span style={{ color: '#6366f1' }}>{idLabel}</span>}
                     {(item.section || item.department) && (
                       <span>{[item.section, shortCode(item.department)].filter(Boolean).join(' | ')}</span>
@@ -212,8 +212,8 @@ function StayHistory() {
                   </div>
                   <div style={{ display: 'flex', alignItems: 'baseline', gap: 6, flexWrap: 'wrap' }}>
                     <span style={{ color: '#6366f1', fontWeight: 800, fontSize: 11 }}>{item.roomId || '-'}</span>
-                    {item.bedNo ? <span style={{ color: '#94a3b8', fontSize: 10, fontWeight: 600 }}>Bed {item.bedNo}</span> : null}
-                    {item.details ? <span style={{ color: '#475569', fontSize: 11, fontWeight: 500 }}>— {item.details}</span> : null}
+                    {item.bedNo ? <span style={{ color: 'var(--c-muted)', fontSize: 10, fontWeight: 600 }}>Bed {item.bedNo}</span> : null}
+                    {item.details ? <span style={{ color: 'var(--c-text-2)', fontSize: 11, fontWeight: 500 }}>— {item.details}</span> : null}
                   </div>
                   {isAdmin && (
                     <div style={{ marginTop: 7, display: 'flex', justifyContent: 'flex-end' }}>
@@ -232,8 +232,8 @@ function StayHistory() {
         </div>
       ) : (
         /* ── Desktop table view ── */
-        <div style={{ background: '#fff', borderRadius: 18, boxShadow: '0 8px 26px rgba(30,49,95,.08)', border: '1px solid #dfe6f1', overflow: 'hidden' }}>
-          <div style={{ display: 'grid', gridTemplateColumns: cols, padding: '0 20px', height: 44, alignItems: 'center', background: 'linear-gradient(180deg, #f8fbff 0%, #f3f7fd 100%)', borderBottom: '1px solid #dfe6f1', gap: 12 }}>
+        <div style={{ background: 'var(--c-card)', borderRadius: 18, boxShadow: '0 8px 26px rgba(30,49,95,.08)', border: '1px solid var(--c-border-2)', overflow: 'hidden' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: cols, padding: '0 20px', height: 44, alignItems: 'center', background: 'linear-gradient(180deg, var(--c-card-alt) 0%, var(--c-card-hdr) 100%)', borderBottom: '1px solid var(--c-border-2)', gap: 12 }}>
             {[...['Action', 'Person', 'Room', 'Details', 'Time'], ...(isAdmin ? [''] : [])].map(label => (
               <span key={label} style={{ fontSize: 10.5, fontWeight: 700, color: '#7f93b3', textTransform: 'uppercase', letterSpacing: 0.6 }}>
                 {label}
@@ -242,19 +242,19 @@ function StayHistory() {
           </div>
 
           {filtered.length === 0 ? (
-            <div style={{ padding: '56px 20px', textAlign: 'center', color: '#94a3b8' }}>
+            <div style={{ padding: '56px 20px', textAlign: 'center', color: 'var(--c-muted)' }}>
               No stay activity has been recorded yet for this filter.
             </div>
           ) : (
             filtered.map((item, index) => {
               const tone = ACTION_STYLES[item.type] || ACTION_STYLES.Edit;
-              const rowBg = index % 2 === 0 ? '#ffffff' : '#f8fbff';
+              const rowBg = index % 2 === 0 ? 'var(--c-card)' : 'var(--c-card-alt)';
               const idLabel = item.staffId ? `ID ${item.staffId}` : item.wpPpNo ? `WP/PP ${item.wpPpNo}` : null;
               return (
                 <div
                   key={item.id || index}
                   onClick={() => setDetailItem(item)}
-                  style={{ display: 'grid', gridTemplateColumns: cols, gap: 12, alignItems: 'center', padding: '12px 20px', borderBottom: '1px solid #e8eef6', background: rowBg, cursor: 'pointer', transition: 'background 0.12s' }}
+                  style={{ display: 'grid', gridTemplateColumns: cols, gap: 12, alignItems: 'center', padding: '12px 20px', borderBottom: '1px solid var(--c-border)', background: rowBg, cursor: 'pointer', transition: 'background 0.12s' }}
                   onMouseEnter={e => { e.currentTarget.style.background = '#eef2ff'; }}
                   onMouseLeave={e => { e.currentTarget.style.background = rowBg; }}
                 >
@@ -264,8 +264,8 @@ function StayHistory() {
                     </span>
                   </div>
                   <div style={{ minWidth: 0 }}>
-                    <div style={{ fontWeight: 700, color: '#1e293b', fontSize: 13, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{item.name || '-'}</div>
-                    <div style={{ fontSize: 11, color: '#94a3b8', fontWeight: 600, marginTop: 1, display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                    <div style={{ fontWeight: 700, color: 'var(--c-text)', fontSize: 13, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{item.name || '-'}</div>
+                    <div style={{ fontSize: 11, color: 'var(--c-muted)', fontWeight: 600, marginTop: 1, display: 'flex', gap: 6, flexWrap: 'wrap' }}>
                       {idLabel && <span style={{ color: '#6366f1' }}>{idLabel}</span>}
                       {(item.section || item.department) && (
                         <span>{[item.section, shortCode(item.department)].filter(Boolean).join(' | ')}</span>
@@ -274,10 +274,10 @@ function StayHistory() {
                   </div>
                   <div style={{ color: '#6366f1', fontWeight: 800, fontSize: 12 }}>
                     {item.roomId || '-'}
-                    {item.bedNo ? <div style={{ color: '#94a3b8', fontWeight: 600, fontSize: 10, marginTop: 1 }}>Bed {item.bedNo}</div> : null}
+                    {item.bedNo ? <div style={{ color: 'var(--c-muted)', fontWeight: 600, fontSize: 10, marginTop: 1 }}>Bed {item.bedNo}</div> : null}
                   </div>
-                  <div style={{ color: '#475569', fontWeight: 600, fontSize: 12, lineHeight: 1.4, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.details || '-'}</div>
-                  <div style={{ color: '#64748b', fontSize: 11.5, fontWeight: 600 }}>{formatTime(item.timestamp)}</div>
+                  <div style={{ color: 'var(--c-text-2)', fontWeight: 600, fontSize: 12, lineHeight: 1.4, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.details || '-'}</div>
+                  <div style={{ color: 'var(--c-subtle)', fontSize: 11.5, fontWeight: 600 }}>{formatTime(item.timestamp)}</div>
                   {isAdmin && (
                     <div>
                       <button

@@ -87,7 +87,7 @@ function MealDayDetailModal({ row, departments, onClose }) {
 
   return (
     <div style={{ position: 'fixed', top: isMobile ? 50 : 62, left: 0, right: 0, bottom: 0, background: 'rgba(15,23,42,0.6)', backdropFilter: 'blur(4px)', zIndex: 3500, display: 'flex', alignItems: 'flex-start', justifyContent: 'center', padding: 16, overflowY: 'auto' }} onClick={onClose}>
-      <div style={{ width: '100%', maxWidth: 500, background: '#fff', borderRadius: 18, boxShadow: '0 24px 80px rgba(15,23,42,0.3)', maxHeight: '88vh', display: 'flex', flexDirection: 'column' }} onClick={e => e.stopPropagation()}>
+      <div style={{ width: '100%', maxWidth: 500, background: 'var(--c-card)', borderRadius: 18, boxShadow: '0 24px 80px rgba(15,23,42,0.3)', maxHeight: '88vh', display: 'flex', flexDirection: 'column' }} onClick={e => e.stopPropagation()}>
 
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '18px 22px', borderBottom: '1px solid #e8edf5', background: 'linear-gradient(135deg, #1e315f 0%, #2563eb 100%)', borderRadius: '18px 18px 0 0' }}>
           <div>
@@ -104,29 +104,29 @@ function MealDayDetailModal({ row, departments, onClose }) {
             const sharePct = row.total > 0 ? ((count / row.total) * 100).toFixed(1) : '0.0';
             const color = BADGE_COLORS[idx % BADGE_COLORS.length];
             return (
-              <div key={dept} style={{ display: 'grid', gridTemplateColumns: 'auto 1fr auto', gap: 12, alignItems: 'center', padding: '11px 22px', borderBottom: '1px solid #f1f5f9' }}>
+              <div key={dept} style={{ display: 'grid', gridTemplateColumns: 'auto 1fr auto', gap: 12, alignItems: 'center', padding: '11px 22px', borderBottom: '1px solid var(--c-border)' }}>
                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3, minWidth: 42 }}>
                   <span style={{ fontSize: 10, fontWeight: 800, padding: '3px 7px', borderRadius: 6, background: color.bg, color: color.text, letterSpacing: 0.4, textTransform: 'uppercase', whiteSpace: 'nowrap' }}>{shortCode(dept)}</span>
                 </div>
                 <div style={{ minWidth: 0 }}>
-                  <div style={{ fontWeight: 700, color: '#1e293b', fontSize: 13, lineHeight: 1.3, marginBottom: 5 }}>{dept}</div>
-                  <div style={{ position: 'relative', height: 6, borderRadius: 6, background: '#e9edf5', overflow: 'hidden' }}>
+                  <div style={{ fontWeight: 700, color: 'var(--c-text)', fontSize: 13, lineHeight: 1.3, marginBottom: 5 }}>{dept}</div>
+                  <div style={{ position: 'relative', height: 6, borderRadius: 6, background: 'var(--c-border)', overflow: 'hidden' }}>
                     <div style={{ position: 'absolute', left: 0, top: 0, height: '100%', width: `${pct}%`, background: count > 0 ? color.text : '#cbd5e1', borderRadius: 6, transition: 'width .4s ease' }} />
                   </div>
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', minWidth: 50 }}>
-                  <span style={{ fontWeight: 900, color: count > 0 ? '#0f172a' : '#94a3b8', fontSize: 20, lineHeight: 1 }}>{count}</span>
-                  <span style={{ fontSize: 10.5, color: '#94a3b8', fontWeight: 600, marginTop: 2 }}>{sharePct}%</span>
+                  <span style={{ fontWeight: 900, color: count > 0 ? 'var(--c-text)' : 'var(--c-muted)', fontSize: 20, lineHeight: 1 }}>{count}</span>
+                  <span style={{ fontSize: 10.5, color: 'var(--c-muted)', fontWeight: 600, marginTop: 2 }}>{sharePct}%</span>
                 </div>
               </div>
             );
           })}
-          {departments.length === 0 && <div style={{ color: '#94a3b8', padding: 20, textAlign: 'center', fontSize: 13 }}>No department data available.</div>}
+          {departments.length === 0 && <div style={{ color: 'var(--c-muted)', padding: 20, textAlign: 'center', fontSize: 13 }}>No department data available.</div>}
         </div>
 
-        <div style={{ borderTop: '1px solid #e8edf5', padding: '14px 22px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#f8fafc', borderRadius: '0 0 18px 18px' }}>
-          <div style={{ color: '#475569', fontSize: 13, fontWeight: 700 }}>Total Meals</div>
-          <div style={{ color: '#0f172a', fontWeight: 900, fontSize: 26 }}>{row.total || 0}</div>
+        <div style={{ borderTop: '1px solid var(--c-border)', padding: '14px 22px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--c-surface)', borderRadius: '0 0 18px 18px' }}>
+          <div style={{ color: 'var(--c-text-2)', fontSize: 13, fontWeight: 700 }}>Total Meals</div>
+          <div style={{ color: 'var(--c-text)', fontWeight: 900, fontSize: 26 }}>{row.total || 0}</div>
         </div>
       </div>
     </div>
@@ -306,13 +306,13 @@ function MealHistory() {
   return (
     <div className="page-container" style={{ width: '100%', maxWidth: '100%', margin: 0, padding: isMobile ? '10px 12px 20px' : '12px clamp(12px, 3vw, 32px) 30px', background: 'none', fontFamily: 'Inter, Segoe UI, Arial, sans-serif', boxSizing: 'border-box' }}>
       <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: isMobile ? 6 : 16, marginBottom: isMobile ? 8 : 14, flexWrap: 'wrap' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: isMobile ? 4 : 8, flexWrap: 'wrap', padding: isMobile ? 7 : 10, borderRadius: isMobile ? 12 : 16, background: 'linear-gradient(180deg, #ffffff 0%, #f8fbff 100%)', border: '1px solid #dbe4f0', boxShadow: '0 10px 28px rgba(15,23,42,0.06)', width: isMobile ? '100%' : 'auto' }}>
-          <select value={selectedMonth} onChange={e => setSelectedMonth(e.target.value)} style={{ height: isMobile ? 28 : 36, minWidth: isMobile ? 0 : 150, flex: isMobile ? '1 1 0' : 'none', border: '1px solid #cbd5e1', borderRadius: 8, padding: '0 6px', fontWeight: 600, color: '#334155', fontSize: isMobile ? 11 : 14 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: isMobile ? 4 : 8, flexWrap: 'wrap', padding: isMobile ? 7 : 10, borderRadius: isMobile ? 12 : 16, background: 'linear-gradient(180deg, var(--c-card) 0%, var(--c-card-alt) 100%)', border: '1px solid var(--c-border-2)', boxShadow: '0 10px 28px rgba(15,23,42,0.06)', width: isMobile ? '100%' : 'auto' }}>
+          <select value={selectedMonth} onChange={e => setSelectedMonth(e.target.value)} style={{ height: isMobile ? 28 : 36, minWidth: isMobile ? 0 : 150, flex: isMobile ? '1 1 0' : 'none', border: '1px solid var(--c-border-3)', borderRadius: 8, padding: '0 6px', fontWeight: 600, color: 'var(--c-text-2)', background: 'var(--c-card)', fontSize: isMobile ? 11 : 14 }}>
             {monthOptions.map(month => <option key={month} value={month}>{month}</option>)}
           </select>
-          <input type="date" value={fromDate} onChange={e => setFromDate(e.target.value)} style={{ height: isMobile ? 28 : 36, flex: isMobile ? '1 1 0' : 'none', border: '1px solid #cbd5e1', borderRadius: 8, padding: '0 6px', fontWeight: 600, color: '#334155', fontSize: isMobile ? 11 : 14, minWidth: 0 }} />
-          <input type="date" value={toDate} onChange={e => setToDate(e.target.value)} style={{ height: isMobile ? 28 : 36, flex: isMobile ? '1 1 0' : 'none', border: '1px solid #cbd5e1', borderRadius: 8, padding: '0 6px', fontWeight: 600, color: '#334155', fontSize: isMobile ? 11 : 14, minWidth: 0 }} />
-          <button onClick={handleExport} disabled={filteredRows.length === 0} style={{ height: isMobile ? 28 : 36, padding: isMobile ? '0 8px' : '0 14px', borderRadius: 8, border: '1px solid #94a3b8', background: filteredRows.length === 0 ? '#e2e8f0' : '#dbe4ef', color: '#1e293b', fontWeight: 800, cursor: filteredRows.length === 0 ? 'not-allowed' : 'pointer', fontSize: isMobile ? 11 : 14, whiteSpace: 'nowrap' }}>{isMobile ? 'CSV' : 'Export CSV'}</button>
+          <input type="date" value={fromDate} onChange={e => setFromDate(e.target.value)} style={{ height: isMobile ? 28 : 36, flex: isMobile ? '1 1 0' : 'none', border: '1px solid var(--c-border-3)', borderRadius: 8, padding: '0 6px', fontWeight: 600, color: 'var(--c-text-2)', background: 'var(--c-card)', fontSize: isMobile ? 11 : 14, minWidth: 0 }} />
+          <input type="date" value={toDate} onChange={e => setToDate(e.target.value)} style={{ height: isMobile ? 28 : 36, flex: isMobile ? '1 1 0' : 'none', border: '1px solid var(--c-border-3)', borderRadius: 8, padding: '0 6px', fontWeight: 600, color: 'var(--c-text-2)', background: 'var(--c-card)', fontSize: isMobile ? 11 : 14, minWidth: 0 }} />
+          <button onClick={handleExport} disabled={filteredRows.length === 0} style={{ height: isMobile ? 28 : 36, padding: isMobile ? '0 8px' : '0 14px', borderRadius: 8, border: '1px solid var(--c-border-3)', background: filteredRows.length === 0 ? 'var(--c-border)' : 'var(--c-card-alt)', color: 'var(--c-text)', fontWeight: 800, cursor: filteredRows.length === 0 ? 'not-allowed' : 'pointer', fontSize: isMobile ? 11 : 14, whiteSpace: 'nowrap' }}>{isMobile ? 'CSV' : 'Export CSV'}</button>
           <button onClick={loadHistory} disabled={loading} style={{ height: isMobile ? 28 : 36, padding: isMobile ? '0 8px' : '0 14px', borderRadius: 8, border: 'none', background: loading ? '#cbd5e1' : '#6366f1', color: '#fff', fontWeight: 800, cursor: loading ? 'not-allowed' : 'pointer', fontSize: isMobile ? 11 : 14, whiteSpace: 'nowrap' }}>{loading ? (isMobile ? '...' : 'Refreshing...') : 'Refresh'}</button>
         </div>
       </div>
@@ -338,34 +338,34 @@ function MealHistory() {
         </div>
       </div>
 
-      <div style={{ background: '#fff', border: '1px solid #dbe4f0', borderRadius: 18, overflow: 'hidden', boxShadow: '0 18px 40px rgba(15,23,42,0.06)' }}>
-        {loading && history.length === 0 ? <div style={{ color: '#64748b', fontWeight: 700, padding: 16 }}>Loading history...</div> : null}
-        {!loading && filteredRows.length === 0 ? <div style={{ color: '#64748b', fontWeight: 700, padding: 16 }}>No meal history records for the selected filters.</div> : null}
+      <div style={{ background: 'var(--c-card)', border: '1px solid var(--c-border-2)', borderRadius: 18, overflow: 'hidden', boxShadow: '0 18px 40px rgba(15,23,42,0.06)' }}>
+        {loading && history.length === 0 ? <div style={{ color: 'var(--c-subtle)', fontWeight: 700, padding: 16 }}>Loading history...</div> : null}
+        {!loading && filteredRows.length === 0 ? <div style={{ color: 'var(--c-subtle)', fontWeight: 700, padding: 16 }}>No meal history records for the selected filters.</div> : null}
 
         {filteredRows.length > 0 ? (
           <div style={{ overflowX: 'auto' }}>
             <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: 600 }}>
               <thead>
                 <tr>
-                  <th style={{ textAlign: 'left', padding: isMobile ? '7px 8px' : '14px 16px', fontSize: isMobile ? 10 : 12, color: '#475569', textTransform: 'uppercase', letterSpacing: '.06em', borderBottom: '1px solid #dbe4f0', background: '#f8fafc' }}>Date</th>
+                  <th style={{ textAlign: 'left', padding: isMobile ? '7px 8px' : '14px 16px', fontSize: isMobile ? 10 : 12, color: 'var(--c-text-2)', textTransform: 'uppercase', letterSpacing: '.06em', borderBottom: '1px solid var(--c-border-2)', background: 'var(--c-surface)' }}>Date</th>
                   {departments.map(dept => (
-                    <th key={dept} title={dept} style={{ textAlign: 'center', padding: isMobile ? '7px 6px' : '14px 10px', fontSize: isMobile ? 10 : 12, color: '#475569', textTransform: 'uppercase', letterSpacing: '.06em', borderBottom: '1px solid #dbe4f0', background: '#f8fafc', whiteSpace: 'nowrap' }}>{shortCode(dept)}</th>
+                    <th key={dept} title={dept} style={{ textAlign: 'center', padding: isMobile ? '7px 6px' : '14px 10px', fontSize: isMobile ? 10 : 12, color: 'var(--c-text-2)', textTransform: 'uppercase', letterSpacing: '.06em', borderBottom: '1px solid var(--c-border-2)', background: 'var(--c-surface)', whiteSpace: 'nowrap' }}>{shortCode(dept)}</th>
                   ))}
-                  <th style={{ textAlign: 'center', padding: isMobile ? '7px 6px' : '14px 12px', fontSize: isMobile ? 10 : 12, color: '#475569', textTransform: 'uppercase', letterSpacing: '.06em', borderBottom: '1px solid #dbe4f0', background: '#f8fafc' }}>Total</th>
+                  <th style={{ textAlign: 'center', padding: isMobile ? '7px 6px' : '14px 12px', fontSize: isMobile ? 10 : 12, color: 'var(--c-text-2)', textTransform: 'uppercase', letterSpacing: '.06em', borderBottom: '1px solid var(--c-border-2)', background: 'var(--c-surface)' }}>Total</th>
                 </tr>
               </thead>
               <tbody>
                 {filteredRows.map((row, index) => {
-                  const baseBg = row.date === todayIso ? '#e0f2fe' : (index % 2 === 0 ? '#fff' : '#fbfdff');
+                  const baseBg = row.date === todayIso ? '#e0f2fe' : (index % 2 === 0 ? 'var(--c-card)' : 'var(--c-card-alt)');
                   return (
-                  <tr key={row.date} style={{ cursor: 'pointer', borderBottom: '1px solid #edf2f7', background: baseBg, transition: 'background .15s ease' }} onClick={() => setSelectedRow(row)} onMouseEnter={e => { e.currentTarget.style.background = '#eef6ff'; }} onMouseLeave={e => { e.currentTarget.style.background = baseBg; }}>
-                    <td style={{ padding: isMobile ? '7px 8px' : '13px 16px', color: '#1f2937', fontWeight: 700, fontSize: isMobile ? 11 : 14 }}>
+                  <tr key={row.date} style={{ cursor: 'pointer', borderBottom: '1px solid var(--c-border)', background: baseBg, transition: 'background .15s ease' }} onClick={() => setSelectedRow(row)} onMouseEnter={e => { e.currentTarget.style.background = '#eef6ff'; }} onMouseLeave={e => { e.currentTarget.style.background = baseBg; }}>
+                    <td style={{ padding: isMobile ? '7px 8px' : '13px 16px', color: 'var(--c-text)', fontWeight: 700, fontSize: isMobile ? 11 : 14 }}>
                       {formatDateForUi(row.date)}
                     </td>
                     {departments.map(dept => (
                       <td key={`${row.date}-${dept}`} style={{ textAlign: 'center', padding: isMobile ? '7px 6px' : '13px 10px', color: '#3730a3', fontWeight: 700, fontSize: isMobile ? 11 : 14 }}>{row.counts?.[dept] || 0}</td>
                     ))}
-                    <td style={{ textAlign: 'center', padding: isMobile ? '7px 6px' : '13px 12px', color: '#0f172a', fontWeight: 900, fontSize: isMobile ? 11 : 14 }}>{row.total || 0}</td>
+                    <td style={{ textAlign: 'center', padding: isMobile ? '7px 6px' : '13px 12px', color: 'var(--c-text)', fontWeight: 900, fontSize: isMobile ? 11 : 14 }}>{row.total || 0}</td>
                   </tr>
                   );
                 })}

@@ -20,17 +20,17 @@ function asDate(value) {
 }
 
 const thStyle = {
-  padding: '10px 14px', fontSize: 11, fontWeight: 800, color: '#64748b',
+  padding: '10px 14px', fontSize: 11, fontWeight: 800, color: 'var(--c-subtle)',
   textTransform: 'uppercase', letterSpacing: '0.06em',
-  borderBottom: '1px solid #e2e8f0', background: '#f8fafc',
+  borderBottom: '1px solid var(--c-border)', background: 'var(--c-surface)',
   textAlign: 'left', whiteSpace: 'nowrap',
 };
-const tdStyle = { padding: '12px 14px', borderBottom: '1px solid #f1f5f9', verticalAlign: 'middle', fontSize: 13 };
+const tdStyle = { padding: '12px 14px', borderBottom: '1px solid var(--c-border)', verticalAlign: 'middle', fontSize: 13 };
 const thMobile = { padding: '7px 8px', fontSize: 10 };
 const tdMobile = { padding: '7px 8px', fontSize: 11 };
 const modalFieldStyle = {
-  height: 40, padding: '9px 10px', borderRadius: 8, border: '1px solid #cbd5e1',
-  fontSize: 13, boxSizing: 'border-box', width: '100%', background: '#ffffff',
+  height: 40, padding: '9px 10px', borderRadius: 8, border: '1px solid var(--c-border-3)',
+  fontSize: 13, boxSizing: 'border-box', width: '100%', background: 'var(--c-card)', color: 'var(--c-text)',
 };
 
 function normalizeText(value) {
@@ -120,58 +120,58 @@ function ExclusionModal({ open, onClose, occupants, canEdit, onSaved, editEntry 
   if (!open) return null;
   return (
     <div style={{ position: 'fixed', top: isMobile ? 50 : 62, left: 0, right: 0, bottom: 0, background: 'rgba(15,23,42,0.5)', zIndex: 3000, display: 'flex', alignItems: 'flex-start', justifyContent: 'center', padding: 16, overflowY: 'auto', animation: 'fadeIn 0.18s ease both' }}>
-      <div style={{ background: 'linear-gradient(180deg,#ffffff 0%,#f8fbff 100%)', borderRadius: 16, width: '100%', maxWidth: 560, boxShadow: '0 20px 60px rgba(0,0,0,0.2)', border: '1px solid #dbeafe', fontFamily: 'Inter,Segoe UI,Arial,sans-serif', animation: 'scaleIn 0.22s cubic-bezier(0.22,1,0.36,1) both' }}>
+      <div style={{ background: 'linear-gradient(180deg, var(--c-card) 0%, var(--c-card-alt) 100%)', borderRadius: 16, width: '100%', maxWidth: 560, boxShadow: '0 20px 60px rgba(0,0,0,0.2)', border: '1px solid #dbeafe', fontFamily: 'Inter,Segoe UI,Arial,sans-serif', animation: 'scaleIn 0.22s cubic-bezier(0.22,1,0.36,1) both' }}>
         <div style={{ padding: '18px 24px 15px', borderBottom: '1px solid #dbeafe', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'linear-gradient(130deg,#eff6ff 0%,#f8fbff 100%)', borderRadius: '16px 16px 0 0' }}>
           <div>
-            <div style={{ fontWeight: 800, fontSize: '1.1rem', color: '#1e293b' }}>{isEditing ? 'Edit Meal Exclusion' : 'Add Meal Exclusion'}</div>
-            <div style={{ fontSize: 12, color: '#64748b', marginTop: 2 }}>{isEditing ? 'Update exclusion details for selected occupant' : 'Exclude a staff member from meals for a date range'}</div>
+            <div style={{ fontWeight: 800, fontSize: '1.1rem', color: 'var(--c-text)' }}>{isEditing ? 'Edit Meal Exclusion' : 'Add Meal Exclusion'}</div>
+            <div style={{ fontSize: 12, color: 'var(--c-subtle)', marginTop: 2 }}>{isEditing ? 'Update exclusion details for selected occupant' : 'Exclude a staff member from meals for a date range'}</div>
           </div>
-          <button onClick={handleClose} style={{ background: 'none', border: 'none', fontSize: 22, cursor: 'pointer', color: '#64748b', lineHeight: 1 }}>X</button>
+          <button onClick={handleClose} style={{ background: 'none', border: 'none', fontSize: 22, cursor: 'pointer', color: 'var(--c-subtle)', lineHeight: 1 }}>X</button>
         </div>
         <form onSubmit={handleSubmit} style={{ padding: '18px 24px 20px' }}>
           {error ? <div style={{ marginBottom: 12, padding: '9px 12px', background: '#fef2f2', border: '1px solid #fecaca', borderRadius: 8, color: '#dc2626', fontSize: 13, fontWeight: 600 }}>{error}</div> : null}
-          <div style={{ display: 'grid', gap: 14, background: '#fff', border: '1px solid #e2e8f0', borderRadius: 12, padding: 14 }}>
-            <div style={{ display: 'grid', gap: 5, fontWeight: 700, color: '#334155', fontSize: 12, position: 'relative', zIndex: 10 }}>
+          <div style={{ display: 'grid', gap: 14, background: 'var(--c-card)', border: '1px solid var(--c-border)', borderRadius: 12, padding: 14 }}>
+            <div style={{ display: 'grid', gap: 5, fontWeight: 700, color: 'var(--c-text-2)', fontSize: 12, position: 'relative', zIndex: 10 }}>
               Occupant (search by Name or Staff ID)
               <input value={occupantQuery} onChange={e => { setOccupantQuery(e.target.value); setSelectedOccupantId(''); setShowMatches(true); }} onFocus={() => setShowMatches(true)} onBlur={() => setTimeout(() => setShowMatches(false), 150)} placeholder="Click to see all, or type to search" disabled={!canEdit || saving} style={modalFieldStyle} />
               {showMatches && (filteredOccupants.length > 0 || occupants.length === 0) ? (
-                <div style={{ position: 'absolute', left: 0, right: 0, top: '100%', marginTop: 2, background: '#fff', border: '2px solid #2563eb', borderRadius: 8, boxShadow: '0 12px 32px rgba(15,23,42,0.18)', zIndex: 30, maxHeight: 240, overflowY: 'auto' }}>
+                <div style={{ position: 'absolute', left: 0, right: 0, top: '100%', marginTop: 2, background: 'var(--c-card)', border: '2px solid #2563eb', borderRadius: 8, boxShadow: '0 12px 32px rgba(15,23,42,0.18)', zIndex: 30, maxHeight: 240, overflowY: 'auto' }}>
                   {filteredOccupants.length === 0
-                    ? <div style={{ padding: '12px 10px', color: '#64748b', fontSize: 12, textAlign: 'center' }}>{occupants.length === 0 ? 'No occupants available' : 'No matches found'}</div>
+                    ? <div style={{ padding: '12px 10px', color: 'var(--c-subtle)', fontSize: 12, textAlign: 'center' }}>{occupants.length === 0 ? 'No occupants available' : 'No matches found'}</div>
                     : filteredOccupants.map(item => (
                       <button key={item.id || item._id} type="button" onMouseDown={() => handlePickOccupant(item)}
-                        style={{ width: '100%', textAlign: 'left', border: 'none', background: '#fff', padding: '10px 12px', cursor: 'pointer', borderBottom: '1px solid #e2e8f0', fontSize: 12 }}
-                        onMouseEnter={e => e.currentTarget.style.background = '#eff6ff'} onMouseLeave={e => e.currentTarget.style.background = '#fff'}>
-                        <div style={{ fontWeight: 700, color: '#1f2937', fontSize: 13 }}>{item.name || 'Unknown'}</div>
-                        <div style={{ color: '#64748b', fontSize: 11, marginTop: 2 }}>ID: {item.staffId || '-'} | {item.roomId || '-'} / Bed {item.bedNo ?? '-'}</div>
+                        style={{ width: '100%', textAlign: 'left', border: 'none', background: 'var(--c-card)', padding: '10px 12px', cursor: 'pointer', borderBottom: '1px solid var(--c-border)', fontSize: 12 }}
+                        onMouseEnter={e => e.currentTarget.style.background = '#eff6ff'} onMouseLeave={e => e.currentTarget.style.background = 'var(--c-card)'}>
+                        <div style={{ fontWeight: 700, color: 'var(--c-text)', fontSize: 13 }}>{item.name || 'Unknown'}</div>
+                        <div style={{ color: 'var(--c-subtle)', fontSize: 11, marginTop: 2 }}>ID: {item.staffId || '-'} | {item.roomId || '-'} / Bed {item.bedNo ?? '-'}</div>
                       </button>
                     ))}
                 </div>
               ) : null}
             </div>
-            <label style={{ display: 'grid', gap: 5, fontWeight: 700, color: '#334155', fontSize: 12 }}>
+            <label style={{ display: 'grid', gap: 5, fontWeight: 700, color: 'var(--c-text-2)', fontSize: 12 }}>
               Reason
               <select value={reason} onChange={e => setReason(e.target.value)} disabled={!canEdit || saving} style={modalFieldStyle}>
                 {REASONS.map(r => <option key={r} value={r}>{r}</option>)}
               </select>
             </label>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, alignItems: 'end' }}>
-              <label style={{ display: 'grid', gap: 5, fontWeight: 700, color: '#334155', fontSize: 12 }}>
-                <span>From Date</span><span style={{ fontWeight: 500, color: '#94a3b8', fontSize: 11 }}>required</span>
+              <label style={{ display: 'grid', gap: 5, fontWeight: 700, color: 'var(--c-text-2)', fontSize: 12 }}>
+                <span>From Date</span><span style={{ fontWeight: 500, color: 'var(--c-muted)', fontSize: 11 }}>required</span>
                 <input type="date" value={fromDate} max={toDate || undefined} onChange={e => setFromDate(e.target.value)} disabled={!canEdit || saving} required style={modalFieldStyle} />
               </label>
-              <label style={{ display: 'grid', gap: 5, fontWeight: 700, color: '#334155', fontSize: 12 }}>
-                <span>To Date</span><span style={{ fontWeight: 500, color: '#94a3b8', fontSize: 11 }}>optional</span>
+              <label style={{ display: 'grid', gap: 5, fontWeight: 700, color: 'var(--c-text-2)', fontSize: 12 }}>
+                <span>To Date</span><span style={{ fontWeight: 500, color: 'var(--c-muted)', fontSize: 11 }}>optional</span>
                 <input type="date" value={toDate} min={fromDate || undefined} onChange={e => setToDate(e.target.value)} disabled={!canEdit || saving} style={modalFieldStyle} />
               </label>
             </div>
-            <label style={{ display: 'grid', gap: 5, fontWeight: 700, color: '#334155', fontSize: 12 }}>
-              Notes <span style={{ fontWeight: 400, color: '#94a3b8' }}>(optional)</span>
+            <label style={{ display: 'grid', gap: 5, fontWeight: 700, color: 'var(--c-text-2)', fontSize: 12 }}>
+              Notes <span style={{ fontWeight: 400, color: 'var(--c-muted)' }}>(optional)</span>
               <input value={notes} onChange={e => setNotes(e.target.value)} disabled={!canEdit || saving} placeholder="Any additional notes..." style={modalFieldStyle} />
             </label>
           </div>
           <div style={{ display: 'flex', gap: 10, marginTop: 20, justifyContent: 'flex-end' }}>
-            <button type="button" onClick={handleClose} style={{ padding: '9px 18px', borderRadius: 8, border: '1px solid #cbd5e1', background: '#fff', color: '#334155', fontWeight: 700, cursor: 'pointer', fontSize: 13 }}>Cancel</button>
+            <button type="button" onClick={handleClose} style={{ padding: '9px 18px', borderRadius: 8, border: '1px solid var(--c-border-3)', background: 'var(--c-card)', color: 'var(--c-text-2)', fontWeight: 700, cursor: 'pointer', fontSize: 13 }}>Cancel</button>
             <button type="submit" disabled={!canEdit || saving} style={{ padding: '9px 22px', borderRadius: 8, border: 'none', background: saving ? '#93c5fd' : '#6366f1', color: '#fff', fontWeight: 700, cursor: saving ? 'not-allowed' : 'pointer', fontSize: 13 }}>
               {saving ? 'Saving...' : isEditing ? 'Update Exclusion' : 'Save Exclusion'}
             </button>
@@ -376,13 +376,13 @@ function ImportModal({ open, onClose, occupants, onImported }) {
 
   return (
     <div style={{ position: 'fixed', top: isMobile ? 50 : 62, left: 0, right: 0, bottom: 0, background: 'rgba(15,23,42,0.5)', zIndex: 3000, display: 'flex', alignItems: 'flex-start', justifyContent: 'center', padding: 16, overflowY: 'auto' }}>
-      <div style={{ background: '#fff', borderRadius: 16, width: '100%', maxWidth: 860, maxHeight: '88vh', overflow: 'hidden', display: 'flex', flexDirection: 'column', boxShadow: '0 20px 60px rgba(0,0,0,0.2)', fontFamily: 'Inter,Segoe UI,Arial,sans-serif' }}>
-        <div style={{ padding: '18px 22px', borderBottom: '1px solid #e2e8f0', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'linear-gradient(130deg,#f0fdf4 0%,#f8fbff 100%)', borderRadius: '16px 16px 0 0' }}>
+      <div style={{ background: 'var(--c-card)', borderRadius: 16, width: '100%', maxWidth: 860, maxHeight: '88vh', overflow: 'hidden', display: 'flex', flexDirection: 'column', boxShadow: '0 20px 60px rgba(0,0,0,0.2)', fontFamily: 'Inter,Segoe UI,Arial,sans-serif' }}>
+        <div style={{ padding: '18px 22px', borderBottom: '1px solid var(--c-border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'linear-gradient(130deg,#f0fdf4 0%,#f8fbff 100%)', borderRadius: '16px 16px 0 0' }}>
           <div>
-            <div style={{ fontWeight: 800, color: '#1e293b', fontSize: '1.05rem' }}>Bulk Import Meal Exclusions</div>
-            <div style={{ fontSize: 12, color: '#64748b', marginTop: 2 }}>Upload a CSV to add multiple exclusions at once - existing data is never overwritten</div>
+            <div style={{ fontWeight: 800, color: 'var(--c-text)', fontSize: '1.05rem' }}>Bulk Import Meal Exclusions</div>
+            <div style={{ fontSize: 12, color: 'var(--c-subtle)', marginTop: 2 }}>Upload a CSV to add multiple exclusions at once - existing data is never overwritten</div>
           </div>
-          <button onClick={handleClose} style={{ background: 'none', border: 'none', fontSize: 22, cursor: 'pointer', color: '#64748b', lineHeight: 1 }}>X</button>
+          <button onClick={handleClose} style={{ background: 'none', border: 'none', fontSize: 22, cursor: 'pointer', color: 'var(--c-subtle)', lineHeight: 1 }}>X</button>
         </div>
 
         <div style={{ padding: '16px 22px', overflowY: 'auto', flex: 1 }}>
@@ -391,9 +391,9 @@ function ImportModal({ open, onClose, occupants, onImported }) {
             <button onClick={downloadTemplate} style={{ padding: '8px 14px', borderRadius: 8, border: '1px solid #16a34a', background: '#f0fdf4', color: '#15803d', fontWeight: 700, fontSize: 12, cursor: 'pointer' }}>
               Download Template
             </button>
-            <span style={{ color: '#94a3b8', fontSize: 12 }}>then fill it in and upload below</span>
+            <span style={{ color: 'var(--c-muted)', fontSize: 12 }}>then fill it in and upload below</span>
           </div>
-          <div style={{ background: '#f8fafc', border: '2px dashed #cbd5e1', borderRadius: 10, padding: '16px', marginBottom: 14, textAlign: 'center' }}>
+          <div style={{ background: 'var(--c-surface)', border: '2px dashed var(--c-border-3)', borderRadius: 10, padding: '16px', marginBottom: 14, textAlign: 'center' }}>
             <input ref={fileRef} type="file" accept=".csv,text/csv" onChange={handleFile} style={{ display: 'none' }} id="csv-upload" />
             <label htmlFor="csv-upload" style={{ cursor: 'pointer', display: 'inline-block' }}>
               <div style={{ fontSize: 13, color: '#6366f1', fontWeight: 700 }}>Click to select CSV file</div>
@@ -418,7 +418,7 @@ function ImportModal({ open, onClose, occupants, onImported }) {
                 <span style={{ background: '#dcfce7', color: '#166534', fontWeight: 700, fontSize: 12, padding: '3px 10px', borderRadius: 999 }}>{validCount} valid</span>
                 {invalidCount > 0 ? <span style={{ background: '#fee2e2', color: '#991b1b', fontWeight: 700, fontSize: 12, padding: '3px 10px', borderRadius: 999 }}>{invalidCount} with errors (will be skipped)</span> : null}
               </div>
-              <div style={{ overflowX: 'auto', border: '1px solid #e2e8f0', borderRadius: 10, maxHeight: 320, overflowY: 'auto' }}>
+              <div style={{ overflowX: 'auto', border: '1px solid var(--c-border)', borderRadius: 10, maxHeight: 320, overflowY: 'auto' }}>
                 <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: 700 }}>
                   <thead>
                     <tr>
@@ -430,7 +430,7 @@ function ImportModal({ open, onClose, occupants, onImported }) {
                   <tbody>
                     {parsed.map(row => (
                       <tr key={row.rowNum} style={{ background: row.valid ? '#fff' : '#fff5f5' }}>
-                        <td style={{ ...tdStyle, padding: '8px 10px', color: '#64748b', fontSize: 11 }}>{row.rowNum}</td>
+                        <td style={{ ...tdStyle, padding: '8px 10px', color: 'var(--c-subtle)', fontSize: 11 }}>{row.rowNum}</td>
                         <td style={{ ...tdStyle, padding: '8px 10px', fontWeight: 600, fontSize: 12 }}>{row.name || '-'}</td>
                         <td style={{ ...tdStyle, padding: '8px 10px', fontSize: 12 }}>{row.staffId || '-'}</td>
                         <td style={{ ...tdStyle, padding: '8px 10px', fontSize: 12 }}>
@@ -438,7 +438,7 @@ function ImportModal({ open, onClose, occupants, onImported }) {
                         </td>
                         <td style={{ ...tdStyle, padding: '8px 10px', fontSize: 12 }}>{row.fromDateDisplay || formatIsoDateToDmy(row.fromDate) || '-'}</td>
                         <td style={{ ...tdStyle, padding: '8px 10px', fontSize: 12 }}>{row.toDateDisplay || formatIsoDateToDmy(row.toDate) || '-'}</td>
-                        <td style={{ ...tdStyle, padding: '8px 10px', fontSize: 11, color: '#64748b', maxWidth: 120, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{row.notes || '-'}</td>
+                        <td style={{ ...tdStyle, padding: '8px 10px', fontSize: 11, color: 'var(--c-subtle)', maxWidth: 120, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{row.notes || '-'}</td>
                         <td style={{ ...tdStyle, padding: '8px 10px', fontSize: 11 }}>
                           {row.matchedOccupant ? <span style={{ color: '#166534', fontWeight: 600 }}>OK {row.matchedOccupant}</span> : <span style={{ color: '#92400e' }}>Unmatched</span>}
                         </td>
@@ -456,8 +456,8 @@ function ImportModal({ open, onClose, occupants, onImported }) {
           ) : null}
         </div>
 
-        <div style={{ padding: '14px 22px', borderTop: '1px solid #e2e8f0', display: 'flex', gap: 10, justifyContent: 'flex-end', background: '#fafafa', borderRadius: '0 0 16px 16px' }}>
-          <button onClick={handleClose} style={{ padding: '9px 18px', borderRadius: 8, border: '1px solid #cbd5e1', background: '#fff', color: '#334155', fontWeight: 700, cursor: 'pointer', fontSize: 13 }}>
+        <div style={{ padding: '14px 22px', borderTop: '1px solid var(--c-border)', display: 'flex', gap: 10, justifyContent: 'flex-end', background: 'var(--c-surface)', borderRadius: '0 0 16px 16px' }}>
+          <button onClick={handleClose} style={{ padding: '9px 18px', borderRadius: 8, border: '1px solid var(--c-border-3)', background: 'var(--c-card)', color: 'var(--c-text-2)', fontWeight: 700, cursor: 'pointer', fontSize: 13 }}>
             {result ? 'Close' : 'Cancel'}
           </button>
           {parsed && !result ? (
@@ -496,17 +496,17 @@ function ExclusionHistoryModal({ open, onClose }) {
   if (!open) return null;
   return (
     <div style={{ position: 'fixed', top: isMobile ? 50 : 62, left: 0, right: 0, bottom: 0, background: 'rgba(15,23,42,0.5)', zIndex: 3000, display: 'flex', alignItems: 'flex-start', justifyContent: 'center', padding: 16, overflowY: 'auto' }}>
-      <div style={{ background: '#fff', borderRadius: 16, width: '100%', maxWidth: 980, boxShadow: '0 20px 60px rgba(0,0,0,0.2)', maxHeight: '84vh', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
-        <div style={{ padding: '18px 22px', borderBottom: '1px solid #e2e8f0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <div style={{ background: 'var(--c-card)', borderRadius: 16, width: '100%', maxWidth: 980, boxShadow: '0 20px 60px rgba(0,0,0,0.2)', maxHeight: '84vh', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+        <div style={{ padding: '18px 22px', borderBottom: '1px solid var(--c-border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div>
-            <div style={{ fontWeight: 800, color: '#1e293b', fontSize: '1.05rem' }}>Exclusion History</div>
-            <div style={{ fontSize: 12, color: '#64748b', marginTop: 2 }}>Past exclusions that have reached their to-date</div>
+            <div style={{ fontWeight: 800, color: 'var(--c-text)', fontSize: '1.05rem' }}>Exclusion History</div>
+            <div style={{ fontSize: 12, color: 'var(--c-subtle)', marginTop: 2 }}>Past exclusions that have reached their to-date</div>
           </div>
-          <button onClick={onClose} style={{ background: 'none', border: 'none', fontSize: 22, cursor: 'pointer', color: '#64748b', lineHeight: 1 }}>X</button>
+          <button onClick={onClose} style={{ background: 'none', border: 'none', fontSize: 22, cursor: 'pointer', color: 'var(--c-subtle)', lineHeight: 1 }}>X</button>
         </div>
         <div style={{ padding: 16, overflowY: 'auto', flex: 1 }}>
           {error ? <div style={{ marginBottom: 12, padding: '9px 12px', background: '#fef2f2', border: '1px solid #fecaca', borderRadius: 8, color: '#dc2626', fontSize: 13, fontWeight: 600 }}>{error}</div> : null}
-          {loading ? <div style={{ padding: '10px 0', color: '#64748b', fontWeight: 600 }}>Loading history...</div>
+          {loading ? <div style={{ padding: '10px 0', color: 'var(--c-subtle)', fontWeight: 600 }}>Loading history...</div>
             : <ExclusionTable rows={historyRows} canEdit={false} closingId="" onClose={() => {}} onEdit={() => {}} emptyText="No past exclusions found." />}
         </div>
       </div>
@@ -541,31 +541,31 @@ function ExclusionTable({ rows, canEdit, closingId, onClose, onEdit, emptyText, 
         </thead>
         <tbody>
           {rows.length === 0
-            ? <tr><td colSpan={6} style={{ ...td, color: '#94a3b8', fontWeight: 600, textAlign: 'center', padding: '24px 14px' }}>{emptyText}</td></tr>
+            ? <tr><td colSpan={6} style={{ ...td, color: 'var(--c-muted)', fontWeight: 600, textAlign: 'center', padding: '24px 14px' }}>{emptyText}</td></tr>
             : rows.map((item, idx) => {
               const rc = reasonColor(item.reason);
               return (
                 <tr
                   key={item.id}
-                  style={{ background: idx % 2 === 0 ? '#fff' : '#fbfdff', transition: 'background .15s ease' }}
+                  style={{ background: idx % 2 === 0 ? 'var(--c-card)' : 'var(--c-card-alt)', transition: 'background .15s ease' }}
                   onMouseEnter={e => { e.currentTarget.style.background = '#eef6ff'; }}
-                  onMouseLeave={e => { e.currentTarget.style.background = idx % 2 === 0 ? '#fff' : '#fbfdff'; }}
+                  onMouseLeave={e => { e.currentTarget.style.background = idx % 2 === 0 ? 'var(--c-card)' : 'var(--c-card-alt)'; }}
                 >
                   <td style={td}>
-                    <div style={{ fontWeight: 800, color: '#1f2937', fontSize: isMobile ? 11 : 13, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{item.name}</div>
-                    {item.staffId ? <div style={{ fontSize: isMobile ? 10 : 11, color: '#64748b', marginTop: 1 }}>{item.staffId}</div> : null}
+                    <div style={{ fontWeight: 800, color: 'var(--c-text)', fontSize: isMobile ? 11 : 13, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{item.name}</div>
+                    {item.staffId ? <div style={{ fontSize: isMobile ? 10 : 11, color: 'var(--c-subtle)', marginTop: 1 }}>{item.staffId}</div> : null}
                   </td>
-                  <td style={{ ...td, color: '#374151', fontWeight: 600, textTransform: 'uppercase', fontSize: isMobile ? 10 : 12, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{item.department || '-'}</td>
+                  <td style={{ ...td, color: 'var(--c-text)', fontWeight: 600, textTransform: 'uppercase', fontSize: isMobile ? 10 : 12, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{item.department || '-'}</td>
                   <td style={td}>
                     <span style={{ display: 'inline-block', padding: isMobile ? '2px 6px' : '3px 10px', borderRadius: 999, background: rc.bg, color: rc.text, fontWeight: 700, fontSize: isMobile ? 10 : 11, border: `1px solid ${rc.text}30` }}>{item.reason}</span>
                   </td>
-                  <td style={{ ...td, color: '#374151' }}>{asDate(item.fromDate)}</td>
-                  <td style={{ ...td, color: '#374151' }}>{item.toDate ? asDate(item.toDate) : '-'}</td>
+                  <td style={{ ...td, color: 'var(--c-text)' }}>{asDate(item.fromDate)}</td>
+                  <td style={{ ...td, color: 'var(--c-text)' }}>{item.toDate ? asDate(item.toDate) : '-'}</td>
                   <td style={{ ...td, textAlign: 'right' }}>
                     {canEdit ? (
                       <div style={{ display: 'flex', justifyContent: 'flex-end', gap: isMobile ? 4 : 6 }}>
                         <button onClick={() => onEdit(item)} style={{ padding: isMobile ? '3px 7px' : '5px 10px', borderRadius: 6, border: '1px solid #93c5fd', background: '#eff6ff', color: '#4338ca', fontWeight: 700, cursor: 'pointer', fontSize: isMobile ? 10 : 12 }}>Edit</button>
-                        <button onClick={() => onClose(item.id)} disabled={closingId === item.id} style={{ padding: isMobile ? '3px 7px' : '5px 10px', borderRadius: 6, border: '1px solid #fca5a5', background: '#fff', color: '#dc2626', fontWeight: 700, cursor: closingId === item.id ? 'not-allowed' : 'pointer', fontSize: isMobile ? 10 : 12 }}>
+                        <button onClick={() => onClose(item.id)} disabled={closingId === item.id} style={{ padding: isMobile ? '3px 7px' : '5px 10px', borderRadius: 6, border: '1px solid #fca5a5', background: 'var(--c-card)', color: '#dc2626', fontWeight: 700, cursor: closingId === item.id ? 'not-allowed' : 'pointer', fontSize: isMobile ? 10 : 12 }}>
                           {closingId === item.id ? '...' : 'Remove'}
                         </button>
                       </div>
@@ -742,15 +742,15 @@ function MealExclusion() {
     return (
       <button onClick={() => setActiveTab(value)} style={{
         padding: '10px 22px', border: 'none', cursor: 'pointer', fontSize: 13, fontWeight: 800,
-        background: isActive ? '#fff' : 'transparent',
-        color: isActive ? color : '#64748b',
+        background: isActive ? 'var(--c-card)' : 'transparent',
+        color: isActive ? color : 'var(--c-subtle)',
         borderBottom: isActive ? `3px solid ${color}` : '3px solid transparent',
         borderRadius: 0,
         transition: 'all 0.15s',
         display: 'flex', alignItems: 'center', gap: 8,
       }}>
         {label}
-        <span style={{ background: isActive ? color : '#e2e8f0', color: isActive ? '#fff' : '#64748b', borderRadius: 999, padding: '1px 8px', fontSize: 11, fontWeight: 800 }}>{count}</span>
+        <span style={{ background: isActive ? color : 'var(--c-border)', color: isActive ? '#fff' : 'var(--c-subtle)', borderRadius: 999, padding: '1px 8px', fontSize: 11, fontWeight: 800 }}>{count}</span>
       </button>
     );
   };
@@ -760,7 +760,7 @@ function MealExclusion() {
 
       {/* --- Action bar (mirrors MealHistory filter bar) --- */}
       <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', marginBottom: isMobile ? 8 : 14, flexWrap: 'wrap' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: isMobile ? 4 : 8, flexWrap: 'wrap', padding: isMobile ? 7 : 10, borderRadius: isMobile ? 12 : 16, background: 'linear-gradient(180deg, #ffffff 0%, #f8fbff 100%)', border: '1px solid #dbe4f0', boxShadow: '0 10px 28px rgba(15,23,42,0.06)', width: isMobile ? '100%' : 'auto' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: isMobile ? 4 : 8, flexWrap: 'wrap', padding: isMobile ? 7 : 10, borderRadius: isMobile ? 12 : 16, background: 'linear-gradient(180deg, var(--c-card) 0%, var(--c-card-alt) 100%)', border: '1px solid var(--c-border-2)', boxShadow: '0 10px 28px rgba(15,23,42,0.06)', width: isMobile ? '100%' : 'auto' }}>
           {canEditMeals ? (
             <>
               <button onClick={openAddModal} style={{ height: isMobile ? 28 : 36, padding: isMobile ? '0 10px' : '0 14px', borderRadius: 8, border: 'none', background: '#6366f1', color: '#fff', fontWeight: 800, fontSize: isMobile ? 11 : 13, cursor: 'pointer', whiteSpace: 'nowrap', boxShadow: '0 2px 6px rgba(37,99,235,0.22)' }}>+ Add Exclusion</button>
@@ -798,9 +798,9 @@ function MealExclusion() {
       ) : null}
 
       {/* --- Tabbed exclusion table --- */}
-      <div style={{ background: '#fff', border: '1px solid #dbe4f0', borderRadius: 16, overflow: 'hidden', boxShadow: '0 18px 40px rgba(15,23,42,0.06)' }}>
+      <div style={{ background: 'var(--c-card)', border: '1px solid var(--c-border-2)', borderRadius: 16, overflow: 'hidden', boxShadow: '0 18px 40px rgba(15,23,42,0.06)' }}>
         {/* Tab bar */}
-        <div style={{ display: 'flex', borderBottom: '1px solid #e2e8f0', background: 'linear-gradient(180deg, #f8fafc 0%, #f3f7fd 100%)', overflowX: 'auto' }}>
+        <div style={{ display: 'flex', borderBottom: '1px solid var(--c-border)', background: 'linear-gradient(180deg, var(--c-surface) 0%, var(--c-card-hdr) 100%)', overflowX: 'auto' }}>
           {tabBtn(isMobile ? 'Active' : 'Active Exclusions', 'active', activeCount, '#ea580c')}
           {tabBtn(isMobile ? 'Upcoming' : 'Upcoming Exclusions', 'upcoming', upcomingCount, '#6366f1')}
         </div>
