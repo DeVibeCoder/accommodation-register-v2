@@ -356,9 +356,11 @@ function MealHistory() {
               </thead>
               <tbody>
                 {filteredRows.map((row, index) => {
-                  const baseBg = row.date === todayIso ? '#e0f2fe' : (index % 2 === 0 ? 'var(--c-card)' : 'var(--c-card-alt)');
+                  const isToday = row.date === todayIso;
+                  const baseBg = isToday ? 'var(--c-today-row)' : (index % 2 === 0 ? 'var(--c-card)' : 'var(--c-card-alt)');
+                  const hoverBg = isToday ? 'var(--c-today-hover)' : 'var(--c-card-alt)';
                   return (
-                  <tr key={row.date} style={{ cursor: 'pointer', borderBottom: '1px solid var(--c-border)', background: baseBg, transition: 'background .15s ease' }} onClick={() => setSelectedRow(row)} onMouseEnter={e => { e.currentTarget.style.background = '#eef6ff'; }} onMouseLeave={e => { e.currentTarget.style.background = baseBg; }}>
+                  <tr key={row.date} style={{ cursor: 'pointer', borderBottom: '1px solid var(--c-border)', background: baseBg, transition: 'background .15s ease' }} onClick={() => setSelectedRow(row)} onMouseEnter={e => { e.currentTarget.style.background = hoverBg; }} onMouseLeave={e => { e.currentTarget.style.background = baseBg; }}>
                     <td style={{ padding: isMobile ? '7px 8px' : '13px 16px', color: 'var(--c-text)', fontWeight: 700, fontSize: isMobile ? 11 : 14 }}>
                       {formatDateForUi(row.date)}
                     </td>
