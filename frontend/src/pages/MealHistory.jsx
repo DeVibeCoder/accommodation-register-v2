@@ -22,7 +22,7 @@ function shortCode(value) {
 }
 
 const DEPT_ORDER = ['TIC', 'QMAR', 'VTC2', 'VMT', 'VT', 'LOGI'];
-const MEAL_HISTORY_CACHE_KEY = 'tic_meal_history_cache_v1';
+const MEAL_HISTORY_CACHE_KEY = 'tic_meal_history_cache_v2';
 
 // Dates that were missed due to manual-refresh not being done.
 // Each entry is filled by copying the closest previous date's headcount.
@@ -49,6 +49,13 @@ function normalizeCounts(source = {}, departments = []) {
     const value = Number(source?.[dept] ?? 0);
     counts[dept] = Number.isFinite(value) ? Math.max(0, Math.floor(value)) : 0;
   }
+  // Preserve any OTHER-* sub-variants from source that aren't in the main list
+  for (const key of Object.keys(source || {})) {
+    if (!(key in counts) && /^other(\s|[-_])/i.test(key)) {
+      const value = Number(source[key] ?? 0);
+      counts[key] = Number.isFinite(value) ? Math.max(0, Math.floor(value)) : 0;
+    }
+  }
   return counts;
 }
 
@@ -73,7 +80,9 @@ function escapeCsv(value) {
 function MealDayDetailModal({ row, departments, onClose }) {
   if (!row) return null;
   const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
-  const sorted = [...departments].sort((a, b) => {
+  // Union global departments with any extra keys in this row's counts (e.g. OTHER - X variants)
+  const allRowDepts = [...new Set([...departments, ...Object.keys(row.counts || {})])].filter(d => (row.counts?.[d] || 0) > 0 || departments.includes(d));
+  const sorted = allRowDepts.sort((a, b) => {
     const aOther = /^other(\s|[-_]|$)/i.test(a);
     const bOther = /^other(\s|[-_]|$)/i.test(b);
     if (aOther !== bOther) return aOther ? 1 : -1;
