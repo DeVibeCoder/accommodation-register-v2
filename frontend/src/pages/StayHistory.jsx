@@ -33,7 +33,6 @@ function fmtDate(value) {
 function HistoryDetailModal({ item, onClose, isMobile }) {
   if (!item) return null;
   const tone = ACTION_STYLES[item.type] || ACTION_STYLES.Edit;
-  const idLabel = item.staffId ? `ID ${item.staffId}` : item.wpPpNo ? `WP/PP ${item.wpPpNo}` : null;
 
   const row = (label, value) => value ? (
     <div style={{ display: 'flex', gap: 8, alignItems: 'baseline', padding: '5px 0', borderBottom: '1px solid var(--c-border)' }}>
@@ -58,7 +57,8 @@ function HistoryDetailModal({ item, onClose, isMobile }) {
               {item.type}
             </span>
             <div style={{ fontWeight: 800, fontSize: 15, color: 'var(--c-text)', lineHeight: 1.3 }}>{item.name || '-'}</div>
-            {idLabel && <div style={{ fontSize: 11, fontWeight: 700, color: '#6366f1', marginTop: 2 }}>{idLabel}</div>}
+            {item.staffId && <div style={{ fontSize: 11, fontWeight: 700, color: '#6366f1', marginTop: 2 }}>Staff ID: {item.staffId}</div>}
+            {item.wpPpNo && <div style={{ fontSize: 11, fontWeight: 700, color: '#6366f1', marginTop: 1 }}>WP/PP No: {item.wpPpNo}</div>}
           </div>
           <button onClick={onClose} style={{ width: 28, height: 28, borderRadius: '50%', border: '1px solid var(--c-border)', background: 'var(--c-surface)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--c-subtle)', fontSize: 13, fontWeight: 700, flexShrink: 0, marginLeft: 8 }}>✕</button>
         </div>

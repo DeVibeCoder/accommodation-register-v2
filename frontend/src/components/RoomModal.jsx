@@ -79,14 +79,30 @@ function RoomModal({ open, onClose, room, sidebarWidth = 0 }) {
 
   const statusLabel = room.occupiedBeds === 0 ? 'Vacant' : room.occupiedBeds === room.totalBeds ? 'Full' : 'Partial';
   const activeOccupants = room.beds.filter(b => b.occupied && b.occupant);
-  const summaryItems = [
-    ['Building', room.building],
-    ['Floor', room.floor],
-    ['Beds', room.totalBeds],
-    ['Occupied', room.occupiedBeds],
-    ['Available', room.availableBeds],
-    ['Status', statusLabel],
-  ];
+  const buildingCode = (() => {
+    const code = String(room.buildingCode || room.building || '').toUpperCase();
+    if (code === 'VTV') return 'VT';
+    if (code.startsWith('OB')) return 'OB';
+    if (code.startsWith('FB')) return 'FB';
+    return code.slice(0, 3);
+  })();
+  const summaryItems = isMobile
+    ? [
+        ['BLD', buildingCode || room.building],
+        ['FL', room.floor],
+        ['BEDS', room.totalBeds],
+        ['OCC', room.occupiedBeds],
+        ['AVL', room.availableBeds],
+        ['STS', statusLabel],
+      ]
+    : [
+        ['Building', room.building],
+        ['Floor', room.floor],
+        ['Beds', room.totalBeds],
+        ['Occupied', room.occupiedBeds],
+        ['Available', room.availableBeds],
+        ['Status', statusLabel],
+      ];
 
   return (
     <div style={{ ...overlayBase, top: isMobile ? 50 : 62, left: isMobile ? 0 : sidebarWidth, alignItems: isMobile ? 'flex-start' : 'center', padding: isMobile ? '8px 10px 8px' : 0 }} onClick={onClose}>
