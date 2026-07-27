@@ -168,30 +168,29 @@ function MealDayDetailModal({ row, departments, onClose }) {
                           <span style={{ fontSize: 10.5, color: 'var(--c-muted)', fontWeight: 600, marginTop: 2 }}>{otherSharePct}%</span>
                         </div>
                       </div>
-                      {!isSingleExact && otherDepts.map((dept, subIdx) => {
-                        const subLabel = dept.replace(/^other\s*[-:/()]*\s*/i, '').trim() || '(Other)';
-                        const subColor = BADGE_COLORS[(otherIdx + 1 + subIdx) % BADGE_COLORS.length];
-                        const count = row.counts?.[dept] || 0;
-                        const pct = maxCount > 0 ? Math.round((count / maxCount) * 100) : 0;
-                        const sharePct2 = row.total > 0 ? ((count / row.total) * 100).toFixed(1) : '0.0';
+                      {!isSingleExact && (() => {
+                        const subItems = otherDepts
+                          .map((dept, subIdx) => ({
+                            dept,
+                            subLabel: dept.replace(/^other\s*[-:/()]*\s*/i, '').trim() || dept,
+                            count: row.counts?.[dept] || 0,
+                            color: BADGE_COLORS[(otherIdx + 1 + subIdx) % BADGE_COLORS.length],
+                          }))
+                          .filter(item => item.count > 0);
+                        if (subItems.length === 0) return null;
                         return (
-                          <div key={dept} style={{ display: 'grid', gridTemplateColumns: 'auto 1fr auto', gap: 12, alignItems: 'center', padding: '8px 22px 8px 36px', borderBottom: '1px solid var(--c-border)', background: 'var(--c-card-alt)', fontSize: 12 }}>
-                            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3, minWidth: 42 }}>
-                              <span style={{ fontSize: 10, fontWeight: 800, padding: '3px 7px', borderRadius: 6, background: subColor.bg, color: subColor.text, letterSpacing: 0.4, textTransform: 'uppercase', whiteSpace: 'nowrap' }}>{shortCode(subLabel)}</span>
-                            </div>
-                            <div style={{ minWidth: 0 }}>
-                              <div style={{ fontWeight: 700, color: 'var(--c-text)', fontSize: 12, lineHeight: 1.3, marginBottom: 5 }}>{subLabel}</div>
-                              <div style={{ position: 'relative', height: 6, borderRadius: 6, background: 'var(--c-border)', overflow: 'hidden' }}>
-                                <div style={{ position: 'absolute', left: 0, top: 0, height: '100%', width: `${pct}%`, background: count > 0 ? subColor.text : '#cbd5e1', borderRadius: 6, transition: 'width .4s ease' }} />
-                              </div>
-                            </div>
-                            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', minWidth: 50 }}>
-                              <span style={{ fontWeight: 900, color: count > 0 ? 'var(--c-text)' : 'var(--c-muted)', fontSize: 16, lineHeight: 1 }}>{count}</span>
-                              <span style={{ fontSize: 10.5, color: 'var(--c-muted)', fontWeight: 600, marginTop: 2 }}>{sharePct2}%</span>
+                          <div style={{ padding: '8px 22px 12px 22px', borderBottom: '1px solid var(--c-border)', background: 'var(--c-card-alt)' }}>
+                            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                              {subItems.map(({ dept, subLabel, count, color }) => (
+                                <div key={dept} style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'var(--c-card)', border: '1px solid var(--c-border-2)', borderRadius: 8, padding: '5px 10px', minWidth: 0 }}>
+                                  <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--c-text)', whiteSpace: 'nowrap' }}>{subLabel}</span>
+                                  <span style={{ fontSize: 13, fontWeight: 900, background: color.bg, color: color.text, borderRadius: 6, padding: '2px 8px', whiteSpace: 'nowrap' }}>{count}</span>
+                                </div>
+                              ))}
                             </div>
                           </div>
                         );
-                      })}
+                      })()}
                     </>
                   );
                 })()}
