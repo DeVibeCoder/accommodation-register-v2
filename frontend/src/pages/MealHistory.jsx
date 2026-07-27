@@ -73,7 +73,12 @@ function escapeCsv(value) {
 function MealDayDetailModal({ row, departments, onClose }) {
   if (!row) return null;
   const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
-  const sorted = [...departments].sort((a, b) => (row.counts?.[b] || 0) - (row.counts?.[a] || 0));
+  const sorted = [...departments].sort((a, b) => {
+    const aOther = /^other(\s|[-_]|$)/i.test(a);
+    const bOther = /^other(\s|[-_]|$)/i.test(b);
+    if (aOther !== bOther) return aOther ? 1 : -1;
+    return (row.counts?.[b] || 0) - (row.counts?.[a] || 0);
+  });
   const maxCount = sorted.length > 0 ? (row.counts?.[sorted[0]] || 0) : 1;
 
   const BADGE_COLORS = [
@@ -98,29 +103,92 @@ function MealDayDetailModal({ row, departments, onClose }) {
         </div>
 
         <div style={{ padding: '8px 0', overflowY: 'auto', flex: 1 }}>
-          {sorted.map((dept, idx) => {
-            const count = row.counts?.[dept] || 0;
-            const pct = maxCount > 0 ? Math.round((count / maxCount) * 100) : 0;
-            const sharePct = row.total > 0 ? ((count / row.total) * 100).toFixed(1) : '0.0';
-            const color = BADGE_COLORS[idx % BADGE_COLORS.length];
-            return (
-              <div key={dept} style={{ display: 'grid', gridTemplateColumns: 'auto 1fr auto', gap: 12, alignItems: 'center', padding: '11px 22px', borderBottom: '1px solid var(--c-border)' }}>
-                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3, minWidth: 42 }}>
-                  <span style={{ fontSize: 10, fontWeight: 800, padding: '3px 7px', borderRadius: 6, background: color.bg, color: color.text, letterSpacing: 0.4, textTransform: 'uppercase', whiteSpace: 'nowrap' }}>{shortCode(dept)}</span>
-                </div>
-                <div style={{ minWidth: 0 }}>
-                  <div style={{ fontWeight: 700, color: 'var(--c-text)', fontSize: 13, lineHeight: 1.3, marginBottom: 5 }}>{dept}</div>
-                  <div style={{ position: 'relative', height: 6, borderRadius: 6, background: 'var(--c-border)', overflow: 'hidden' }}>
-                    <div style={{ position: 'absolute', left: 0, top: 0, height: '100%', width: `${pct}%`, background: count > 0 ? color.text : '#cbd5e1', borderRadius: 6, transition: 'width .4s ease' }} />
+          {(() => {
+            const mainDepts = sorted.filter(d => !/^other(\s|[-_])/i.test(d) && d.toUpperCase() !== 'OTHER');
+            const otherDepts = sorted.filter(d => /^other(\s|[-_])/i.test(d) || d.toUpperCase() === 'OTHER');
+            const otherTotal = otherDepts.reduce((s, d) => s + (row.counts?.[d] || 0), 0);
+
+            const renderRow = (dept, idx, count, overrideLabel, extraStyle = {}) => {
+              const pct = maxCount > 0 ? Math.round((count / maxCount) * 100) : 0;
+              const sharePct = row.total > 0 ? ((count / row.total) * 100).toFixed(1) : '0.0';
+              const color = BADGE_COLORS[idx % BADGE_COLORS.length];
+              const label = overrideLabel !== undefined ? overrideLabel : dept;
+              return (
+                <div key={dept} style={{ display: 'grid', gridTemplateColumns: 'auto 1fr auto', gap: 12, alignItems: 'center', padding: '11px 22px', borderBottom: '1px solid var(--c-border)', ...extraStyle }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3, minWidth: 42 }}>
+                    <span style={{ fontSize: 10, fontWeight: 800, padding: '3px 7px', borderRadius: 6, background: color.bg, color: color.text, letterSpacing: 0.4, textTransform: 'uppercase', whiteSpace: 'nowrap' }}>{shortCode(label || dept)}</span>
+                  </div>
+                  <div style={{ minWidth: 0 }}>
+                    <div style={{ fontWeight: 700, color: 'var(--c-text)', fontSize: extraStyle.fontSize || 13, lineHeight: 1.3, marginBottom: 5 }}>{label}</div>
+                    <div style={{ position: 'relative', height: 6, borderRadius: 6, background: 'var(--c-border)', overflow: 'hidden' }}>
+                      <div style={{ position: 'absolute', left: 0, top: 0, height: '100%', width: `${pct}%`, background: count > 0 ? color.text : '#cbd5e1', borderRadius: 6, transition: 'width .4s ease' }} />
+                    </div>
+                  </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', minWidth: 50 }}>
+                    <span style={{ fontWeight: 900, color: count > 0 ? 'var(--c-text)' : 'var(--c-muted)', fontSize: extraStyle.fontSize ? 16 : 20, lineHeight: 1 }}>{count}</span>
+                    <span style={{ fontSize: 10.5, color: 'var(--c-muted)', fontWeight: 600, marginTop: 2 }}>{sharePct}%</span>
                   </div>
                 </div>
-                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', minWidth: 50 }}>
-                  <span style={{ fontWeight: 900, color: count > 0 ? 'var(--c-text)' : 'var(--c-muted)', fontSize: 20, lineHeight: 1 }}>{count}</span>
-                  <span style={{ fontSize: 10.5, color: 'var(--c-muted)', fontWeight: 600, marginTop: 2 }}>{sharePct}%</span>
-                </div>
-              </div>
+              );
+            };
+
+            const isSingleExact = otherDepts.length === 1 && otherDepts[0].toUpperCase() === 'OTHER';
+
+            return (
+              <>
+                {mainDepts.map((dept, idx) => renderRow(dept, idx, row.counts?.[dept] || 0))}
+                {otherDepts.length > 0 && (() => {
+                  const otherIdx = mainDepts.length;
+                  const otherColor = BADGE_COLORS[otherIdx % BADGE_COLORS.length];
+                  const otherPct = maxCount > 0 ? Math.round((otherTotal / maxCount) * 100) : 0;
+                  const otherSharePct = row.total > 0 ? ((otherTotal / row.total) * 100).toFixed(1) : '0.0';
+                  return (
+                    <>
+                      <div style={{ display: 'grid', gridTemplateColumns: 'auto 1fr auto', gap: 12, alignItems: 'center', padding: '11px 22px', borderBottom: '1px solid var(--c-border)', borderLeft: '3px solid var(--c-border-3)' }}>
+                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3, minWidth: 42 }}>
+                          <span style={{ fontSize: 10, fontWeight: 800, padding: '3px 7px', borderRadius: 6, background: otherColor.bg, color: otherColor.text, letterSpacing: 0.4, textTransform: 'uppercase', whiteSpace: 'nowrap' }}>OTH</span>
+                        </div>
+                        <div style={{ minWidth: 0 }}>
+                          <div style={{ fontWeight: 700, color: 'var(--c-text)', fontSize: 13, lineHeight: 1.3, marginBottom: 5 }}>OTHER</div>
+                          <div style={{ position: 'relative', height: 6, borderRadius: 6, background: 'var(--c-border)', overflow: 'hidden' }}>
+                            <div style={{ position: 'absolute', left: 0, top: 0, height: '100%', width: `${otherPct}%`, background: otherTotal > 0 ? otherColor.text : '#cbd5e1', borderRadius: 6, transition: 'width .4s ease' }} />
+                          </div>
+                        </div>
+                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', minWidth: 50 }}>
+                          <span style={{ fontWeight: 900, color: otherTotal > 0 ? 'var(--c-text)' : 'var(--c-muted)', fontSize: 20, lineHeight: 1 }}>{otherTotal}</span>
+                          <span style={{ fontSize: 10.5, color: 'var(--c-muted)', fontWeight: 600, marginTop: 2 }}>{otherSharePct}%</span>
+                        </div>
+                      </div>
+                      {!isSingleExact && otherDepts.map((dept, subIdx) => {
+                        const subLabel = dept.replace(/^other\s*[-:/()]*\s*/i, '').trim() || dept;
+                        const subColor = BADGE_COLORS[(otherIdx + 1 + subIdx) % BADGE_COLORS.length];
+                        const count = row.counts?.[dept] || 0;
+                        const pct = maxCount > 0 ? Math.round((count / maxCount) * 100) : 0;
+                        const sharePct2 = row.total > 0 ? ((count / row.total) * 100).toFixed(1) : '0.0';
+                        return (
+                          <div key={dept} style={{ display: 'grid', gridTemplateColumns: 'auto 1fr auto', gap: 12, alignItems: 'center', padding: '8px 22px 8px 36px', borderBottom: '1px solid var(--c-border)', background: 'var(--c-card-alt)', fontSize: 12 }}>
+                            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3, minWidth: 42 }}>
+                              <span style={{ fontSize: 10, fontWeight: 800, padding: '3px 7px', borderRadius: 6, background: subColor.bg, color: subColor.text, letterSpacing: 0.4, textTransform: 'uppercase', whiteSpace: 'nowrap' }}>{shortCode(subLabel)}</span>
+                            </div>
+                            <div style={{ minWidth: 0 }}>
+                              <div style={{ fontWeight: 700, color: 'var(--c-text)', fontSize: 12, lineHeight: 1.3, marginBottom: 5 }}>{subLabel}</div>
+                              <div style={{ position: 'relative', height: 6, borderRadius: 6, background: 'var(--c-border)', overflow: 'hidden' }}>
+                                <div style={{ position: 'absolute', left: 0, top: 0, height: '100%', width: `${pct}%`, background: count > 0 ? subColor.text : '#cbd5e1', borderRadius: 6, transition: 'width .4s ease' }} />
+                              </div>
+                            </div>
+                            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', minWidth: 50 }}>
+                              <span style={{ fontWeight: 900, color: count > 0 ? 'var(--c-text)' : 'var(--c-muted)', fontSize: 16, lineHeight: 1 }}>{count}</span>
+                              <span style={{ fontSize: 10.5, color: 'var(--c-muted)', fontWeight: 600, marginTop: 2 }}>{sharePct2}%</span>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </>
+                  );
+                })()}
+              </>
             );
-          })}
+          })()}
           {departments.length === 0 && <div style={{ color: 'var(--c-muted)', padding: 20, textAlign: 'center', fontSize: 13 }}>No department data available.</div>}
         </div>
 
@@ -332,7 +400,7 @@ function MealHistory() {
           <div style={{ color: 'var(--c-subtle)', fontSize: isMobile ? 9 : 11, fontWeight: 800, textTransform: 'uppercase' }}>{isMobile ? 'Avg/Day' : 'Average Per Day'}</div>
           <div style={{ marginTop: isMobile ? 2 : 6, fontWeight: 900, color: 'var(--c-text)', fontSize: isMobile ? 20 : 32, animation: 'numberPop 0.5s cubic-bezier(0.22,1,0.36,1) both', animationDelay: '185ms' }}>{averageMeals.toFixed(1)}</div>
         </div>
-        <div style={{ border: '1px solid #bfdbfe', borderRadius: isMobile ? 10 : 14, background: 'linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%)', padding: isMobile ? '9px 10px' : '14px 16px', boxShadow: '0 12px 30px rgba(30,49,95,0.06)', animation: 'fadeUp 0.38s cubic-bezier(0.22,1,0.36,1) both', animationDelay: '130ms' }}>
+        <div style={{ border: '1px solid var(--c-border-2)', borderRadius: isMobile ? 10 : 14, background: 'var(--c-card)', padding: isMobile ? '9px 10px' : '14px 16px', boxShadow: '0 12px 30px rgba(30,49,95,0.06)', animation: 'fadeUp 0.38s cubic-bezier(0.22,1,0.36,1) both', animationDelay: '130ms' }}>
           <div style={{ color: '#6366f1', fontSize: isMobile ? 9 : 11, fontWeight: 800, textTransform: 'uppercase' }}>{isMobile ? 'Today' : "Today's Headcount"}</div>
           <div style={{ marginTop: isMobile ? 2 : 6, fontWeight: 900, color: 'var(--c-text)', fontSize: isMobile ? 20 : 32, animation: 'numberPop 0.5s cubic-bezier(0.22,1,0.36,1) both', animationDelay: '250ms' }}>{todaysHeadcount}</div>
         </div>

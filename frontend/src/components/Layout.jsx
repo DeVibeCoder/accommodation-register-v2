@@ -211,11 +211,18 @@ function Layout({ user, onLogout }) {
   const uidRef = useRef(1000);
   const getNextUid = () => uidRef.current++;
 
-  const [dataLoading, setDataLoading] = useState(true);
+  const getCachedOccupants = () => {
+    try { return JSON.parse(sessionStorage.getItem('tic_occupants_cache') || '[]'); } catch { return []; }
+  };
+  const getCachedRooms = () => {
+    try { return JSON.parse(sessionStorage.getItem('tic_rooms_cache') || '[]'); } catch { return []; }
+  };
+
+  const [dataLoading, setDataLoading] = useState(() => getCachedOccupants().length === 0);
   const [dataError, setDataError] = useState('');
 
-  const [occupants, setOccupants] = useState([]);
-  const [roomBaseState, setRoomsState] = useState([]);
+  const [occupants, setOccupants] = useState(() => getCachedOccupants().map(o => ({ ...o, _id: uidRef.current++ })));
+  const [roomBaseState, setRoomsState] = useState(() => getCachedRooms());
   const [mealExclusionSummary, setMealExclusionSummary] = useState({ active: [], upcoming: [], mealExcludedCount: 0 });
   const [stayHistory, setStayHistory] = useState(() => {
     try {
@@ -285,7 +292,9 @@ function Layout({ user, onLogout }) {
   };
 
   const loadAllData = async (ignoreCheck) => {
-    setDataLoading(true);
+    // Only show skeleton if there is no cached data yet
+    const hasCachedData = Boolean(sessionStorage.getItem('tic_occupants_cache'));
+    if (!hasCachedData) setDataLoading(true);
     setDataError('');
 
     try {
@@ -321,6 +330,11 @@ function Layout({ user, onLogout }) {
       } catch {
         // ignore cache write issues
       }
+
+      try {
+        sessionStorage.setItem('tic_occupants_cache', JSON.stringify(liveOccupants));
+        sessionStorage.setItem('tic_rooms_cache', JSON.stringify(liveRooms));
+      } catch { /* ignore */ }
 
       console.info(`[API] Loaded ${liveRooms.length} rooms, ${liveOccupants.length} occupants, ${historyEntries.length} history entries, and ${mealSummary?.mealExcludedCount || 0} active meal exclusions from backend.`);
     } catch (error) {

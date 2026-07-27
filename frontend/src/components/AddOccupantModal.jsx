@@ -1,5 +1,36 @@
 import React, { useState, useEffect } from 'react';
 
+const NATIONALITY_LIST = [
+  'Afghan','Albanian','Algerian','American','Andorran','Angolan','Antiguan','Argentine',
+  'Armenian','Australian','Austrian','Azerbaijani','Bahamian','Bahraini','Bangladeshi',
+  'Barbadian','Belarusian','Belgian','Belizean','Beninese','Bhutanese','Bolivian',
+  'Bosnian','Botswanan','Brazilian','British','Bruneian','Bulgarian','Burkinabe',
+  'Burundian','Cambodian','Cameroonian','Canadian','Cape Verdean','Central African',
+  'Chadian','Chilean','Chinese','Colombian','Comoran','Congolese','Costa Rican',
+  'Croatian','Cuban','Cypriot','Czech','Danish','Djiboutian','Dominican',
+  'Dutch','Ecuadorian','Egyptian','Emirati','Equatorial Guinean','Eritrean',
+  'Estonian','Ethiopian','Fijian','Filipino','Finnish','French','Gabonese',
+  'Gambian','Georgian','German','Ghanaian','Greek','Grenadian','Guatemalan',
+  'Guinean','Guyanese','Haitian','Honduran','Hungarian','Icelandic','Indian',
+  'Indonesian','Iranian','Iraqi','Irish','Israeli','Italian','Ivorian',
+  'Jamaican','Japanese','Jordanian','Kazakhstani','Kenyan','Kuwaiti','Kyrgyz',
+  'Laotian','Latvian','Lebanese','Lesothan','Liberian','Libyan','Liechtenstein',
+  'Lithuanian','Luxembourgish','Macedonian','Malagasy','Malawian','Malaysian',
+  'Maldivian','Malian','Maltese','Marshallese','Mauritanian','Mauritian','Mexican',
+  'Micronesian','Moldovan','Monégasque','Mongolian','Montenegrin','Moroccan',
+  'Mozambican','Namibian','Nauruan','Nepali','New Zealander','Nicaraguan','Nigerian',
+  'Norwegian','Omani','Pakistani','Palauan','Palestinian','Panamanian',
+  'Papua New Guinean','Paraguayan','Peruvian','Polish','Portuguese','Qatari',
+  'Romanian','Russian','Rwandan','Saint Kitts and Nevis','Saint Lucian',
+  'Saint Vincentian','Samoan','Sao Tomean','Saudi','Senegalese','Serbian',
+  'Sierra Leonean','Singaporean','Slovak','Slovenian','Solomon Islander','Somali',
+  'South African','South Korean','South Sudanese','Spanish','Sri Lankan','Sudanese',
+  'Surinamese','Swazi','Swedish','Swiss','Syrian','Taiwanese','Tajik','Tanzanian',
+  'Thai','Timorese','Togolese','Tongan','Trinidadian','Tunisian','Turkish',
+  'Turkmen','Tuvaluan','Ugandan','Ukrainian','Uruguayan','Uzbek','Vanuatuan',
+  'Venezuelan','Vietnamese','Yemeni','Zambian','Zimbabwean',
+];
+
 const DEPARTMENT_OPTIONS = [
   'THILAFUSHI INDUSTRIAL COMPLEX',
   'QMARINE',
@@ -228,7 +259,18 @@ function AddOccupantModal({ open, onClose, rooms, onAdd }) {
               )}
 
               <label style={lbl}>Nationality*
-                <input name="nationality" value={form.nationality} onChange={handleChange} style={inp} />
+                <input
+                  name="nationality"
+                  value={form.nationality}
+                  onChange={handleChange}
+                  style={inp}
+                  list="nationality-list"
+                  autoComplete="off"
+                  placeholder="e.g. Indian, Filipino..."
+                />
+                <datalist id="nationality-list">
+                  {NATIONALITY_LIST.map(n => <option key={n} value={n} />)}
+                </datalist>
                 {errors.nationality && <span style={errStyle}>{errors.nationality}</span>}
               </label>
 

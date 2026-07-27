@@ -461,7 +461,7 @@ function Rooms() {
 
               {/* Row 1: Room ID + Status badge (padded right to clear the absolute edit button) */}
               <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginBottom: isMobile ? 4 : 7, paddingRight: 30 }}>
-                <div style={{ fontWeight: 900, fontSize: isMobile ? '0.74rem' : '1rem', color: cardText, letterSpacing: 0.2, flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                <div style={{ fontWeight: 900, fontSize: isMobile ? 13 : 16, color: cardText, letterSpacing: 0.2, flex: 1, minWidth: 0, wordBreak: 'break-all', lineHeight: 1.2 }}>
                   {room.id}
                 </div>
                 <span style={{
@@ -509,7 +509,9 @@ function Rooms() {
               {/* Building + Floor */}
               <div style={{ marginBottom: isMobile ? 4 : 8 }}>
                 <div style={{ textTransform: 'uppercase', color: mutedText, fontWeight: 700, fontSize: isMobile ? '0.60rem' : '0.76rem', letterSpacing: 0.32, lineHeight: 1.3, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                  {`${room.building} | FL ${room.floor}`}
+                  {isMobile
+                    ? `${(room.buildingCode || '').toUpperCase() === 'VTV' ? 'VT' : (room.buildingCode || room.building || '')} | FL ${room.floor}`
+                    : `${room.building} | FL ${room.floor}`}
                 </div>
               </div>
 

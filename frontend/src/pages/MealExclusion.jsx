@@ -44,7 +44,7 @@ function normalizeDepartmentLabel(value) {
 }
 
 // --- Add / Edit Modal -------------------------------------------------------
-function ExclusionModal({ open, onClose, occupants, canEdit, onSaved, editEntry = null }) {
+function ExclusionModal({ open, onClose, occupants, canEdit, onSaved, editEntry = null, allExclusions = [] }) {
   const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
   const isEditing = Boolean(editEntry?.id);
   const [selectedOccupantId, setSelectedOccupantId] = useState('');
@@ -104,6 +104,21 @@ function ExclusionModal({ open, onClose, occupants, canEdit, onSaved, editEntry 
     if (!reason) { setError('Please select a reason.'); return; }
     if (!fromDate) { setError('Please select a from date.'); return; }
     if (toDate && toDate < fromDate) { setError('To date cannot be earlier than from date.'); return; }
+    // Check for overlapping exclusion for same person
+    const overlapExists = allExclusions.some(ex => {
+      if (ex.id === editEntry?.id) return false;
+      if (String(ex.occupantId) !== String(resolved.id) &&
+          normalizeText(ex.name) !== normalizeText(resolved.name)) return false;
+      const newFrom = new Date(fromDate);
+      const newTo = toDate ? new Date(toDate) : new Date('2099-12-31');
+      const exFrom = ex.fromDate ? new Date(ex.fromDate) : new Date('2000-01-01');
+      const exTo = ex.toDate ? new Date(ex.toDate) : new Date('2099-12-31');
+      return newFrom <= exTo && exFrom <= newTo;
+    });
+    if (overlapExists) {
+      setError('This person already has an exclusion overlapping these dates.');
+      return;
+    }
     setSaving(true); setError('');
     try {
       const payload = { occupantId: resolved.id, name: resolved.name, staffId: resolved.staffId, roomId: resolved.roomId, bedNo: resolved.bedNo, reason, fromDate, toDate: toDate || null, notes };
@@ -472,7 +487,7 @@ function ImportModal({ open, onClose, occupants, onImported }) {
 }
 
 // --- History Modal ----------------------------------------------------------
-function ExclusionHistoryModal({ open, onClose }) {
+function ExclusionHistoryModal({ open, onClose, occupants = [] }) {
   const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -493,7 +508,16 @@ function ExclusionHistoryModal({ open, onClose }) {
     return () => { active = false; };
   }, [open]);
 
+  const getDept = (entry) => {
+    const byId = entry.staffId && occupants.find(o => String(o.staffId) === String(entry.staffId));
+    const byName = occupants.find(o => (o.name || '').toLowerCase().trim() === (entry.name || '').toLowerCase().trim());
+    const found = byId || byName;
+    return found?.department || entry.department || '';
+  };
+
   if (!open) return null;
+  const enrichedRows = historyRows.map(r => ({ ...r, department: normalizeDepartmentLabel(getDept(r)) || r.department || '' }));
+
   return (
     <div style={{ position: 'fixed', top: isMobile ? 50 : 62, left: 0, right: 0, bottom: 0, background: 'rgba(15,23,42,0.5)', zIndex: 3000, display: 'flex', alignItems: 'flex-start', justifyContent: 'center', padding: 16, overflowY: 'auto' }}>
       <div style={{ background: 'var(--c-card)', borderRadius: 16, width: '100%', maxWidth: 980, boxShadow: '0 20px 60px rgba(0,0,0,0.2)', maxHeight: '84vh', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
@@ -507,7 +531,32 @@ function ExclusionHistoryModal({ open, onClose }) {
         <div style={{ padding: 16, overflowY: 'auto', flex: 1 }}>
           {error ? <div style={{ marginBottom: 12, padding: '9px 12px', background: '#fef2f2', border: '1px solid #fecaca', borderRadius: 8, color: '#dc2626', fontSize: 13, fontWeight: 600 }}>{error}</div> : null}
           {loading ? <div style={{ padding: '10px 0', color: 'var(--c-subtle)', fontWeight: 600 }}>Loading history...</div>
-            : <ExclusionTable rows={historyRows} canEdit={false} closingId="" onClose={() => {}} onEdit={() => {}} emptyText="No past exclusions found." />}
+            : isMobile ? (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                {enrichedRows.length === 0 ? (
+                  <div style={{ color: 'var(--c-muted)', fontWeight: 600, textAlign: 'center', padding: '24px 14px', fontSize: 12 }}>No past exclusions found.</div>
+                ) : enrichedRows.map(item => {
+                  const rc = reasonColor(item.reason);
+                  return (
+                    <div key={item.id} style={{ background: 'var(--c-card)', border: '1px solid var(--c-border)', borderRadius: 10, padding: '10px 12px' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 4 }}>
+                        <div>
+                          <div style={{ fontWeight: 800, color: 'var(--c-text)', fontSize: 12 }}>{item.name}</div>
+                          {item.staffId ? <div style={{ fontSize: 10, color: 'var(--c-subtle)', marginTop: 1 }}>{item.staffId}</div> : null}
+                          {item.department ? <div style={{ fontSize: 10, color: 'var(--c-muted)', marginTop: 1, textTransform: 'uppercase' }}>{item.department}</div> : null}
+                        </div>
+                        <span style={{ display: 'inline-block', padding: '2px 7px', borderRadius: 999, background: rc.bg, color: rc.text, fontWeight: 700, fontSize: 10, border: `1px solid ${rc.text}30`, flexShrink: 0 }}>{item.reason}</span>
+                      </div>
+                      <div style={{ fontSize: 10, color: 'var(--c-subtle)', fontWeight: 600 }}>
+                        {asDate(item.fromDate)}{item.toDate ? ` → ${asDate(item.toDate)}` : ' → ongoing'}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            ) : (
+              <ExclusionTable rows={enrichedRows} canEdit={false} closingId="" onClose={() => {}} onEdit={() => {}} emptyText="No past exclusions found." isMobile={false} />
+            )}
         </div>
       </div>
     </div>
@@ -765,9 +814,6 @@ function MealExclusion() {
             <>
               <button onClick={openAddModal} style={{ height: isMobile ? 28 : 36, padding: isMobile ? '0 10px' : '0 14px', borderRadius: 8, border: 'none', background: '#6366f1', color: '#fff', fontWeight: 800, fontSize: isMobile ? 11 : 13, cursor: 'pointer', whiteSpace: 'nowrap', boxShadow: '0 2px 6px rgba(37,99,235,0.22)' }}>+ Add Exclusion</button>
               <button onClick={() => setImportOpen(true)} style={{ height: isMobile ? 28 : 36, padding: isMobile ? '0 10px' : '0 14px', borderRadius: 8, border: 'none', background: '#16a34a', color: '#fff', fontWeight: 800, fontSize: isMobile ? 11 : 13, cursor: 'pointer', whiteSpace: 'nowrap', boxShadow: '0 2px 6px rgba(22,163,74,0.22)' }}>Import CSV</button>
-              <button onClick={handleRemoveDuplicates} disabled={deduping} style={{ height: isMobile ? 28 : 36, padding: isMobile ? '0 10px' : '0 14px', borderRadius: 8, border: '1px solid #fdba74', background: '#fff7ed', color: '#c2410c', fontWeight: 800, fontSize: isMobile ? 11 : 13, cursor: deduping ? 'not-allowed' : 'pointer', whiteSpace: 'nowrap' }}>
-                {deduping ? (isMobile ? 'Removing...' : 'Removing Duplicates...') : (isMobile ? 'Dedup' : 'Remove Duplicates')}
-              </button>
             </>
           ) : null}
           <button onClick={() => setHistoryOpen(true)} style={{ height: isMobile ? 28 : 36, padding: isMobile ? '0 10px' : '0 14px', borderRadius: 8, border: '1px solid #93c5fd', background: '#eff6ff', color: '#4338ca', fontWeight: 800, fontSize: isMobile ? 11 : 13, cursor: 'pointer', whiteSpace: 'nowrap' }}>{isMobile ? 'History' : 'Exclusion History'}</button>
@@ -818,8 +864,8 @@ function MealExclusion() {
         </div>
       </div>
 
-      <ExclusionModal open={modalOpen} onClose={() => { setModalOpen(false); setEditingEntry(null); }} occupants={occupants} canEdit={canEditMeals} onSaved={handleSaved} editEntry={editingEntry} />
-      <ExclusionHistoryModal open={historyOpen} onClose={() => setHistoryOpen(false)} />
+      <ExclusionModal open={modalOpen} onClose={() => { setModalOpen(false); setEditingEntry(null); }} occupants={occupants} canEdit={canEditMeals} onSaved={handleSaved} editEntry={editingEntry} allExclusions={[...(mealExclusionSummary.active || []), ...(mealExclusionSummary.upcoming || [])]} />
+      <ExclusionHistoryModal open={historyOpen} onClose={() => setHistoryOpen(false)} occupants={occupants} />
       <ImportModal open={importOpen} onClose={() => setImportOpen(false)} occupants={occupants} onImported={async () => { await refreshSummary(); setImportOpen(false); setNotice('Bulk import completed successfully.'); }} />
     </div>
   );
