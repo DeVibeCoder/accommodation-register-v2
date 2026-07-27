@@ -169,7 +169,7 @@ function MealDayDetailModal({ row, departments, onClose }) {
                         </div>
                       </div>
                       {!isSingleExact && otherDepts.map((dept, subIdx) => {
-                        const subLabel = dept.replace(/^other\s*[-:/()]*\s*/i, '').trim() || dept;
+                        const subLabel = dept.replace(/^other\s*[-:/()]*\s*/i, '').trim() || '(Other)';
                         const subColor = BADGE_COLORS[(otherIdx + 1 + subIdx) % BADGE_COLORS.length];
                         const count = row.counts?.[dept] || 0;
                         const pct = maxCount > 0 ? Math.round((count / maxCount) * 100) : 0;

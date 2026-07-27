@@ -260,8 +260,7 @@ function normalizeDeptCounts(source = {}) {
 function normalizeDepartmentForMeals(value = '') {
   const raw = String(value || '').trim();
   if (!raw) return 'OTHER';
-  if (/^other(\b|\s|[-_/(:])/i.test(raw)) return 'OTHER';
-  return raw;
+  return raw; // Keep full name e.g. "OTHER - MAXX ROYAL" so sub-breakdown is preserved
 }
 
 function toIsoDateOrEmpty(value) {
