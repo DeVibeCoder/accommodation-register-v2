@@ -82,7 +82,7 @@ function AddOccupantModal({ open, onClose, rooms, onAdd }) {
     if (!natQuery.trim()) return [];
     const q = natQuery.toLowerCase();
     return COUNTRY_LIST.filter(c => c.toLowerCase().includes(q)).slice(0, 8);
-  }, [natQuery]);
+  }, [natQuery]);  // natQuery is already uppercased but toLowerCase() normalises for matching
 
   React.useEffect(() => {
     const handleClick = e => { if (natRef.current && !natRef.current.contains(e.target)) setShowNatSuggestions(false); };
@@ -276,7 +276,7 @@ function AddOccupantModal({ open, onClose, rooms, onAdd }) {
                   <input
                     value={natQuery || form.nationality}
                     onChange={e => {
-                      const v = e.target.value;
+                      const v = e.target.value.toUpperCase();
                       setNatQuery(v);
                       setForm(f => ({ ...f, nationality: v }));
                       setErrors(prev => ({ ...prev, nationality: undefined }));
@@ -294,7 +294,7 @@ function AddOccupantModal({ open, onClose, rooms, onAdd }) {
                           key={country}
                           onMouseDown={e => {
                             e.preventDefault();
-                            setForm(f => ({ ...f, nationality: country }));
+                            setForm(f => ({ ...f, nationality: country.toUpperCase() }));
                             setNatQuery('');
                             setShowNatSuggestions(false);
                             setErrors(prev => ({ ...prev, nationality: undefined }));
