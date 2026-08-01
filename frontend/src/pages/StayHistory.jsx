@@ -48,34 +48,48 @@ function HistoryDetailModal({ item, onClose, isMobile }) {
     >
       <div
         onClick={e => e.stopPropagation()}
-        style={{ background: 'var(--c-card)', borderRadius: 18, padding: '20px', maxWidth: 380, width: '100%', boxShadow: '0 20px 60px rgba(15,23,42,0.25)', animation: 'scaleIn 0.2s cubic-bezier(0.22,1,0.36,1) both' }}
+        style={{ background: 'var(--c-card)', borderRadius: 18, padding: '20px', maxWidth: 400, width: '100%', boxShadow: '0 20px 60px rgba(15,23,42,0.25)', animation: 'scaleIn 0.2s cubic-bezier(0.22,1,0.36,1) both', maxHeight: isMobile ? 'calc(100vh - 80px)' : '88vh', overflowY: 'auto' }}
       >
         {/* Header */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 14 }}>
-          <div>
-            <span style={{ display: 'inline-flex', alignItems: 'center', padding: '4px 10px', borderRadius: 999, background: tone.bg, color: tone.text, fontWeight: 800, fontSize: 12, marginBottom: 8 }}>
-              {item.type}
-            </span>
-            <div style={{ fontWeight: 800, fontSize: 15, color: 'var(--c-text)', lineHeight: 1.3 }}>{item.name || '-'}</div>
-            {item.staffId && <div style={{ fontSize: 11, fontWeight: 700, color: '#6366f1', marginTop: 2 }}>Staff ID: {item.staffId}</div>}
-            {item.wpPpNo && <div style={{ fontSize: 11, fontWeight: 700, color: '#6366f1', marginTop: 1 }}>WP/PP No: {item.wpPpNo}</div>}
-          </div>
-          <button onClick={onClose} style={{ width: 28, height: 28, borderRadius: '50%', border: '1px solid var(--c-border)', background: 'var(--c-surface)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--c-subtle)', fontSize: 13, fontWeight: 700, flexShrink: 0, marginLeft: 8 }}>✕</button>
+          <span style={{ display: 'inline-flex', alignItems: 'center', padding: '4px 10px', borderRadius: 999, background: tone.bg, color: tone.text, fontWeight: 800, fontSize: 12 }}>
+            {item.type}
+          </span>
+          <button onClick={onClose} style={{ width: 28, height: 28, borderRadius: '50%', border: '1px solid var(--c-border)', background: 'var(--c-surface)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--c-subtle)', fontSize: 13, fontWeight: 700, flexShrink: 0 }}>✕</button>
         </div>
 
-        {/* Details */}
-        <div style={{ display: 'flex', flexDirection: 'column' }}>
-          {row('Person Type', item.personType)}
-          {row('Section', item.section)}
-          {row('Department', item.department)}
-          {row('Nationality', item.nationality)}
-          {item.fasting !== undefined && item.fasting !== null && item.fasting !== '' && row('Fasting', item.fasting === true || item.fasting === 'true' || item.fasting === 'Yes' ? 'Yes' : 'No')}
-          {row('Room', item.roomId ? `${item.roomId}${item.bedNo ? ` / Bed ${item.bedNo}` : ''}` : null)}
-          {row('Check-in', fmtDate(item.checkIn))}
-          {item.type === 'Check Out' && row('Check-out', formatTime(item.timestamp))}
-          {item.type !== 'Check Out' && row('Time', formatTime(item.timestamp))}
-          {item.details && row('Details', item.details)}
-        </div>
+        {item.type === 'Check Out' ? (
+          /* Check Out: full ordered staff details */
+          <div style={{ display: 'flex', flexDirection: 'column' }}>
+            {row('Person Type', item.personType)}
+            {row('Staff ID', item.staffId)}
+            {row('WP/PP No', item.wpPpNo)}
+            {row('Full Name', item.name)}
+            {row('Section', item.section)}
+            {row('Department', item.department)}
+            {row('Nationality', item.nationality)}
+            {row('Room', item.roomId)}
+            {row('Bed', item.bedNo ? `Bed ${item.bedNo}` : null)}
+            {row('Check In', fmtDate(item.checkIn))}
+            {row('Check Out', formatTime(item.timestamp))}
+          </div>
+        ) : (
+          /* Check In / other types */
+          <div style={{ display: 'flex', flexDirection: 'column' }}>
+            <div style={{ fontWeight: 800, fontSize: 15, color: 'var(--c-text)', lineHeight: 1.3, marginBottom: 10 }}>{item.name || '-'}</div>
+            {item.staffId && <div style={{ fontSize: 11, fontWeight: 700, color: '#6366f1', marginBottom: 2 }}>Staff ID: {item.staffId}</div>}
+            {item.wpPpNo && <div style={{ fontSize: 11, fontWeight: 700, color: '#6366f1', marginBottom: 8 }}>WP/PP No: {item.wpPpNo}</div>}
+            {row('Person Type', item.personType)}
+            {row('Section', item.section)}
+            {row('Department', item.department)}
+            {row('Nationality', item.nationality)}
+            {item.fasting !== undefined && item.fasting !== null && item.fasting !== '' && row('Fasting', item.fasting === true || item.fasting === 'true' || item.fasting === 'Yes' ? 'Yes' : 'No')}
+            {row('Room', item.roomId ? `${item.roomId}${item.bedNo ? ` / Bed ${item.bedNo}` : ''}` : null)}
+            {row('Check-in', fmtDate(item.checkIn))}
+            {row('Time', formatTime(item.timestamp))}
+            {item.details && row('Details', item.details)}
+          </div>
+        )}
       </div>
     </div>
   );

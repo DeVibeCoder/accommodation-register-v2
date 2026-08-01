@@ -1,34 +1,30 @@
 import React, { useState, useEffect } from 'react';
 
-const NATIONALITY_LIST = [
-  'Afghan','Albanian','Algerian','American','Andorran','Angolan','Antiguan','Argentine',
-  'Armenian','Australian','Austrian','Azerbaijani','Bahamian','Bahraini','Bangladeshi',
-  'Barbadian','Belarusian','Belgian','Belizean','Beninese','Bhutanese','Bolivian',
-  'Bosnian','Botswanan','Brazilian','British','Bruneian','Bulgarian','Burkinabe',
-  'Burundian','Cambodian','Cameroonian','Canadian','Cape Verdean','Central African',
-  'Chadian','Chilean','Chinese','Colombian','Comoran','Congolese','Costa Rican',
-  'Croatian','Cuban','Cypriot','Czech','Danish','Djiboutian','Dominican',
-  'Dutch','Ecuadorian','Egyptian','Emirati','Equatorial Guinean','Eritrean',
-  'Estonian','Ethiopian','Fijian','Filipino','Finnish','French','Gabonese',
-  'Gambian','Georgian','German','Ghanaian','Greek','Grenadian','Guatemalan',
-  'Guinean','Guyanese','Haitian','Honduran','Hungarian','Icelandic','Indian',
-  'Indonesian','Iranian','Iraqi','Irish','Israeli','Italian','Ivorian',
-  'Jamaican','Japanese','Jordanian','Kazakhstani','Kenyan','Kuwaiti','Kyrgyz',
-  'Laotian','Latvian','Lebanese','Lesothan','Liberian','Libyan','Liechtenstein',
-  'Lithuanian','Luxembourgish','Macedonian','Malagasy','Malawian','Malaysian',
-  'Maldivian','Malian','Maltese','Marshallese','Mauritanian','Mauritian','Mexican',
-  'Micronesian','Moldovan','Monégasque','Mongolian','Montenegrin','Moroccan',
-  'Mozambican','Namibian','Nauruan','Nepali','New Zealander','Nicaraguan','Nigerian',
-  'Norwegian','Omani','Pakistani','Palauan','Palestinian','Panamanian',
-  'Papua New Guinean','Paraguayan','Peruvian','Polish','Portuguese','Qatari',
-  'Romanian','Russian','Rwandan','Saint Kitts and Nevis','Saint Lucian',
-  'Saint Vincentian','Samoan','Sao Tomean','Saudi','Senegalese','Serbian',
-  'Sierra Leonean','Singaporean','Slovak','Slovenian','Solomon Islander','Somali',
-  'South African','South Korean','South Sudanese','Spanish','Sri Lankan','Sudanese',
-  'Surinamese','Swazi','Swedish','Swiss','Syrian','Taiwanese','Tajik','Tanzanian',
-  'Thai','Timorese','Togolese','Tongan','Trinidadian','Tunisian','Turkish',
-  'Turkmen','Tuvaluan','Ugandan','Ukrainian','Uruguayan','Uzbek','Vanuatuan',
-  'Venezuelan','Vietnamese','Yemeni','Zambian','Zimbabwean',
+const COUNTRY_LIST = [
+  'Afghanistan','Albania','Algeria','Andorra','Angola','Argentina','Armenia','Australia',
+  'Austria','Azerbaijan','Bahamas','Bahrain','Bangladesh','Barbados','Belarus','Belgium',
+  'Belize','Benin','Bhutan','Bolivia','Bosnia and Herzegovina','Botswana','Brazil',
+  'Brunei','Bulgaria','Burkina Faso','Burundi','Cambodia','Cameroon','Canada',
+  'Cape Verde','Central African Republic','Chad','Chile','China','Colombia','Comoros',
+  'Congo','Costa Rica','Croatia','Cuba','Cyprus','Czech Republic','Denmark','Djibouti',
+  'Dominican Republic','Ecuador','Egypt','El Salvador','Equatorial Guinea','Eritrea',
+  'Estonia','Eswatini','Ethiopia','Fiji','Finland','France','Gabon','Gambia','Georgia',
+  'Germany','Ghana','Greece','Grenada','Guatemala','Guinea','Guinea-Bissau','Guyana',
+  'Haiti','Honduras','Hungary','Iceland','India','Indonesia','Iran','Iraq','Ireland',
+  'Israel','Italy','Jamaica','Japan','Jordan','Kazakhstan','Kenya','Kuwait','Kyrgyzstan',
+  'Laos','Latvia','Lebanon','Lesotho','Liberia','Libya','Liechtenstein','Lithuania',
+  'Luxembourg','Madagascar','Malawi','Malaysia','Maldives','Mali','Malta',
+  'Marshall Islands','Mauritania','Mauritius','Mexico','Moldova','Monaco','Mongolia',
+  'Montenegro','Morocco','Mozambique','Myanmar','Namibia','Nepal','Netherlands',
+  'New Zealand','Nicaragua','Niger','Nigeria','Norway','Oman','Pakistan','Palestine',
+  'Panama','Papua New Guinea','Paraguay','Peru','Philippines','Poland','Portugal',
+  'Qatar','Romania','Russia','Rwanda','Saint Lucia','Saudi Arabia','Senegal','Serbia',
+  'Sierra Leone','Singapore','Slovakia','Slovenia','Solomon Islands','Somalia',
+  'South Africa','South Korea','South Sudan','Spain','Sri Lanka','Sudan','Suriname',
+  'Sweden','Switzerland','Syria','Taiwan','Tajikistan','Tanzania','Thailand',
+  'Timor-Leste','Togo','Tonga','Trinidad and Tobago','Tunisia','Turkey','Turkmenistan',
+  'Uganda','Ukraine','United Arab Emirates','United Kingdom','United States','Uruguay',
+  'Uzbekistan','Vanuatu','Venezuela','Vietnam','Yemen','Zambia','Zimbabwe',
 ];
 
 const DEPARTMENT_OPTIONS = [
@@ -78,6 +74,21 @@ function AddOccupantModal({ open, onClose, rooms, onAdd }) {
     roomId: '', bedId: '', fasting: '', checkin: '',
   });
   const [errors, setErrors] = useState({});
+  const [natQuery, setNatQuery] = useState('');
+  const [showNatSuggestions, setShowNatSuggestions] = useState(false);
+  const natRef = React.useRef(null);
+
+  const natSuggestions = React.useMemo(() => {
+    if (!natQuery.trim()) return [];
+    const q = natQuery.toLowerCase();
+    return COUNTRY_LIST.filter(c => c.toLowerCase().includes(q)).slice(0, 8);
+  }, [natQuery]);
+
+  React.useEffect(() => {
+    const handleClick = e => { if (natRef.current && !natRef.current.contains(e.target)) setShowNatSuggestions(false); };
+    document.addEventListener('mousedown', handleClick);
+    return () => document.removeEventListener('mousedown', handleClick);
+  }, []);
 
   const selectedRoom = rooms.find(r => r.id === form.roomId);
   const availableBeds = selectedRoom ? selectedRoom.beds.filter(b => !b.occupied) : [];
@@ -114,6 +125,8 @@ function AddOccupantModal({ open, onClose, rooms, onAdd }) {
     onClose();
     setForm({ personType: '', staffId: '', wpPpNo: '', fullName: '', section: '', department: '', otherDepartment: '', nationality: '', roomId: '', bedId: '', fasting: '', checkin: '' });
     setErrors({});
+    setNatQuery('');
+    setShowNatSuggestions(false);
   };
 
   if (!open) return null;
@@ -259,18 +272,43 @@ function AddOccupantModal({ open, onClose, rooms, onAdd }) {
               )}
 
               <label style={lbl}>Nationality*
-                <input
-                  name="nationality"
-                  value={form.nationality}
-                  onChange={handleChange}
-                  style={inp}
-                  list="nationality-list"
-                  autoComplete="off"
-                  placeholder="e.g. Indian, Filipino..."
-                />
-                <datalist id="nationality-list">
-                  {NATIONALITY_LIST.map(n => <option key={n} value={n} />)}
-                </datalist>
+                <div ref={natRef} style={{ position: 'relative' }}>
+                  <input
+                    value={natQuery || form.nationality}
+                    onChange={e => {
+                      const v = e.target.value;
+                      setNatQuery(v);
+                      setForm(f => ({ ...f, nationality: v }));
+                      setErrors(prev => ({ ...prev, nationality: undefined }));
+                      setShowNatSuggestions(true);
+                    }}
+                    onFocus={() => { if (natQuery || form.nationality) setShowNatSuggestions(true); }}
+                    style={{ ...inp, marginTop: 0 }}
+                    autoComplete="off"
+                    placeholder="Type country name..."
+                  />
+                  {showNatSuggestions && natSuggestions.length > 0 && (
+                    <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, background: 'var(--c-card)', border: '1px solid var(--c-border-2)', borderRadius: 8, boxShadow: '0 8px 24px rgba(15,23,42,0.15)', zIndex: 9999, overflow: 'hidden', marginTop: 2 }}>
+                      {natSuggestions.map(country => (
+                        <div
+                          key={country}
+                          onMouseDown={e => {
+                            e.preventDefault();
+                            setForm(f => ({ ...f, nationality: country }));
+                            setNatQuery('');
+                            setShowNatSuggestions(false);
+                            setErrors(prev => ({ ...prev, nationality: undefined }));
+                          }}
+                          style={{ padding: '9px 12px', fontSize: 13, fontWeight: 600, color: 'var(--c-text)', cursor: 'pointer', borderBottom: '1px solid var(--c-border)' }}
+                          onMouseEnter={e => { e.currentTarget.style.background = 'var(--c-hover-row)'; }}
+                          onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; }}
+                        >
+                          {country}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
                 {errors.nationality && <span style={errStyle}>{errors.nationality}</span>}
               </label>
 
