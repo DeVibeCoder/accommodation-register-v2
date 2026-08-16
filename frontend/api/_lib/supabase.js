@@ -342,6 +342,7 @@ export function toOccupancyRow(payload = {}) {
     person_type: payload.personType || 'Permanent',
     staff_id: payload.staffId || null,
     wp_pp_no: payload.wpPpNo || null,
+    phone_no: payload.phone || null,
     full_name: payload.name || null,
     section: payload.section || null,
     department: payload.department || null,
