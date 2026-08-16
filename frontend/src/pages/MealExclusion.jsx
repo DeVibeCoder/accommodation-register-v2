@@ -486,79 +486,64 @@ function ImportModal({ open, onClose, occupants, onImported }) {
   );
 }
 
-// --- History Modal ----------------------------------------------------------
-function ExclusionHistoryModal({ open, onClose, occupants = [] }) {
-  const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
+// --- History Panel (inline tab) ---------------------------------------------
+function ExclusionHistoryPanel({ occupants = [], isMobile = false }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [historyRows, setHistoryRows] = useState([]);
 
   useEffect(() => {
-    if (!open) return;
-    let active = true;
+    let cancelled = false;
     setLoading(true); setError('');
     fetchMealExclusionHistory()
-      .then(rows => { if (active) setHistoryRows(Array.isArray(rows) ? rows : []); })
+      .then(rows => { if (!cancelled) setHistoryRows(Array.isArray(rows) ? rows : []); })
       .catch(err => {
-        if (!active) return;
+        if (cancelled) return;
         const msg = err?.message || '';
         setError(msg.includes('meal_exclusions') ? 'Meal exclusions table not set up yet.' : msg || 'Unable to load history.');
       })
-      .finally(() => { if (active) setLoading(false); });
-    return () => { active = false; };
-  }, [open]);
+      .finally(() => { if (!cancelled) setLoading(false); });
+    return () => { cancelled = true; };
+  }, []);
 
   const getDept = (entry) => {
     const byId = entry.staffId && occupants.find(o => String(o.staffId) === String(entry.staffId));
     const byName = occupants.find(o => (o.name || '').toLowerCase().trim() === (entry.name || '').toLowerCase().trim());
-    const found = byId || byName;
-    return found?.department || entry.department || '';
+    return (byId || byName)?.department || entry.department || '';
   };
 
-  if (!open) return null;
   const enrichedRows = historyRows.map(r => ({ ...r, department: normalizeDepartmentLabel(getDept(r)) || r.department || '' }));
 
   return (
-    <div style={{ position: 'fixed', top: isMobile ? 50 : 62, left: 0, right: 0, bottom: 0, background: 'rgba(15,23,42,0.5)', zIndex: 3000, display: 'flex', alignItems: 'flex-start', justifyContent: 'center', padding: 16, overflowY: 'auto' }}>
-      <div style={{ background: 'var(--c-card)', borderRadius: 16, width: '100%', maxWidth: 980, boxShadow: '0 20px 60px rgba(0,0,0,0.2)', maxHeight: '84vh', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
-        <div style={{ padding: '18px 22px', borderBottom: '1px solid var(--c-border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <div>
-            <div style={{ fontWeight: 800, color: 'var(--c-text)', fontSize: '1.05rem' }}>Exclusion History</div>
-            <div style={{ fontSize: 12, color: 'var(--c-subtle)', marginTop: 2 }}>Past exclusions that have reached their to-date</div>
-          </div>
-          <button onClick={onClose} style={{ background: 'none', border: 'none', fontSize: 22, cursor: 'pointer', color: 'var(--c-subtle)', lineHeight: 1 }}>X</button>
-        </div>
-        <div style={{ padding: 16, overflowY: 'auto', flex: 1 }}>
-          {error ? <div style={{ marginBottom: 12, padding: '9px 12px', background: '#fef2f2', border: '1px solid #fecaca', borderRadius: 8, color: '#dc2626', fontSize: 13, fontWeight: 600 }}>{error}</div> : null}
-          {loading ? <div style={{ padding: '10px 0', color: 'var(--c-subtle)', fontWeight: 600 }}>Loading history...</div>
-            : isMobile ? (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                {enrichedRows.length === 0 ? (
-                  <div style={{ color: 'var(--c-muted)', fontWeight: 600, textAlign: 'center', padding: '24px 14px', fontSize: 12 }}>No past exclusions found.</div>
-                ) : enrichedRows.map(item => {
-                  const rc = reasonColor(item.reason);
-                  return (
-                    <div key={item.id} style={{ background: 'var(--c-card)', border: '1px solid var(--c-border)', borderRadius: 10, padding: '10px 12px' }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 4 }}>
-                        <div>
-                          <div style={{ fontWeight: 800, color: 'var(--c-text)', fontSize: 12 }}>{item.name}</div>
-                          {item.staffId ? <div style={{ fontSize: 10, color: 'var(--c-subtle)', marginTop: 1 }}>{item.staffId}</div> : null}
-                          {item.department ? <div style={{ fontSize: 10, color: 'var(--c-muted)', marginTop: 1, textTransform: 'uppercase' }}>{item.department}</div> : null}
-                        </div>
-                        <span style={{ display: 'inline-block', padding: '2px 7px', borderRadius: 999, background: rc.bg, color: rc.text, fontWeight: 700, fontSize: 10, border: `1px solid ${rc.text}30`, flexShrink: 0 }}>{item.reason}</span>
-                      </div>
-                      <div style={{ fontSize: 10, color: 'var(--c-subtle)', fontWeight: 600 }}>
-                        {asDate(item.fromDate)}{item.toDate ? ` → ${asDate(item.toDate)}` : ' → ongoing'}
-                      </div>
+    <div style={{ padding: 16, minHeight: 420 }}>
+      {error ? <div style={{ marginBottom: 12, padding: '9px 12px', background: '#fef2f2', border: '1px solid #fecaca', borderRadius: 8, color: '#dc2626', fontSize: 13, fontWeight: 600 }}>{error}</div> : null}
+      {loading ? <div style={{ padding: '10px 0', color: 'var(--c-subtle)', fontWeight: 600 }}>Loading history...</div>
+        : isMobile ? (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            {enrichedRows.length === 0 ? (
+              <div style={{ color: 'var(--c-muted)', fontWeight: 600, textAlign: 'center', padding: '24px 14px', fontSize: 12 }}>No past exclusions found.</div>
+            ) : enrichedRows.map(item => {
+              const rc = reasonColor(item.reason);
+              return (
+                <div key={item.id} style={{ background: 'var(--c-card)', border: '1px solid var(--c-border)', borderRadius: 10, padding: '10px 12px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 4 }}>
+                    <div>
+                      <div style={{ fontWeight: 800, color: 'var(--c-text)', fontSize: 12 }}>{item.name}</div>
+                      {item.staffId ? <div style={{ fontSize: 10, color: 'var(--c-subtle)', marginTop: 1 }}>{item.staffId}</div> : null}
+                      {item.department ? <div style={{ fontSize: 10, color: 'var(--c-muted)', marginTop: 1, textTransform: 'uppercase' }}>{item.department}</div> : null}
                     </div>
-                  );
-                })}
-              </div>
-            ) : (
-              <ExclusionTable rows={enrichedRows} canEdit={false} closingId="" onClose={() => {}} onEdit={() => {}} emptyText="No past exclusions found." isMobile={false} />
-            )}
-        </div>
-      </div>
+                    <span style={{ display: 'inline-block', padding: '2px 7px', borderRadius: 999, background: rc.bg, color: rc.text, fontWeight: 700, fontSize: 10, border: `1px solid ${rc.text}30`, flexShrink: 0 }}>{item.reason}</span>
+                  </div>
+                  <div style={{ fontSize: 10, color: 'var(--c-subtle)', fontWeight: 600 }}>
+                    {asDate(item.fromDate)}{item.toDate ? ` → ${asDate(item.toDate)}` : ' → ongoing'}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        ) : (
+          <ExclusionTable rows={enrichedRows} canEdit={false} closingId="" onClose={() => {}} onEdit={() => {}} emptyText="No past exclusions found." isMobile={false} />
+        )}
     </div>
   );
 }
@@ -643,7 +628,6 @@ function MealExclusion() {
 
   const [activeTab, setActiveTab] = useState('active');
   const [modalOpen, setModalOpen] = useState(false);
-  const [historyOpen, setHistoryOpen] = useState(false);
   const [importOpen, setImportOpen] = useState(false);
   const [editingEntry, setEditingEntry] = useState(null);
   const [closingId, setClosingId] = useState('');
@@ -799,7 +783,7 @@ function MealExclusion() {
         display: 'flex', alignItems: 'center', gap: 8,
       }}>
         {label}
-        <span style={{ background: isActive ? color : 'var(--c-border)', color: isActive ? '#fff' : 'var(--c-subtle)', borderRadius: 999, padding: '1px 8px', fontSize: 11, fontWeight: 800 }}>{count}</span>
+        {count != null && <span style={{ background: isActive ? color : 'var(--c-border)', color: isActive ? '#fff' : 'var(--c-subtle)', borderRadius: 999, padding: '1px 8px', fontSize: 11, fontWeight: 800 }}>{count}</span>}
       </button>
     );
   };
@@ -816,7 +800,6 @@ function MealExclusion() {
               <button onClick={() => setImportOpen(true)} style={{ height: isMobile ? 28 : 36, padding: isMobile ? '0 10px' : '0 14px', borderRadius: 8, border: 'none', background: '#16a34a', color: '#fff', fontWeight: 800, fontSize: isMobile ? 11 : 13, cursor: 'pointer', whiteSpace: 'nowrap', boxShadow: '0 2px 6px rgba(22,163,74,0.22)' }}>Import CSV</button>
             </>
           ) : null}
-          <button onClick={() => setHistoryOpen(true)} style={{ height: isMobile ? 28 : 36, padding: isMobile ? '0 10px' : '0 14px', borderRadius: 8, border: '1px solid #93c5fd', background: '#eff6ff', color: '#4338ca', fontWeight: 800, fontSize: isMobile ? 11 : 13, cursor: 'pointer', whiteSpace: 'nowrap' }}>{isMobile ? 'History' : 'Exclusion History'}</button>
         </div>
       </div>
 
@@ -849,23 +832,27 @@ function MealExclusion() {
         <div style={{ display: 'flex', borderBottom: '1px solid var(--c-border)', background: 'linear-gradient(180deg, var(--c-surface) 0%, var(--c-card-hdr) 100%)', overflowX: 'auto' }}>
           {tabBtn(isMobile ? 'Active' : 'Active Exclusions', 'active', activeCount, '#ea580c')}
           {tabBtn(isMobile ? 'Upcoming' : 'Upcoming Exclusions', 'upcoming', upcomingCount, '#6366f1')}
+          {tabBtn(isMobile ? 'History' : 'Exclusion History', 'history', null, '#0ea5e9')}
         </div>
         {/* Tab content */}
         <div style={{ minHeight: 420 }}>
-          <ExclusionTable
-            rows={activeTab === 'active' ? hydrateRows.active : hydrateRows.upcoming}
-            canEdit={canEditMeals}
-            closingId={closingId}
-            onClose={handleCloseExclusion}
-            onEdit={openEditModal}
-            emptyText={activeTab === 'active' ? 'No active meal exclusions.' : 'No upcoming meal exclusions.'}
-            isMobile={isMobile}
-          />
+          {activeTab === 'history' ? (
+            <ExclusionHistoryPanel occupants={occupants} isMobile={isMobile} />
+          ) : (
+            <ExclusionTable
+              rows={activeTab === 'active' ? hydrateRows.active : hydrateRows.upcoming}
+              canEdit={canEditMeals}
+              closingId={closingId}
+              onClose={handleCloseExclusion}
+              onEdit={openEditModal}
+              emptyText={activeTab === 'active' ? 'No active meal exclusions.' : 'No upcoming meal exclusions.'}
+              isMobile={isMobile}
+            />
+          )}
         </div>
       </div>
 
       <ExclusionModal open={modalOpen} onClose={() => { setModalOpen(false); setEditingEntry(null); }} occupants={occupants} canEdit={canEditMeals} onSaved={handleSaved} editEntry={editingEntry} allExclusions={[...(mealExclusionSummary.active || []), ...(mealExclusionSummary.upcoming || [])]} />
-      <ExclusionHistoryModal open={historyOpen} onClose={() => setHistoryOpen(false)} occupants={occupants} />
       <ImportModal open={importOpen} onClose={() => setImportOpen(false)} occupants={occupants} onImported={async () => { await refreshSummary(); setImportOpen(false); setNotice('Bulk import completed successfully.'); }} />
     </div>
   );
