@@ -487,24 +487,22 @@ function ImportModal({ open, onClose, occupants, onImported }) {
 }
 
 // --- History Panel (inline tab) ---------------------------------------------
-function ExclusionHistoryPanel({ occupants = [], isMobile = false }) {
-  const [loading, setLoading] = useState(false);
+function ExclusionHistoryPanel({ prefetchedRows = null, occupants = [], isMobile = false }) {
   const [error, setError] = useState('');
-  const [historyRows, setHistoryRows] = useState([]);
+  const [historyRows, setHistoryRows] = useState(prefetchedRows);
 
   useEffect(() => {
+    if (prefetchedRows !== null) { setHistoryRows(prefetchedRows); return; }
     let cancelled = false;
-    setLoading(true); setError('');
     fetchMealExclusionHistory()
       .then(rows => { if (!cancelled) setHistoryRows(Array.isArray(rows) ? rows : []); })
       .catch(err => {
         if (cancelled) return;
         const msg = err?.message || '';
         setError(msg.includes('meal_exclusions') ? 'Meal exclusions table not set up yet.' : msg || 'Unable to load history.');
-      })
-      .finally(() => { if (!cancelled) setLoading(false); });
+      });
     return () => { cancelled = true; };
-  }, []);
+  }, [prefetchedRows]);
 
   const getDept = (entry) => {
     const byId = entry.staffId && occupants.find(o => String(o.staffId) === String(entry.staffId));
@@ -632,6 +630,15 @@ function MealExclusion() {
   const [closingId, setClosingId] = useState('');
   const [deduping, setDeduping] = useState(false);
   const [notice, setNotice] = useState('');
+  const [prefetchedHistory, setPrefetchedHistory] = useState(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetchMealExclusionHistory()
+      .then(rows => { if (!cancelled) setPrefetchedHistory(Array.isArray(rows) ? rows : []); })
+      .catch(() => { if (!cancelled) setPrefetchedHistory([]); });
+    return () => { cancelled = true; };
+  }, []);
 
   const active = Array.isArray(mealExclusionSummary?.active) ? mealExclusionSummary.active : [];
   const upcoming = Array.isArray(mealExclusionSummary?.upcoming) ? mealExclusionSummary.upcoming : [];
@@ -836,7 +843,7 @@ function MealExclusion() {
         {/* Tab content */}
         <div style={{ minHeight: 420 }}>
           {activeTab === 'history' ? (
-            <ExclusionHistoryPanel occupants={occupants} isMobile={isMobile} />
+            <ExclusionHistoryPanel prefetchedRows={prefetchedHistory} occupants={occupants} isMobile={isMobile} />
           ) : (
             <ExclusionTable
               rows={activeTab === 'active' ? hydrateRows.active : hydrateRows.upcoming}
