@@ -69,7 +69,7 @@ function AddOccupantModal({ open, onClose, rooms, onAdd }) {
   const isTablet = vw >= 768 && vw < 1024;
 
   const [form, setForm] = useState({
-    personType: '', staffId: '', wpPpNo: '', fullName: '', section: '',
+    personType: '', staffId: '', wpPpNo: '', phone: '', fullName: '', section: '',
     department: '', otherDepartment: '', nationality: '',
     roomId: '', bedId: '', fasting: '', checkin: '',
   });
@@ -123,7 +123,7 @@ function AddOccupantModal({ open, onClose, rooms, onAdd }) {
     if (!validate()) return;
     onAdd({ ...form, department: toDepartmentValue(form.department, form.otherDepartment) });
     onClose();
-    setForm({ personType: '', staffId: '', wpPpNo: '', fullName: '', section: '', department: '', otherDepartment: '', nationality: '', roomId: '', bedId: '', fasting: '', checkin: '' });
+    setForm({ personType: '', staffId: '', wpPpNo: '', phone: '', fullName: '', section: '', department: '', otherDepartment: '', nationality: '', roomId: '', bedId: '', fasting: '', checkin: '' });
     setErrors({});
     setNatQuery('');
     setShowNatSuggestions(false);
@@ -245,6 +245,10 @@ function AddOccupantModal({ open, onClose, rooms, onAdd }) {
               <label style={lbl}>WP / PP No
                 <input name="wpPpNo" value={form.wpPpNo} onChange={handleChange} style={{ ...inp, borderColor: errors.wpPpNo ? '#f87171' : '#e2e8f0' }} placeholder="Required if no Staff ID" />
                 {errors.wpPpNo && !errors.staffId && <span style={errStyle}>{errors.wpPpNo}</span>}
+              </label>
+
+              <label style={lbl}>Phone
+                <input name="phone" value={form.phone} onChange={handleChange} style={inp} placeholder="Phone number" />
               </label>
 
               <label style={{ ...lbl, gridColumn: '1 / -1' }}>Full Name*

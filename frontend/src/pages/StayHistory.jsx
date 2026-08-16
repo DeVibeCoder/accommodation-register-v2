@@ -4,6 +4,8 @@ import { formatDisplayDateTime, formatDisplayDate } from '../utils/date';
 import { deleteStayHistoryEntry } from '../services/stayHistoryService';
 
 const FILTERS = ['All', 'Check Out', 'Check In', 'Swap', 'Move', 'Edits'];
+const VIEWER_FILTERS = ['All', 'Check Out', 'Check In'];
+const VIEWER_TYPES = new Set(['Check In', 'Check Out']);
 
 function shortCode(value) {
   if (!value) return '';
@@ -96,7 +98,9 @@ function HistoryDetailModal({ item, onClose, isMobile }) {
 }
 
 function StayHistory() {
-  const { stayHistory = [], setStayHistory, isAdmin, occupants = [], isMobile = false } = useOutletContext();
+  const { stayHistory = [], setStayHistory, isAdmin, occupants = [], isMobile = false, role = '' } = useOutletContext();
+  const isViewer = role === 'Viewer';
+  const visibleFilters = isViewer ? VIEWER_FILTERS : FILTERS;
   const [activeFilter, setActiveFilter] = useState('All');
   const [search, setSearch] = useState('');
   const [deletingId, setDeletingId] = useState(null);
@@ -138,6 +142,8 @@ function StayHistory() {
 
   const filtered = useMemo(() => {
     return enrichedHistory.filter(item => {
+      if (isViewer && !VIEWER_TYPES.has(item.type)) return false;
+
       const matchesFilter = activeFilter === 'All'
         ? true
         : activeFilter === 'Edits'
@@ -157,7 +163,7 @@ function StayHistory() {
 
       return matchesFilter && matchesSearch;
     });
-  }, [enrichedHistory, activeFilter, search]);
+  }, [enrichedHistory, activeFilter, search, isViewer]);
 
   const cols = isAdmin ? '120px 1fr 100px 1.6fr 120px 36px' : '120px 1fr 100px 1.6fr 120px';
 
@@ -180,7 +186,7 @@ function StayHistory() {
 
       {/* ── Filter pills ── */}
       <div style={{ display: 'flex', flexWrap: isMobile ? 'nowrap' : 'wrap', gap: isMobile ? 4 : 10, marginBottom: isMobile ? 10 : 18, overflowX: isMobile ? 'auto' : 'visible', scrollbarWidth: 'none' }}>
-        {FILTERS.map(filter => {
+        {visibleFilters.map(filter => {
           const isActive = activeFilter === filter;
           return (
             <button

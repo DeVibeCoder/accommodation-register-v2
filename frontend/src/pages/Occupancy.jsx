@@ -335,6 +335,7 @@ function EditOccupantModal({ open, onClose, occupant, onSave, isMobile = false }
           <label style={lbl2}>Staff ID<input name="staffId" value={form.staffId || ''} onChange={handle} style={inp2} placeholder="Required if no WP/PP No" /></label>
           <label style={{...lbl2,gridColumn:'1/3'}}>Full Name<input name="name" value={form.name} onChange={handle} style={inp2} /></label>
           <label style={lbl2}>WP / PP No<input name="wpPpNo" value={form.wpPpNo || ''} onChange={handle} style={inp2} placeholder="Required if no Staff ID" /></label>
+          <label style={lbl2}>Phone<input name="phone" value={form.phone || ''} onChange={handle} style={inp2} placeholder="Phone number" /></label>
           <label style={lbl2}>Section<input name="section" value={form.section} onChange={handle} style={inp2} /></label>
           <label style={lbl2}>Department
             <select name="departmentChoice" value={form.departmentChoice} onChange={handle} style={inp2}>
@@ -1168,6 +1169,7 @@ function Occupancy() {
                   <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
                     <span style={{ fontSize: 9, fontWeight: 700, padding: '2px 6px', borderRadius: 999, background: tc.bg, color: tc.text, textTransform: 'uppercase', border: `1px solid ${tc.text}22` }}>{o.personType}</span>
                     <span style={{ fontSize: 9, fontWeight: 700, padding: '2px 6px', borderRadius: 999, background: '#eef2ff', color: '#4f46e5', border: '1px solid #cfd8ff' }}>{o.staffId ? `ID ${o.staffId}` : o.wpPpNo ? `WP/PP ${o.wpPpNo}` : '-'}</span>
+                    {o.phone && <span style={{ fontSize: 9, fontWeight: 700, padding: '2px 6px', borderRadius: 999, background: '#ecfdf5', color: '#15803d', border: '1px solid #bbf7d0' }}>PHN {o.phone}</span>}
                   </div>
                   <div style={{ textAlign: 'right', flexShrink: 0, marginLeft: 6 }}>
                     <div style={{ fontSize: 11, fontWeight: 800, padding: '2px 6px', borderRadius: 5, background: '#e0e7ff', color: '#6366f1', display: 'inline-block' }}>{o.roomId}</div>
@@ -1233,6 +1235,7 @@ function Occupancy() {
                   <div style={{ display:'flex',alignItems:'center',gap:6,minWidth:0,flexWrap:'wrap' }}>
                     <span style={{ fontSize:10.5,fontWeight:600,padding:'3px 10px',borderRadius:999,background:tc.bg,color:tc.text,letterSpacing:.2,display:'inline-block',whiteSpace:'nowrap',textTransform:'uppercase',border:`1px solid ${tc.text}22` }}>{o.personType}</span>
                     <span style={{ fontSize:10.5,fontWeight:700,padding:'3px 10px',borderRadius:999,background:'#eef2ff',color:'#4f46e5',letterSpacing:.2,display:'inline-block',whiteSpace:'nowrap',border:'1px solid #cfd8ff' }}>{o.staffId ? `ID ${o.staffId}` : o.wpPpNo ? `WP/PP ${o.wpPpNo}` : '-'}</span>
+                    {o.phone && <span style={{ fontSize:10.5,fontWeight:700,padding:'3px 10px',borderRadius:999,background:'#ecfdf5',color:'#15803d',letterSpacing:.2,display:'inline-block',whiteSpace:'nowrap',border:'1px solid #bbf7d0' }}>PHN {o.phone}</span>}
                   </div>
                   <span style={{ fontWeight:700,fontSize:13.5,color:'var(--c-text)',lineHeight:1.5,overflowWrap:'break-word',wordBreak:'break-word' }}>{o.name}</span>
                 </div>

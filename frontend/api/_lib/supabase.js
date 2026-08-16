@@ -307,6 +307,8 @@ export function formatOccupantForClient(row = {}) {
     id: row.id,
     personType: row.person_type,
     staffId: row.staff_id,
+    wpPpNo: row.wp_pp_no || null,
+    phone: row.phone_no || null,
     name: row.full_name,
     section: row.section,
     department: row.department,
@@ -339,6 +341,8 @@ export function toOccupancyRow(payload = {}) {
   return {
     person_type: payload.personType || 'Permanent',
     staff_id: payload.staffId || null,
+    wp_pp_no: payload.wpPpNo || null,
+    phone_no: payload.phone || null,
     full_name: payload.name || null,
     section: payload.section || null,
     department: payload.department || null,

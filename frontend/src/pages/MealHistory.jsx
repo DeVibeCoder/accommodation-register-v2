@@ -59,6 +59,13 @@ function normalizeCounts(source = {}, departments = []) {
   return counts;
 }
 
+function rowOtherTotal(counts = {}) {
+  return Object.entries(counts).reduce((sum, [k, v]) => {
+    if (/^other(\s|[-_]|$)/i.test(k)) return sum + (Number(v) || 0);
+    return sum;
+  }, 0);
+}
+
 function downloadCsv(filename, content) {
   const blob = new Blob([content], { type: 'text/csv;charset=utf-8;' });
   const url = URL.createObjectURL(blob);
@@ -214,6 +221,7 @@ function MealHistory() {
   const isMobile = vw < 768;
   const [history, setHistory] = useState([]);
   const [departments, setDepartments] = useState([]);
+  const mainTableDepts = useMemo(() => departments.filter(d => DEPT_ORDER.includes(shortCode(d))), [departments]);
   const [selectedMonth, setSelectedMonth] = useState(new Date().toISOString().slice(0, 7));
   const [fromDate, setFromDate] = useState('');
   const [toDate, setToDate] = useState('');
@@ -363,13 +371,14 @@ function MealHistory() {
   const handleExport = () => {
     if (filteredRows.length === 0) return;
 
-    const header = ['Date', ...departments, 'Total'];
+    const header = ['Date', ...mainTableDepts, 'OTHE', 'Total'];
     const lines = [header.map(escapeCsv).join(',')];
 
     for (const row of filteredRows) {
       const values = [
         formatDateForUi(row.date),
-        ...departments.map(dept => row.counts?.[dept] || 0),
+        ...mainTableDepts.map(dept => row.counts?.[dept] || 0),
+        rowOtherTotal(row.counts),
         row.total || 0,
       ];
       lines.push(values.map(escapeCsv).join(','));
@@ -424,9 +433,10 @@ function MealHistory() {
               <thead>
                 <tr>
                   <th style={{ textAlign: 'left', padding: isMobile ? '7px 8px' : '14px 16px', fontSize: isMobile ? 10 : 12, color: 'var(--c-text-2)', textTransform: 'uppercase', letterSpacing: '.06em', borderBottom: '1px solid var(--c-border-2)', background: 'var(--c-surface)' }}>Date</th>
-                  {departments.map(dept => (
+                  {mainTableDepts.map(dept => (
                     <th key={dept} title={dept} style={{ textAlign: 'center', padding: isMobile ? '7px 6px' : '14px 10px', fontSize: isMobile ? 10 : 12, color: 'var(--c-text-2)', textTransform: 'uppercase', letterSpacing: '.06em', borderBottom: '1px solid var(--c-border-2)', background: 'var(--c-surface)', whiteSpace: 'nowrap' }}>{shortCode(dept)}</th>
                   ))}
+                  <th title="Other departments (aggregated)" style={{ textAlign: 'center', padding: isMobile ? '7px 6px' : '14px 10px', fontSize: isMobile ? 10 : 12, color: 'var(--c-text-2)', textTransform: 'uppercase', letterSpacing: '.06em', borderBottom: '1px solid var(--c-border-2)', background: 'var(--c-surface)', whiteSpace: 'nowrap' }}>OTHE</th>
                   <th style={{ textAlign: 'center', padding: isMobile ? '7px 6px' : '14px 12px', fontSize: isMobile ? 10 : 12, color: 'var(--c-text-2)', textTransform: 'uppercase', letterSpacing: '.06em', borderBottom: '1px solid var(--c-border-2)', background: 'var(--c-surface)' }}>Total</th>
                 </tr>
               </thead>
@@ -440,9 +450,10 @@ function MealHistory() {
                     <td style={{ padding: isMobile ? '7px 8px' : '13px 16px', color: 'var(--c-text)', fontWeight: 700, fontSize: isMobile ? 11 : 14 }}>
                       {formatDateForUi(row.date)}
                     </td>
-                    {departments.map(dept => (
+                    {mainTableDepts.map(dept => (
                       <td key={`${row.date}-${dept}`} style={{ textAlign: 'center', padding: isMobile ? '7px 6px' : '13px 10px', color: 'var(--c-text)', fontWeight: 700, fontSize: isMobile ? 11 : 14 }}>{row.counts?.[dept] || 0}</td>
                     ))}
+                    <td key={`${row.date}-OTHE`} style={{ textAlign: 'center', padding: isMobile ? '7px 6px' : '13px 10px', color: 'var(--c-text)', fontWeight: 700, fontSize: isMobile ? 11 : 14 }}>{rowOtherTotal(row.counts)}</td>
                     <td style={{ textAlign: 'center', padding: isMobile ? '7px 6px' : '13px 12px', color: 'var(--c-text)', fontWeight: 900, fontSize: isMobile ? 11 : 14 }}>{row.total || 0}</td>
                   </tr>
                   );

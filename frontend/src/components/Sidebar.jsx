@@ -111,9 +111,7 @@ export default function Sidebar({ collapsed = false, setCollapsed, onLogout, use
 
   const filteredSections = navSections.map(section => ({
     ...section,
-    items: role === 'Viewer'
-      ? section.items.filter(item => item.to !== '/stay-history')
-      : section.items,
+    items: section.items,
   }));
 
   const showSystem = role === 'Admin';

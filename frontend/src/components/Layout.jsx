@@ -85,7 +85,7 @@ function BottomNav({ role, pathname }) {
         </svg>
       ),
     },
-    ...(!isViewer ? [{
+    {
       label: 'Stay',
       to: '/stay-history',
       icon: (
@@ -94,7 +94,7 @@ function BottomNav({ role, pathname }) {
           <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2"/>
         </svg>
       ),
-    }] : []),
+    },
     {
       label: 'Excl.',
       to: '/meal-exclusion',
