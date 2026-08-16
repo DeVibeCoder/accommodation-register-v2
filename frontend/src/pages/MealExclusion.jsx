@@ -489,7 +489,7 @@ function ImportModal({ open, onClose, occupants, onImported }) {
 // --- History Panel (inline tab) ---------------------------------------------
 function ExclusionHistoryPanel({ prefetchedRows = null, occupants = [], isMobile = false }) {
   const [error, setError] = useState('');
-  const [historyRows, setHistoryRows] = useState(prefetchedRows);
+  const [historyRows, setHistoryRows] = useState(prefetchedRows ?? []);
 
   useEffect(() => {
     if (prefetchedRows !== null) { setHistoryRows(prefetchedRows); return; }
@@ -510,7 +510,7 @@ function ExclusionHistoryPanel({ prefetchedRows = null, occupants = [], isMobile
     return (byId || byName)?.department || entry.department || '';
   };
 
-  const enrichedRows = historyRows.map(r => ({ ...r, department: normalizeDepartmentLabel(getDept(r)) || r.department || '' }));
+  const enrichedRows = (historyRows ?? []).map(r => ({ ...r, department: normalizeDepartmentLabel(getDept(r)) || r.department || '' }));
 
   return (
     <div style={{ padding: isMobile ? 12 : 16 }}>
