@@ -325,15 +325,16 @@ function EditOccupantModal({ open, onClose, occupant, onSave, isMobile = false }
   const inp2 = { padding:'10px 12px',borderRadius:10,border:'1.5px solid var(--c-border-3)',fontSize:13,fontWeight:500,color:'var(--c-text)',background:'var(--c-card)' };
   const handle = e => setForm(f=>({...f,[e.target.name]:e.target.value}));
   const handleFasting = e => setForm(f=>({...f,fasting:e.target.value==='true'}));
+  const fullCol = { gridColumn: isMobile ? 'auto' : '1/3' };
   return (
-    <div onClick={onClose} style={{ position:'fixed',top:isMobile?50:62,left:0,right:0,bottom:0,zIndex:3000,background:'rgba(20,30,60,.55)',display:'flex',alignItems:'center',justifyContent:'center',overflowY:'auto',animation:'fadeIn 0.18s ease both' }}>
-      <div onClick={e=>e.stopPropagation()} style={{ background:'var(--c-card)',borderRadius:18,padding:'40px',maxWidth:700,width:'95%',boxShadow:'0 8px 40px rgba(30,50,120,.18)',position:'relative',animation:'scaleIn 0.22s cubic-bezier(0.22,1,0.36,1) both' }}>
-        <button onClick={onClose} style={{ position:'absolute',top:16,right:20,fontSize:24,border:'none',background:'none',cursor:'pointer',color:'var(--c-muted)' }}>X</button>
-        <h2 style={{ fontWeight:800,fontSize:'1.3rem',marginBottom:32,color:'var(--c-text)',letterSpacing:'-0.3px' }}>Edit Occupant</h2>
-        <div style={{ display:'grid',gridTemplateColumns:'1fr 1fr',gap:'18px 24px',marginBottom:32 }}>
+    <div onClick={onClose} style={{ position:'fixed',top:isMobile?50:62,left:0,right:0,bottom:0,zIndex:3000,background:'rgba(20,30,60,.55)',display:'flex',alignItems:isMobile?'flex-end':'center',justifyContent:'center',overflowY:'auto',animation:'fadeIn 0.18s ease both' }}>
+      <div onClick={e=>e.stopPropagation()} style={{ background:'var(--c-card)',borderRadius:isMobile?'18px 18px 0 0':18,padding:isMobile?'24px 16px 20px':'40px',maxWidth:700,width:'100%',maxHeight:isMobile?'92vh':'none',overflowY:isMobile?'auto':'visible',boxShadow:'0 8px 40px rgba(30,50,120,.18)',position:'relative',animation:isMobile?'slideUpSheet 0.28s cubic-bezier(0.22,1,0.36,1) both':'scaleIn 0.22s cubic-bezier(0.22,1,0.36,1) both' }}>
+        <button onClick={onClose} style={{ position:'absolute',top:16,right:16,fontSize:20,border:'1px solid var(--c-border)',background:'var(--c-card)',cursor:'pointer',color:'var(--c-muted)',borderRadius:'50%',width:30,height:30,display:'flex',alignItems:'center',justifyContent:'center' }}>✕</button>
+        <h2 style={{ fontWeight:800,fontSize:isMobile?'1.05rem':'1.3rem',marginBottom:isMobile?20:32,color:'var(--c-text)',letterSpacing:'-0.3px' }}>Edit Occupant</h2>
+        <div style={{ display:'grid',gridTemplateColumns:isMobile?'1fr':'1fr 1fr',gap:isMobile?'12px':'18px 24px',marginBottom:isMobile?20:32 }}>
           <label style={lbl2}>Person Type<select name="personType" value={form.personType} onChange={handle} style={inp2}><option value="Permanent">Permanent</option><option value="Temporary">Temporary</option><option value="Project">Project</option></select></label>
           <label style={lbl2}>Staff ID<input name="staffId" value={form.staffId || ''} onChange={handle} style={inp2} placeholder="Required if no WP/PP No" /></label>
-          <label style={{...lbl2,gridColumn:'1/3'}}>Full Name<input name="name" value={form.name} onChange={handle} style={inp2} /></label>
+          <label style={{...lbl2,...fullCol}}>Full Name<input name="name" value={form.name} onChange={handle} style={inp2} /></label>
           <label style={lbl2}>WP / PP No<input name="wpPpNo" value={form.wpPpNo || ''} onChange={handle} style={inp2} placeholder="Required if no Staff ID" /></label>
           <label style={lbl2}>Phone<input name="phone" value={form.phone || ''} onChange={handle} style={inp2} placeholder="Phone number" /></label>
           <label style={lbl2}>Section<input name="section" value={form.section} onChange={handle} style={inp2} /></label>
@@ -344,22 +345,22 @@ function EditOccupantModal({ open, onClose, occupant, onSave, isMobile = false }
             </select>
           </label>
           {form.departmentChoice === 'OTHER' ? (
-            <label style={{...lbl2, gridColumn:'1/3'}}>Other Department
+            <label style={{...lbl2,...fullCol}}>Other Department
               <input name="otherDepartment" value={form.otherDepartment || ''} onChange={handle} style={inp2} placeholder="Type custom department" />
             </label>
           ) : null}
           <label style={lbl2}>Nationality<input name="nationality" value={form.nationality} onChange={handle} style={inp2} /></label>
           <label style={lbl2}>Fasting<select name="fasting" value={String(form.fasting)} onChange={handleFasting} style={inp2}><option value="true">Yes</option><option value="false">No</option></select></label>
         </div>
-        <div style={{ display:'flex',justifyContent:'flex-end',gap:12 }}>
-          <button onClick={onClose} style={{ padding:'10px 32px',borderRadius:10,border:'none',background:'#e3eafc',color:'var(--c-text)',fontWeight:700,cursor:'pointer',fontSize:14 }}>Cancel</button>
+        <div style={{ display:'flex',flexDirection:isMobile?'column-reverse':'row',justifyContent:'flex-end',gap:10 }}>
+          <button onClick={onClose} style={{ padding:isMobile?'13px 22px':'10px 32px',borderRadius:10,border:'none',background:'#e3eafc',color:'var(--c-text)',fontWeight:700,cursor:'pointer',fontSize:isMobile?15:14,width:isMobile?'100%':'auto' }}>Cancel</button>
           <button onClick={()=>{
             onSave({
               ...form,
               department: toDepartmentValue(form.departmentChoice, form.otherDepartment),
             });
             onClose();
-          }} style={{ padding:'10px 32px',borderRadius:10,border:'none',background:'#6366f1',color:'#fff',fontWeight:700,cursor:'pointer',fontSize:14 }}>Save</button>
+          }} style={{ padding:isMobile?'13px 22px':'10px 32px',borderRadius:10,border:'none',background:'#6366f1',color:'#fff',fontWeight:700,cursor:'pointer',fontSize:isMobile?15:14,width:isMobile?'100%':'auto' }}>Save</button>
         </div>
       </div>
     </div>
