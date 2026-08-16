@@ -517,8 +517,7 @@ function ExclusionHistoryPanel({ occupants = [], isMobile = false }) {
   return (
     <div style={{ padding: 16, minHeight: 420 }}>
       {error ? <div style={{ marginBottom: 12, padding: '9px 12px', background: '#fef2f2', border: '1px solid #fecaca', borderRadius: 8, color: '#dc2626', fontSize: 13, fontWeight: 600 }}>{error}</div> : null}
-      {loading ? <div style={{ padding: '10px 0', color: 'var(--c-subtle)', fontWeight: 600 }}>Loading history...</div>
-        : isMobile ? (
+      {isMobile ? (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
             {enrichedRows.length === 0 ? (
               <div style={{ color: 'var(--c-muted)', fontWeight: 600, textAlign: 'center', padding: '24px 14px', fontSize: 12 }}>No past exclusions found.</div>
@@ -775,15 +774,15 @@ function MealExclusion() {
     return (
       <button onClick={() => setActiveTab(value)} style={{
         padding: '10px 22px', border: 'none', cursor: 'pointer', fontSize: 13, fontWeight: 800,
-        background: isActive ? 'var(--c-card)' : 'transparent',
-        color: isActive ? color : 'var(--c-subtle)',
+        background: isActive ? `${color}18` : 'transparent',
+        color: isActive ? color : `${color}88`,
         borderBottom: isActive ? `3px solid ${color}` : '3px solid transparent',
         borderRadius: 0,
         transition: 'all 0.15s',
         display: 'flex', alignItems: 'center', gap: 8,
       }}>
         {label}
-        {count != null && <span style={{ background: isActive ? color : 'var(--c-border)', color: isActive ? '#fff' : 'var(--c-subtle)', borderRadius: 999, padding: '1px 8px', fontSize: 11, fontWeight: 800 }}>{count}</span>}
+        {count != null && <span style={{ background: isActive ? color : `${color}22`, color: isActive ? '#fff' : color, borderRadius: 999, padding: '1px 8px', fontSize: 11, fontWeight: 800 }}>{count}</span>}
       </button>
     );
   };
