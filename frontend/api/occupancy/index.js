@@ -376,6 +376,84 @@ async function fetchMealSnapshots(filters = {}) {
   return Array.isArray(rows) ? rows.map(formatMealHistoryRow).filter(item => item.date) : [];
 }
 
+async function backfillSnapshotGaps(snapshots) {
+  if (!Array.isArray(snapshots) || snapshots.length === 0) return snapshots;
+
+  const today = todayIsoDate();
+  const cutoffDt = new Date(`${today}T00:00:00.000Z`);
+  cutoffDt.setUTCDate(cutoffDt.getUTCDate() - 90);
+  const cutoff = cutoffDt.toISOString().slice(0, 10);
+
+  // Yesterday = last full day (today's live snapshot is handled separately)
+  const yesterdayDt = new Date(`${today}T00:00:00.000Z`);
+  yesterdayDt.setUTCDate(yesterdayDt.getUTCDate() - 1);
+  const yesterday = yesterdayDt.toISOString().slice(0, 10);
+
+  const byDate = new Map(snapshots.map(s => [s.date, s]));
+
+  // Collect missing dates oldest-first so chained backfill works (fill day N, reuse for N+1)
+  const missingAsc = [];
+  let cur = new Date(`${cutoff}T00:00:00.000Z`);
+  const endDt = new Date(`${yesterday}T00:00:00.000Z`);
+  while (cur <= endDt) {
+    const d = cur.toISOString().slice(0, 10);
+    if (!byDate.has(d)) missingAsc.push(d);
+    cur.setUTCDate(cur.getUTCDate() + 1);
+  }
+
+  if (missingAsc.length === 0) return snapshots;
+
+  const sortedDates = [...byDate.keys()].sort();
+  const toInsert = [];
+
+  for (const miss of missingAsc) {
+    // Nearest previous date with data
+    let source = null;
+    for (let i = sortedDates.length - 1; i >= 0; i--) {
+      if (sortedDates[i] < miss) { source = byDate.get(sortedDates[i]); break; }
+    }
+    // Fallback: nearest next date with data (e.g. missing date is before earliest record)
+    if (!source) {
+      for (let i = 0; i < sortedDates.length; i++) {
+        if (sortedDates[i] > miss) { source = byDate.get(sortedDates[i]); break; }
+      }
+    }
+    if (!source) continue;
+
+    const filled = { date: miss, total: source.total, counts: { ...source.counts }, createdAt: null, updatedAt: null };
+    byDate.set(miss, filled);
+    // Keep sortedDates in order for subsequent iterations
+    const pos = sortedDates.findIndex(d => d > miss);
+    if (pos === -1) sortedDates.push(miss);
+    else sortedDates.splice(pos, 0, miss);
+
+    toInsert.push({
+      snapshot_date: miss,
+      total_meals: source.total,
+      department_counts: source.counts || {},
+      source_updated_at: new Date().toISOString(),
+    });
+  }
+
+  if (toInsert.length > 0) {
+    try {
+      for (let i = 0; i < toInsert.length; i += 50) {
+        await supabaseRequest('/rest/v1/meal_history_daily', {
+          method: 'POST',
+          service: true,
+          body: toInsert.slice(i, i + 50),
+          // ignore-duplicates: never overwrite real data that may have been saved on that day
+          prefer: 'resolution=ignore-duplicates,return=minimal',
+        });
+      }
+    } catch {
+      // Best-effort — return in-memory filled version regardless
+    }
+  }
+
+  return [...byDate.values()].sort((a, b) => b.date.localeCompare(a.date));
+}
+
 function toInt(value) {
   const parsed = Number.parseInt(String(value ?? '').replace(/[^0-9-]/g, ''), 10);
   return Number.isFinite(parsed) ? parsed : null;
@@ -551,15 +629,26 @@ export default async function handler(req, res) {
 
         try {
           await upsertMealSnapshot(liveSnapshot);
-          history = await fetchMealSnapshots({ fromDate, toDate });
+          // Fetch all snapshots without date filter so gap-fill sees the full picture
+          const allHistory = await fetchMealSnapshots({});
+          // Auto-fill any missing dates in the last 90 days using nearest available data
+          const filledHistory = await backfillSnapshotGaps(allHistory);
+          // Apply the user's date filter in memory
+          history = filledHistory.filter(s =>
+            (!fromDate || s.date >= fromDate) && (!toDate || s.date <= toDate)
+          );
         } catch (error) {
           persistenceWarning = error?.message || 'Meal history table not available.';
           const includeLive = (!fromDate || today >= fromDate) && (!toDate || today <= toDate);
           history = includeLive ? [liveSnapshot] : [];
         }
 
+        // Always include today's live snapshot within the requested range
         if (!history.some(item => item.date === liveSnapshot.date)) {
-          history = [liveSnapshot, ...history].sort((a, b) => String(b.date).localeCompare(String(a.date)));
+          const inRange = (!fromDate || today >= fromDate) && (!toDate || today <= toDate);
+          if (inRange) {
+            history = [liveSnapshot, ...history].sort((a, b) => String(b.date).localeCompare(String(a.date)));
+          }
         }
 
         const allDepts = new Set();
