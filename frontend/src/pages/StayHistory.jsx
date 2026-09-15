@@ -61,26 +61,29 @@ function HistoryDetailModal({ item, onClose, isMobile }) {
         </div>
 
         {item.type === 'Check Out' ? (
-          /* Check Out: full ordered staff details */
+          /* Check Out: full ordered staff snapshot */
           <div style={{ display: 'flex', flexDirection: 'column' }}>
             {row('Person Type', item.personType)}
             {row('Staff ID', item.staffId)}
             {row('WP/PP No', item.wpPpNo)}
+            {row('Phone', item.phone)}
             {row('Full Name', item.name)}
             {row('Section', item.section)}
             {row('Department', item.department)}
             {row('Nationality', item.nationality)}
+            {item.fasting !== undefined && item.fasting !== null && item.fasting !== '' && row('Fasting', item.fasting === true || item.fasting === 'true' || item.fasting === 'Yes' ? 'Yes' : 'No')}
             {row('Room', item.roomId)}
             {row('Bed', item.bedNo ? `Bed ${item.bedNo}` : null)}
             {row('Check In', fmtDate(item.checkIn))}
-            {row('Check Out', formatTime(item.timestamp))}
+            {row('Check Out', item.checkOut ? formatTime(item.checkOut) : formatTime(item.timestamp))}
           </div>
         ) : (
           /* Check In / other types */
           <div style={{ display: 'flex', flexDirection: 'column' }}>
             <div style={{ fontWeight: 800, fontSize: 15, color: 'var(--c-text)', lineHeight: 1.3, marginBottom: 10 }}>{item.name || '-'}</div>
             {item.staffId && <div style={{ fontSize: 11, fontWeight: 700, color: '#6366f1', marginBottom: 2 }}>Staff ID: {item.staffId}</div>}
-            {item.wpPpNo && <div style={{ fontSize: 11, fontWeight: 700, color: '#6366f1', marginBottom: 8 }}>WP/PP No: {item.wpPpNo}</div>}
+            {item.wpPpNo && <div style={{ fontSize: 11, fontWeight: 700, color: '#6366f1', marginBottom: 2 }}>WP/PP No: {item.wpPpNo}</div>}
+            {item.phone && <div style={{ fontSize: 11, fontWeight: 700, color: '#6366f1', marginBottom: 8 }}>Phone: {item.phone}</div>}
             {row('Person Type', item.personType)}
             {row('Section', item.section)}
             {row('Department', item.department)}
@@ -111,19 +114,38 @@ function StayHistory() {
     for (const o of occupants) {
       const key = String(o.name || '').trim().toLowerCase();
       if (key && !map.has(key)) {
-        map.set(key, { section: o.section || '', department: o.department || '', staffId: o.staffId || '', wpPpNo: o.wpPpNo || '' });
+        map.set(key, {
+          section: o.section || '',
+          department: o.department || '',
+          staffId: o.staffId || '',
+          wpPpNo: o.wpPpNo || '',
+          phone: o.phone || '',
+          personType: o.personType || '',
+          nationality: o.nationality || '',
+        });
       }
     }
     return map;
   }, [occupants]);
 
+  // Enrich old history records (before the snapshot was saved) using live occupant data.
+  // New records have all fields in the snapshot so this is a no-op for them.
   const enrichedHistory = useMemo(() => {
     return stayHistory.map(item => {
-      const needsEnrich = !item.section && !item.department;
+      const needsEnrich = !item.section && !item.department && !item.staffId && !item.wpPpNo;
       if (!needsEnrich) return item;
       const info = occupantInfoByName.get(String(item.name || '').trim().toLowerCase());
       if (!info) return item;
-      return { ...item, section: info.section, department: info.department };
+      return {
+        ...item,
+        section: item.section || info.section,
+        department: item.department || info.department,
+        staffId: item.staffId || info.staffId,
+        wpPpNo: item.wpPpNo || info.wpPpNo,
+        phone: item.phone || info.phone,
+        personType: item.personType || info.personType,
+        nationality: item.nationality || info.nationality,
+      };
     });
   }, [stayHistory, occupantInfoByName]);
 

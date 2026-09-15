@@ -370,6 +370,17 @@ export function formatStayHistoryForClient(row = {}) {
     details: details.details || details.message || details.text || '',
     timestamp: row.created_at,
     user: details.user || '',
+    // Occupant snapshot fields (saved at event time, safe to be empty on old records)
+    staffId: details.staffId || '',
+    wpPpNo: details.wpPpNo || '',
+    phone: details.phone || '',
+    personType: details.personType || '',
+    section: details.section || '',
+    department: details.department || '',
+    nationality: details.nationality || '',
+    fasting: details.fasting ?? null,
+    checkIn: details.checkIn || '',
+    checkOut: details.checkOut || '',
   };
 }
 
@@ -382,6 +393,17 @@ export function toStayHistoryRow(payload = {}) {
       bedNo: payload.bedNo ?? null,
       details: payload.details || '',
       user: payload.user || null,
+      // Full occupant snapshot — persisted so history is self-contained after checkout
+      staffId: payload.staffId || null,
+      wpPpNo: payload.wpPpNo || null,
+      phone: payload.phone || null,
+      personType: payload.personType || null,
+      section: payload.section || null,
+      department: payload.department || null,
+      nationality: payload.nationality || null,
+      fasting: payload.fasting ?? null,
+      checkIn: payload.checkIn || null,
+      checkOut: payload.checkOut || null,
     },
   };
 }
