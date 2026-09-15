@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 
 function useViewportWidth() {
   const [w, setW] = useState(() => (typeof window !== 'undefined' ? window.innerWidth : 1200));
@@ -10,6 +10,7 @@ function useViewportWidth() {
   return w;
 }
 import { fetchMealHistory } from '../services/mealService';
+import { apiRequest } from '../services/apiClient';
 import { formatDisplayDate, toIsoDate } from '../utils/date';
 
 function shortCode(value) {
@@ -329,7 +330,11 @@ function MealHistory() {
 
   useEffect(() => {
     hydrateFromCache();
-    loadHistory();
+    // One-time backfill: permanently write known-missing dates to the DB,
+    // then load history so the inserted rows appear immediately.
+    apiRequest('/api/admin-backfill', { method: 'GET' })
+      .catch(() => {})
+      .finally(() => loadHistory());
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Auto-refresh at midnight so the new day's snapshot appears automatically
