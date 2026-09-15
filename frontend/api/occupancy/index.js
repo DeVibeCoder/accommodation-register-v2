@@ -381,7 +381,7 @@ async function backfillSnapshotGaps(snapshots) {
 
   const today = todayIsoDate();
   const cutoffDt = new Date(`${today}T00:00:00.000Z`);
-  cutoffDt.setUTCDate(cutoffDt.getUTCDate() - 90);
+  cutoffDt.setUTCDate(cutoffDt.getUTCDate() - 365);
   const cutoff = cutoffDt.toISOString().slice(0, 10);
 
   // Yesterday = last full day (today's live snapshot is handled separately)
