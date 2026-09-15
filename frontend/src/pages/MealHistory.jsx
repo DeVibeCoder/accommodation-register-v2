@@ -331,26 +331,46 @@ function MealHistory() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [midnightTick]);
 
-  // Inject missing dates by copying the closest prior date's headcount.
-  // These rows are marked _synthetic so they can be styled differently.
+  // Auto-fill every gap between the earliest record and today.
+  // Also covers any MISSED_DATES that fall before the first record (e.g. 1 May).
   const filledHistory = useMemo(() => {
     if (history.length === 0) return history;
-    const dateSet = new Set(history.map(r => r.date));
+
+    const today = new Date().toISOString().slice(0, 10);
+    // Ascending working copy — insertions keep it sorted so chained lookups work
+    const sorted = [...history].sort((a, b) => a.date.localeCompare(b.date));
+    const dateSet = new Set(sorted.map(r => r.date));
     const extras = [];
 
-    for (const missedDate of MISSED_DATES) {
-      if (dateSet.has(missedDate)) continue;
-      // Nearest previous date with data
-      const prev = history
-        .filter(r => r.date < missedDate)
-        .sort((a, b) => b.date.localeCompare(a.date))[0];
-      // Fallback: nearest next date (handles dates before the first record, e.g. 1 May → 2 May)
-      const source = prev || history
-        .filter(r => r.date > missedDate)
-        .sort((a, b) => a.date.localeCompare(b.date))[0];
-      if (!source) continue;
-      extras.push({ ...source, date: missedDate, _synthetic: true, _copiedFrom: source.date });
+    const fill = (d) => {
+      if (dateSet.has(d)) return;
+      // Nearest previous
+      let source = null;
+      for (let i = sorted.length - 1; i >= 0; i--) {
+        if (sorted[i].date < d) { source = sorted[i]; break; }
+      }
+      // Fallback: nearest next
+      if (!source) source = sorted.find(r => r.date > d);
+      if (!source) return;
+
+      const filled = { ...source, date: d, _synthetic: true };
+      extras.push(filled);
+      dateSet.add(d);
+      const pos = sorted.findIndex(r => r.date > d);
+      if (pos === -1) sorted.push(filled);
+      else sorted.splice(pos, 0, filled);
+    };
+
+    // Fill every gap from the first record up to today
+    let cur = new Date(`${sorted[0].date}T00:00:00Z`);
+    const endDt = new Date(`${today}T00:00:00Z`);
+    while (cur <= endDt) {
+      fill(cur.toISOString().slice(0, 10));
+      cur.setUTCDate(cur.getUTCDate() + 1);
     }
+
+    // Also cover MISSED_DATES that fall before the first record (e.g. 1 May)
+    for (const md of MISSED_DATES) fill(md);
 
     if (extras.length === 0) return history;
     return [...history, ...extras].sort((a, b) => b.date.localeCompare(a.date));
