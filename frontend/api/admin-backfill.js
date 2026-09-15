@@ -35,7 +35,7 @@ async function insertSnapshot(date, totalMeals, departmentCounts) {
 export default async function handler(req, res) {
   if (!allowMethods(req, res, ['GET', 'POST'])) return;
 
-  // Require any authenticated user
+  // Require any authenticated user (session cookie must be present)
   const user = await requireRole(req, res, []);
   if (!user) return;
 

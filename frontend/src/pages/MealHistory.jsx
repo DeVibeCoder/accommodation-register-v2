@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 
 function useViewportWidth() {
   const [w, setW] = useState(() => (typeof window !== 'undefined' ? window.innerWidth : 1200));
@@ -10,7 +10,6 @@ function useViewportWidth() {
   return w;
 }
 import { fetchMealHistory } from '../services/mealService';
-import { apiRequest } from '../services/apiClient';
 import { formatDisplayDate, toIsoDate } from '../utils/date';
 
 function shortCode(value) {
@@ -330,10 +329,11 @@ function MealHistory() {
 
   useEffect(() => {
     hydrateFromCache();
-    // One-time backfill: permanently write known-missing dates to the DB,
-    // then load history so the inserted rows appear immediately.
-    apiRequest('/api/admin-backfill', { method: 'GET' })
-      .catch(() => {})
+    // Permanently write known-missing dates to DB, then load.
+    fetch('/api/admin-backfill', { credentials: 'include' })
+      .then(r => r.json())
+      .then(result => { console.log('[MealHistory] backfill result:', result); })
+      .catch(err => { console.warn('[MealHistory] backfill skipped:', err?.message); })
       .finally(() => loadHistory());
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
