@@ -24,9 +24,19 @@ function shortCode(value) {
 const DEPT_ORDER = ['TIC', 'QMAR', 'VTC2', 'VMT', 'VT', 'LOGI'];
 const MEAL_HISTORY_CACHE_KEY = 'tic_meal_history_cache_v2';
 
-// Dates that were missed due to manual-refresh not being done.
-// Each entry is filled by copying the closest previous date's headcount.
-const MISSED_DATES = ['2026-05-15', '2026-06-12', '2026-06-16'];
+// Dates that were missed (no page visit on those days so no snapshot was saved).
+// Each entry is filled by copying the nearest available date's headcount.
+const MISSED_DATES = [
+  '2026-05-01',
+  '2026-05-15',
+  '2026-06-12',
+  '2026-06-16',
+  '2026-07-10',
+  '2026-07-11',
+  '2026-08-21',
+  '2026-09-11',
+  '2026-09-13',
+];
 
 function sortDepartments(departments) {
   return [...departments].sort((a, b) => {
@@ -330,12 +340,16 @@ function MealHistory() {
 
     for (const missedDate of MISSED_DATES) {
       if (dateSet.has(missedDate)) continue;
-      // Find the most recent date before the missed date that has data
+      // Nearest previous date with data
       const prev = history
         .filter(r => r.date < missedDate)
         .sort((a, b) => b.date.localeCompare(a.date))[0];
-      if (!prev) continue;
-      extras.push({ ...prev, date: missedDate, _synthetic: true, _copiedFrom: prev.date });
+      // Fallback: nearest next date (handles dates before the first record, e.g. 1 May → 2 May)
+      const source = prev || history
+        .filter(r => r.date > missedDate)
+        .sort((a, b) => a.date.localeCompare(b.date))[0];
+      if (!source) continue;
+      extras.push({ ...source, date: missedDate, _synthetic: true, _copiedFrom: source.date });
     }
 
     if (extras.length === 0) return history;
