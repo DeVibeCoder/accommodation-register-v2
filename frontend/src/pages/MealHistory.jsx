@@ -22,7 +22,7 @@ function shortCode(value) {
 }
 
 const DEPT_ORDER = ['TIC', 'QMAR', 'VTC2', 'VMT', 'VT', 'LOGI'];
-const MEAL_HISTORY_CACHE_KEY = 'tic_meal_history_cache_v2';
+const MEAL_HISTORY_CACHE_KEY = 'tic_meal_history_cache_v3';
 
 // Dates that were missed (no page visit on those days so no snapshot was saved).
 // Each entry is filled by copying the nearest available date's headcount.
@@ -261,39 +261,60 @@ function MealHistory() {
     try {
       const payload = await fetchMealHistory();
       const rawDepts = Array.isArray(payload?.departments) ? payload.departments : [];
-      // departments is now array of actual department name strings
       const deptList = sortDepartments(rawDepts.filter(d => typeof d === 'string' && d.trim()));
 
+      // Build base rows from API response
+      const baseRows = (Array.isArray(payload?.history) ? payload.history : []).map(item => {
+        const date = toIsoDate(item.date);
+        const counts = normalizeCounts(item.counts || {}, deptList);
+        const total = Number(item.total || 0);
+        return { date, counts, total: Number.isFinite(total) ? Math.max(0, Math.floor(total)) : 0 };
+      }).filter(item => item.date);
+
+      // Gap-fill: auto-detect every missing date between first record and today
+      const gapFilled = (() => {
+        if (baseRows.length === 0) return baseRows;
+        const today = new Date().toISOString().slice(0, 10);
+        const sorted = [...baseRows].sort((a, b) => a.date.localeCompare(b.date));
+        const dateSet = new Set(sorted.map(r => r.date));
+        const extras = [];
+
+        const fill = (d) => {
+          if (dateSet.has(d)) return;
+          let source = null;
+          for (let i = sorted.length - 1; i >= 0; i--) {
+            if (sorted[i].date < d) { source = sorted[i]; break; }
+          }
+          if (!source) source = sorted.find(r => r.date > d);
+          if (!source) return;
+          const filled = { ...source, date: d };
+          extras.push(filled);
+          dateSet.add(d);
+          const pos = sorted.findIndex(r => r.date > d);
+          if (pos === -1) sorted.push(filled); else sorted.splice(pos, 0, filled);
+        };
+
+        // Fill every gap from first record to today
+        let cur = new Date(`${sorted[0].date}T00:00:00Z`);
+        const end = new Date(`${today}T00:00:00Z`);
+        while (cur <= end) { fill(cur.toISOString().slice(0, 10)); cur.setUTCDate(cur.getUTCDate() + 1); }
+
+        // Also fill MISSED_DATES that are before the first record (e.g. 1 May)
+        for (const md of MISSED_DATES) fill(md);
+
+        if (extras.length === 0) return baseRows;
+        return [...baseRows, ...extras].sort((a, b) => b.date.localeCompare(a.date));
+      })();
+
       setDepartments(deptList);
-      setHistory(
-        (Array.isArray(payload?.history) ? payload.history : []).map(item => {
-          const date = toIsoDate(item.date);
-          const counts = normalizeCounts(item.counts || {}, deptList);
-          const total = Number(item.total || 0);
-          return {
-            date,
-            counts,
-            total: Number.isFinite(total) ? Math.max(0, Math.floor(total)) : 0,
-          };
-        }).filter(item => item.date)
-      );
+      setHistory(gapFilled);
 
       try {
-        sessionStorage.setItem(MEAL_HISTORY_CACHE_KEY, JSON.stringify({
-          departments: deptList,
-          history: (Array.isArray(payload?.history) ? payload.history : []).map(item => ({
-            date: toIsoDate(item.date),
-            counts: normalizeCounts(item.counts || {}, deptList),
-            total: Number.isFinite(Number(item.total || 0)) ? Math.max(0, Math.floor(Number(item.total || 0))) : 0,
-          })).filter(item => item.date),
-        }));
-      } catch {
-        // ignore cache write issues
-      }
+        sessionStorage.setItem(MEAL_HISTORY_CACHE_KEY, JSON.stringify({ departments: deptList, history: gapFilled }));
+      } catch { /* ignore */ }
 
       if (payload?.warning) {
         const msg = String(payload.warning);
-        // Suppress table-setup noise — live data still shows correctly
         if (!msg.toLowerCase().includes('schema cache') && !msg.toLowerCase().includes('meal_history_daily')) {
           setNotice(msg);
         }
@@ -331,50 +352,8 @@ function MealHistory() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [midnightTick]);
 
-  // Auto-fill every gap between the earliest record and today.
-  // Also covers any MISSED_DATES that fall before the first record (e.g. 1 May).
-  const filledHistory = useMemo(() => {
-    if (history.length === 0) return history;
-
-    const today = new Date().toISOString().slice(0, 10);
-    // Ascending working copy — insertions keep it sorted so chained lookups work
-    const sorted = [...history].sort((a, b) => a.date.localeCompare(b.date));
-    const dateSet = new Set(sorted.map(r => r.date));
-    const extras = [];
-
-    const fill = (d) => {
-      if (dateSet.has(d)) return;
-      // Nearest previous
-      let source = null;
-      for (let i = sorted.length - 1; i >= 0; i--) {
-        if (sorted[i].date < d) { source = sorted[i]; break; }
-      }
-      // Fallback: nearest next
-      if (!source) source = sorted.find(r => r.date > d);
-      if (!source) return;
-
-      const filled = { ...source, date: d, _synthetic: true };
-      extras.push(filled);
-      dateSet.add(d);
-      const pos = sorted.findIndex(r => r.date > d);
-      if (pos === -1) sorted.push(filled);
-      else sorted.splice(pos, 0, filled);
-    };
-
-    // Fill every gap from the first record up to today
-    let cur = new Date(`${sorted[0].date}T00:00:00Z`);
-    const endDt = new Date(`${today}T00:00:00Z`);
-    while (cur <= endDt) {
-      fill(cur.toISOString().slice(0, 10));
-      cur.setUTCDate(cur.getUTCDate() + 1);
-    }
-
-    // Also cover MISSED_DATES that fall before the first record (e.g. 1 May)
-    for (const md of MISSED_DATES) fill(md);
-
-    if (extras.length === 0) return history;
-    return [...history, ...extras].sort((a, b) => b.date.localeCompare(a.date));
-  }, [history]);
+  // Gap-fill is now done inside loadHistory so history already has all dates filled.
+  const filledHistory = history;
 
   const monthOptions = useMemo(() => {
     const uniq = new Set();
